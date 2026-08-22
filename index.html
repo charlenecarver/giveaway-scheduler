@@ -1,0 +1,2967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Giveaway Scheduler</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+      background: #f5f6fa;
+      color: #222;
+    }
+
+    .container {
+      width: min(850px, 80%);
+      margin: 0 auto;
+      padding: 30px 0 60px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      color: #777;
+      margin-bottom: 22px;
+      font-size: 17px;
+    }
+
+    /* -----------------------------
+       ADD GIVEAWAY
+    ------------------------------ */
+
+    .add-card {
+      position: relative;
+      background: white;
+      border-radius: 14px;
+      padding: 22px 24px;
+      box-shadow: 0 3px 18px rgba(0, 0, 0, 0.07);
+      margin-bottom: 24px;
+    }
+
+    .add-card h2 {
+      margin: 0 0 18px;
+      font-size: 20px;
+    }
+
+    .one-line-form {
+      display: grid;
+      grid-template-columns:
+        150px
+        200px
+        60px
+        60px
+        115px
+        50px
+        minmax(100px, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 7px;
+      color: #555;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 48px;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #777;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .add-button {
+      height: 48px;
+      padding: 0 18px;
+      background: #111;
+      color: white;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .add-button:hover {
+      background: #333;
+    }
+
+    /* -----------------------------
+       BUYER CHECKBOX
+    ------------------------------ */
+
+    .buyer-field {
+      width: 50px;
+    }
+
+    .buyer-checkbox-holder {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: white;
+    }
+
+    .buyer-checkbox-holder:hover {
+      background: #fffaf0;
+      border-color: #d6b35a;
+    }
+
+    .buyer-checkbox-holder input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      padding: 0;
+      cursor: pointer;
+      accent-color: #bf8a08;
+    }
+
+    /* -----------------------------
+       TABS
+    ------------------------------ */
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #e6e7eb;
+      color: #555;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: #111;
+      color: white;
+    }
+
+    .count {
+      opacity: 0.7;
+      margin-left: 4px;
+    }
+
+    /* -----------------------------
+       LISTS
+    ------------------------------ */
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* -----------------------------
+       ACTIVE GIVEAWAYS
+    ------------------------------ */
+
+    .giveaway {
+      position: relative;
+      background: white;
+      border-radius: 16px;
+      padding: 16px 18px;
+      min-height: 94px;
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto auto;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 2px solid transparent;
+      transition: none;
+    }
+
+    .giveaway.next {
+      border-color: transparent;
+    }
+
+    .giveaway.join-ready {
+      border-color: #e19a28;
+      background: #fffaf0;
+    }
+
+    .giveaway.joined-card {
+      border-left: 5px solid #4b9d6c;
+    }
+
+    .giveaway.done {
+      border-color: #41a76f;
+      background: #f2fff7;
+    }
+
+    .giveaway.buyer-giveaway {
+      background: #fffaf0;
+      border-color: #d2a62c;
+      border-left: 6px solid #c38d08;
+      box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(195, 141, 8, 0.08);
+    }
+
+    .giveaway.buyer-giveaway.next {
+      border-color: #a87500;
+      border-left: 6px solid #a87500;
+      box-shadow:
+        0 3px 14px rgba(168, 117, 0, 0.16);
+    }
+
+    .giveaway.buyer-giveaway.join-ready {
+      background: #fff4d5;
+      border-color: #d78600;
+      border-left: 6px solid #d78600;
+    }
+
+    .giveaway.buyer-giveaway.done {
+      background: #f2fff7;
+      border-color: #41a76f;
+      border-left: 6px solid #41a76f;
+    }
+
+    /* Favorites use a cool lavender accent so they stand out differently from Buyer's giveaways. */
+    .giveaway.favorite-giveaway {
+      background: #f7f5ff;
+      border-color: #b8ace8;
+      border-left: 6px solid #8d7ad1;
+      box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(141, 122, 209, 0.08);
+    }
+
+    .giveaway.favorite-giveaway.next {
+      border-color: #7764c2;
+      border-left: 6px solid #7764c2;
+      box-shadow: 0 7px 20px rgba(119, 100, 194, 0.13);
+    }
+
+    .giveaway.favorite-giveaway.join-ready {
+      background: #f4f0ff;
+      border-color: #8d7ad1;
+      border-left: 6px solid #8d7ad1;
+    }
+
+    .giveaway.favorite-giveaway.done {
+      background: #f2fff7;
+      border-color: #41a76f;
+      border-left: 6px solid #41a76f;
+    }
+
+    .giveaway.buyer-giveaway.favorite-giveaway {
+      background: #fffaf0;
+      border-color: #d2a62c;
+      border-left: 6px solid #c38d08;
+      box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.05),
+        inset 0 0 0 2px rgba(141, 122, 209, 0.22);
+    }
+
+    .giveaway-info {
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .name-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      margin-bottom: 4px;
+    }
+
+    .live-name {
+      font-size: 17px;
+      font-weight: 700;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    .item-name {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .joined-badge {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e8f6ed;
+      color: #247447;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .buyer-badge {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f4d36a;
+      color: #684b00;
+      border: 1px solid #ddb94a;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .favorite-badge {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #ece8ff;
+      color: #6453ad;
+      border: 1px solid #c8bff1;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .missed-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #fdeaea;
+      color: #b53737;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* -----------------------------
+       TIMER AREA
+    ------------------------------ */
+
+    .timer-area {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 18px;
+      min-width: 220px;
+      align-self: center;
+    }
+
+    .timer-block {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .timer-label {
+      color: #888;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .timer {
+      font-size: 25px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      min-width: 66px;
+      text-align: right;
+      line-height: 1;
+    }
+
+    .timer.urgent {
+      color: #d33b3b;
+    }
+
+    .countdown-timer {
+      color: #bd7417;
+    }
+
+    .countdown-timer.urgent {
+      color: #d53a31;
+    }
+
+    .done-text {
+      color: #24955b;
+      font-size: 23px;
+      font-weight: 800;
+      min-width: 90px;
+      text-align: right;
+      line-height: 1;
+      align-self: center;
+    }
+
+    /* -----------------------------
+       JOIN / MISS
+    ------------------------------ */
+
+    .join-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      align-self: center;
+    }
+
+    .joined-button {
+      background: #32945c;
+      color: white;
+      border-radius: 7px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 800;
+      transition:
+        background-color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
+    }
+
+    .joined-button:hover {
+      background: #287a4c;
+      box-shadow: 0 3px 9px rgba(40, 122, 76, 0.20);
+      transform: translateY(-1px);
+    }
+
+    .missed-button {
+      background: #d94a4a;
+      color: white;
+      border-radius: 7px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 800;
+      transition:
+        background-color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
+    }
+
+    .missed-button:hover {
+      background: #bd3c3c;
+      box-shadow: 0 3px 9px rgba(189, 60, 60, 0.20);
+      transform: translateY(-1px);
+    }
+
+    .join-ready .join-actions {
+      animation: pulse 1.15s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.025);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* -----------------------------
+       DELETE
+    ------------------------------ */
+
+    .delete-btn {
+      width: 31px;
+      height: 31px;
+      border-radius: 50%;
+      background: #f0f0f0;
+      color: #777;
+      font-size: 17px;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    .delete-btn:hover {
+      background: #ffdede;
+      color: #c73636;
+    }
+
+    /* -----------------------------
+       HISTORY
+    ------------------------------ */
+
+    .history-item {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 18px;
+      min-height: 88px;
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 2px solid transparent;
+    }
+
+    .history-item.buyer-history {
+      background: #fffaf0;
+      border-color: #e0c36e;
+      border-left: 5px solid #c38d08;
+    }
+
+
+    .history-item.favorite-history {
+      background: #f7f5ff;
+      border-color: #c8bff1;
+      border-left: 5px solid #8d7ad1;
+    }
+
+    .history-item.buyer-history.favorite-history {
+      background: #fffaf0;
+      border-color: #e0c36e;
+      border-left: 5px solid #c38d08;
+      box-shadow: inset 0 0 0 2px rgba(141, 122, 209, 0.18);
+    }
+
+    .history-main {
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .history-name-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 4px;
+      min-width: 0;
+    }
+
+    .completed-time {
+      color: #999;
+      font-size: 12px;
+      white-space: nowrap;
+      align-self: center;
+    }
+
+    .empty {
+      background: white;
+      border-radius: 14px;
+      padding: 35px 20px;
+      text-align: center;
+      color: #999;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .clear-button {
+      background: transparent;
+      color: #a33;
+      font-size: 12px;
+      padding: 7px;
+    }
+
+    /* -----------------------------
+       RESPONSIVE
+    ------------------------------ */
+
+    @media (max-width: 1080px) {
+      .one-line-form {
+        grid-template-columns:
+          190px
+          300px
+          78px
+          78px
+          135px
+          72px;
+      }
+
+      .add-button {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .container {
+        width: 94%;
+        padding-top: 20px;
+      }
+
+      h1 {
+        font-size: 27px;
+      }
+
+      .one-line-form {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .live-field,
+      .item-field,
+      .countdown-field,
+      .buyer-field,
+      .add-button {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
+      .time-field {
+        grid-column: span 1;
+      }
+
+      .buyer-checkbox-holder {
+        justify-content: flex-start;
+        padding-left: 11px;
+      }
+
+      .giveaway,
+      .history-item {
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+      }
+
+      .timer-area {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        padding-top: 7px;
+        border-top: 1px solid #eee;
+      }
+
+      .delete-btn {
+        grid-column: 2;
+        grid-row: 1;
+      }
+    }
+
+
+    /* -----------------------------
+       POLISHED NEUTRAL THEME
+       + IMPROVED RESPONSIVENESS
+    ------------------------------ */
+
+    body {
+      background: linear-gradient(180deg, #f8f9fb 0%, #f3f4f7 100%);
+    }
+
+    .add-card,
+    .giveaway,
+    .history-item,
+    .empty {
+      border: 1px solid #e8e9ed;
+      box-shadow: 0 8px 24px rgba(28, 31, 38, 0.06);
+    }
+
+    .add-card {
+      border-radius: 16px;
+    }
+
+    input,
+    select,
+    .buyer-checkbox-holder {
+      border-color: #d9dbe1;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    input:hover,
+    select:hover,
+    .buyer-checkbox-holder:hover {
+      border-color: #bfc2ca;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #777b85;
+      box-shadow: 0 0 0 3px rgba(90, 94, 104, 0.10);
+    }
+
+    .add-button {
+      background: linear-gradient(180deg, #23252a 0%, #111216 100%);
+      box-shadow: 0 5px 12px rgba(20, 22, 27, 0.15);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .add-button:hover {
+      background: linear-gradient(180deg, #303238 0%, #1a1b20 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 7px 16px rgba(20, 22, 27, 0.18);
+    }
+
+    .add-button:active {
+      transform: translateY(0);
+    }
+
+    .tab {
+      border: 1px solid #dde0e5;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    }
+
+    .tab:hover {
+      transform: translateY(-1px);
+      background: #dcdee4;
+    }
+
+    .tab.active {
+      background: #17181c;
+      border-color: #17181c;
+      box-shadow: 0 4px 10px rgba(17, 18, 22, 0.12);
+    }
+
+    .giveaway,
+    .history-item {
+      transition: none;
+    }
+
+    /* The list re-renders every 250ms for the timers, so card hover effects
+       can visibly flicker under the mouse. Keep the cards visually stable. */
+    .giveaway.next {
+      border-color: #b8bdc5;
+      box-shadow: 0 4px 14px rgba(28, 31, 38, 0.06);
+    }
+
+    .delete-btn {
+      transition: none;
+    }
+
+    .delete-btn:hover {
+      transform: none;
+    }
+
+    /* Replace the older breakpoint behavior with smoother responsive sizing. */
+    @media (max-width: 980px) {
+      .container {
+        width: min(92%, 850px);
+      }
+
+      .one-line-form {
+        grid-template-columns: 1.15fr 1.5fr 64px 64px 115px 50px 84px;
+        gap: 8px;
+      }
+
+      .add-button {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .container {
+        width: 94%;
+        padding-top: 18px;
+      }
+
+      .add-card {
+        padding: 18px;
+      }
+
+      .one-line-form {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) 64px 64px;
+        gap: 10px;
+      }
+
+      .live-field {
+        grid-column: 1;
+        width: auto;
+      }
+
+      .item-field {
+        grid-column: 2;
+        width: auto;
+      }
+
+      .time-field {
+        grid-column: auto;
+      }
+
+      .countdown-field {
+        grid-column: 1 / 3;
+        width: auto;
+      }
+
+      .buyer-field {
+        grid-column: 3;
+        width: 100%;
+      }
+
+      .add-button {
+        grid-column: 4;
+        width: 100%;
+      }
+
+      .buyer-checkbox-holder {
+        justify-content: center;
+        padding-left: 0;
+      }
+
+      .giveaway,
+      .history-item {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+      }
+
+      .timer-area {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        padding-top: 8px;
+        border-top: 1px solid #eceef1;
+      }
+
+      .delete-btn {
+        grid-column: 2;
+        grid-row: 1;
+      }
+    }
+
+    @media (max-width: 560px) {
+      h1 {
+        font-size: 26px;
+      }
+
+      .subtitle {
+        font-size: 15px;
+      }
+
+      .one-line-form {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .live-field,
+      .item-field,
+      .countdown-field {
+        grid-column: 1 / -1;
+      }
+
+      .time-field {
+        grid-column: span 1;
+      }
+
+      .buyer-field {
+        grid-column: 1;
+        width: 100%;
+      }
+
+      .add-button {
+        grid-column: 2;
+      }
+
+      .buyer-checkbox-holder {
+        justify-content: center;
+        padding-left: 0;
+      }
+
+      input,
+      select,
+      .buyer-checkbox-holder,
+      .add-button {
+        height: 44px;
+      }
+
+      .giveaway,
+      .history-item {
+        padding: 14px;
+        min-height: auto;
+      }
+
+      .timer {
+        font-size: 22px;
+      }
+
+      .timer-area {
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .one-line-form {
+        grid-template-columns: 1fr;
+      }
+
+      .live-field,
+      .item-field,
+      .time-field,
+      .countdown-field,
+      .buyer-field,
+      .add-button {
+        grid-column: 1;
+        width: 100%;
+      }
+
+      .buyer-checkbox-holder {
+        justify-content: flex-start;
+        padding-left: 12px;
+      }
+    }
+
+
+    /* -----------------------------
+       FINAL RESPONSIVE OVERRIDES
+       Keeps the desktop look, but prevents squeezing/overflow.
+    ------------------------------ */
+
+    .container {
+      width: min(850px, calc(100% - 32px));
+    }
+
+    .one-line-form {
+      grid-template-columns:
+        minmax(110px, 150px)
+        minmax(150px, 200px)
+        60px
+        60px
+        115px
+        50px
+        minmax(72px, 1fr);
+      gap: 8px;
+    }
+
+    .giveaway,
+    .history-item {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .giveaway-info,
+    .history-main,
+    .timer-area {
+      min-width: 0;
+    }
+
+    @media (max-width: 760px) {
+      .container {
+        width: min(100% - 24px, 850px);
+        padding-top: 18px;
+      }
+
+      .add-card {
+        padding: 18px;
+      }
+
+      .one-line-form {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .live-field {
+        grid-column: 1 / span 3;
+        width: auto;
+      }
+
+      .item-field {
+        grid-column: 4 / span 3;
+        width: auto;
+      }
+
+      #minutes,
+      #seconds {
+        min-width: 0;
+      }
+
+      .time-field {
+        grid-column: span 1;
+        width: auto;
+      }
+
+      .countdown-field {
+        grid-column: span 2;
+        width: auto;
+      }
+
+      .buyer-field {
+        grid-column: span 1;
+        width: auto;
+      }
+
+      .add-button {
+        grid-column: span 1;
+        width: 100%;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .buyer-checkbox-holder {
+        justify-content: center;
+        padding-left: 0;
+      }
+
+      .giveaway,
+      .history-item {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 14px;
+        min-height: 0;
+      }
+
+      .giveaway-info,
+      .history-main {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .delete-btn {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        align-self: center;
+      }
+
+      .timer-area {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        min-width: 0;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        padding-top: 10px;
+        border-top: 1px solid #eceef1;
+      }
+
+      .completed-time {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: start;
+        align-self: center;
+        margin-top: 6px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .container {
+        width: calc(100% - 20px);
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      .subtitle {
+        font-size: 15px;
+      }
+
+      .add-card {
+        padding: 16px;
+      }
+
+      .one-line-form {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .live-field,
+      .item-field,
+      .countdown-field {
+        grid-column: 1 / -1;
+        width: auto;
+      }
+
+      .time-field {
+        grid-column: span 1;
+      }
+
+      .buyer-field {
+        grid-column: 1;
+        width: auto;
+      }
+
+      .add-button {
+        grid-column: 2;
+        width: 100%;
+      }
+
+      input,
+      select,
+      .buyer-checkbox-holder,
+      .add-button {
+        height: 44px;
+      }
+
+      .timer-area {
+        gap: 8px 12px;
+      }
+
+      .timer {
+        font-size: 21px;
+        min-width: 58px;
+      }
+
+      .timer-block {
+        gap: 6px;
+      }
+
+      .join-actions {
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .one-line-form {
+        grid-template-columns: 1fr;
+      }
+
+      .live-field,
+      .item-field,
+      .time-field,
+      .countdown-field,
+      .buyer-field,
+      .add-button {
+        grid-column: 1;
+        width: 100%;
+      }
+
+      .buyer-checkbox-holder {
+        justify-content: flex-start;
+        padding-left: 12px;
+      }
+
+      .timer-label {
+        font-size: 10px;
+      }
+
+      .timer {
+        font-size: 20px;
+      }
+    }
+
+  
+
+    /* -----------------------------
+       EDIT ENTRY
+    ------------------------------ */
+
+    .edit-notice {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -6px 0 14px;
+      padding: 9px 11px;
+      border: 1px solid #d9dde3;
+      border-radius: 10px;
+      background: #f7f8fa;
+      color: #555;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .edit-notice-copy {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .edit-current-time {
+      color: #222;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .edit-time-hint {
+      color: #858b94;
+      font-weight: 500;
+    }
+
+    .cancel-edit-button {
+      padding: 5px 8px;
+      border-radius: 7px;
+      background: #e8eaee;
+      color: #555;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .cancel-edit-button:hover {
+      background: #dde0e5;
+      color: #222;
+    }
+
+    .entry-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .favorite-btn,
+    .edit-btn {
+      width: 31px;
+      height: 31px;
+      border-radius: 50%;
+      background: #eef0f3;
+      color: #5f6670;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition:
+        background-color 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
+    }
+
+    .favorite-btn {
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1;
+      font-family: Arial, sans-serif;
+    }
+
+    .favorite-btn:hover {
+      background: #f0edff;
+      color: #6e5bb8;
+      box-shadow: 0 3px 9px rgba(110, 91, 184, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .edit-btn:hover {
+      background: #e9f2ff;
+      color: #3974b8;
+      box-shadow: 0 3px 9px rgba(57, 116, 184, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .delete-btn {
+      transition:
+        background-color 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
+    }
+
+    .delete-btn:hover {
+      background: #ffe9e9;
+      color: #c84444;
+      box-shadow: 0 3px 9px rgba(200, 68, 68, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .favorite-btn.active {
+      background: #ece8ff;
+      color: #715ec1;
+      box-shadow: inset 0 0 0 1px #c8bff1;
+    }
+
+    .favorite-btn.active:hover {
+      background: #dfd8ff;
+      color: #5f4cab;
+      box-shadow:
+        inset 0 0 0 1px #b9adee,
+        0 3px 9px rgba(95, 76, 171, 0.18);
+      transform: translateY(-1px);
+    }
+
+
+    .edit-sync {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .edit-sync-label {
+      color: #777;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 2px;
+    }
+
+    .duplicate-button {
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 7px;
+      background: #eef0f3;
+      color: #555;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 4px;
+      transition:
+        background-color 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
+    }
+
+    .duplicate-button:hover {
+      background: #e7edf5;
+      color: #2f5f91;
+      box-shadow: 0 3px 9px rgba(47, 95, 145, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .sync-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: #f3f4f6;
+      color: #555;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        background-color 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
+    }
+
+    .sync-btn:hover {
+      background: #e7edf5;
+      color: #2f5f91;
+      box-shadow: 0 3px 9px rgba(47, 95, 145, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .sync-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    @media (max-width: 760px) {
+      .entry-actions {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        align-self: center;
+      }
+    }
+
+
+
+    /* -----------------------------
+       SETTINGS
+    ------------------------------ */
+
+    .settings-button {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #666;
+      border: none;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      line-height: 1;
+      z-index: 1001;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .settings-button:hover {
+      background: transparent;
+      color: #222;
+      box-shadow: none;
+      transform: rotate(18deg);
+    }
+
+    .settings-panel {
+      position: absolute;
+      top: 48px;
+      right: 14px;
+      width: 280px;
+      max-width: calc(100vw - 36px);
+      background: #fff;
+      border: 1px solid #e1e3e8;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+      padding: 16px;
+      z-index: 1000;
+      display: none;
+    }
+
+    .settings-panel.open {
+      display: block;
+    }
+
+    .settings-title {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .settings-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .settings-row label {
+      margin: 0;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .delay-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .delay-input-wrap input {
+      width: 72px;
+      height: 36px;
+      padding: 6px 8px;
+      text-align: center;
+    }
+
+    .delay-input-wrap span {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .settings-help {
+      margin: 4px 0 0;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #888;
+    }
+
+    @media (max-width: 760px) {
+      .settings-button {
+        top: 12px;
+        right: 12px;
+      }
+
+      .settings-panel {
+        top: 46px;
+        right: 12px;
+        max-width: calc(100vw - 48px);
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Giveaway Scheduler</h1>
+
+    <div class="subtitle">
+      Track live giveaways and know when you need to return to join.
+    </div>
+
+    <div class="add-card">
+
+  <button
+    id="settingsButton"
+    class="settings-button"
+    type="button"
+    aria-label="Settings"
+    aria-expanded="false"
+    onclick="toggleSettings()"
+    title="Settings"
+  >
+    ⚙
+  </button>
+
+  <div id="settingsPanel" class="settings-panel">
+    <div class="settings-title">Settings</div>
+
+    <div class="settings-row">
+      <label for="delaySeconds">Delay amount</label>
+      <div id="delayInputWrap" class="delay-input-wrap">
+        <input
+          id="delaySeconds"
+          type="number"
+          min="0"
+          max="60"
+          step="1"
+          value="0"
+          onchange="updateDelaySetting()"
+          oninput="updateDelaySetting()"
+        />
+        <span>sec</span>
+      </div>
+    </div>
+
+    <p class="settings-help">
+      Set this to 0 for no delay. Any higher value subtracts that many seconds from newly added or edited timers to compensate for entry time.
+    </p>
+  </div>
+
+      <h2 id="formTitle">Add Giveaway</h2>
+
+      <div id="editNotice" class="edit-notice">
+        <div>
+          <div class="edit-notice-copy">
+            <span>Editing · Current:</span>
+            <span id="editCurrentTime" class="edit-current-time">00:00</span>
+            <span class="edit-time-hint">
+              Leave Min/Sec blank to keep the current end time. Enter a new time only to replace it.
+            </span>
+          </div>
+
+          <div id="editSync" class="edit-sync">
+            <span class="edit-sync-label">Quick sync</span>
+
+            <button
+              class="sync-btn"
+              type="button"
+              onclick="syncEditingGiveaway(-1)"
+              title="Subtract 1 second"
+              aria-label="Subtract 1 second"
+            >
+              −
+            </button>
+
+            <button
+              class="sync-btn"
+              type="button"
+              onclick="syncEditingGiveaway(1)"
+              title="Add 1 second"
+              aria-label="Add 1 second"
+            >
+              +
+            </button>
+
+          </div>
+        </div>
+
+        <button
+          class="cancel-edit-button"
+          type="button"
+          onclick="cancelEdit()"
+        >
+          Cancel
+        </button>
+      </div>
+
+      <div class="one-line-form">
+
+        <div class="field live-field">
+          <label for="liveName">
+            Live Name
+          </label>
+
+          <input
+            id="liveName"
+            type="text"
+            placeholder="@username"
+          />
+        </div>
+
+        <div class="field item-field">
+          <label for="itemName">
+            Giveaway Item
+          </label>
+
+          <input
+            id="itemName"
+            type="text"
+            placeholder="Giveaway item"
+          />
+        </div>
+
+        <div class="field time-field">
+          <label for="minutes">
+            Min
+          </label>
+
+          <input
+            id="minutes"
+            type="number"
+            min="0"
+            placeholder="0"
+          />
+        </div>
+
+        <div class="field time-field">
+          <label for="seconds">
+            Sec
+          </label>
+
+          <input
+            id="seconds"
+            type="number"
+            min="0"
+            max="59"
+            placeholder="0"
+          />
+        </div>
+
+        <div class="field countdown-field">
+          <label for="countdownMinutes">
+            Countdown
+          </label>
+
+          <select id="countdownMinutes">
+            <option value="none" selected>
+              None
+            </option>
+            <option value="1">
+              1 minute
+            </option>
+            <option value="3">
+              3 minutes
+            </option>
+            <option value="5">
+              5 minutes
+            </option>
+            <option value="10">
+              10 minutes
+            </option>
+          </select>
+        </div>
+
+        <div class="field buyer-field">
+          <label for="isBuyerGiveaway">
+            Buyer's
+          </label>
+
+          <div class="buyer-checkbox-holder">
+            <input
+              id="isBuyerGiveaway"
+              type="checkbox"
+            />
+          </div>
+        </div>
+
+        <button
+          id="addButton"
+          class="add-button"
+          type="button"
+          onclick="addGiveaway()"
+        >
+          Add
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="tabs">
+
+      <button
+        id="activeTab"
+        class="tab active"
+        onclick="showTab('active')"
+      >
+        Active
+        <span id="activeCount" class="count">0</span>
+      </button>
+
+      <button
+        id="historyTab"
+        class="tab"
+        onclick="showTab('history')"
+      >
+        History
+        <span id="historyCount" class="count">0</span>
+      </button>
+
+    </div>
+
+    <div id="activeView">
+      <div
+        id="activeList"
+        class="list"
+      ></div>
+    </div>
+
+    <div
+      id="historyView"
+      style="display: none"
+    >
+
+      <div class="history-header">
+        <button
+          class="clear-button"
+          onclick="clearHistory()"
+        >
+          Clear History
+        </button>
+      </div>
+
+      <div
+        id="historyList"
+        class="list"
+      ></div>
+
+    </div>
+
+  </div>
+
+  <script>
+    let giveaways =
+      JSON.parse(
+        localStorage.getItem("giveaways")
+      ) || [];
+
+    let history =
+      JSON.parse(
+        localStorage.getItem("giveawayHistory")
+      ) || [];
+
+    giveaways = giveaways.map(giveaway => ({
+      ...giveaway,
+      useCountdown: giveaway.useCountdown ?? false,
+      countdownMinutes: giveaway.countdownMinutes ?? null,
+      countdownEndTime: giveaway.countdownEndTime ?? null,
+      joined: giveaway.joined ?? false,
+      joinedAt: giveaway.joinedAt ?? null,
+      isBuyerGiveaway: giveaway.isBuyerGiveaway ?? false,
+      isFavorite: giveaway.isFavorite ?? false
+    }));
+
+    history = history.map(entry => ({
+      ...entry,
+      isBuyerGiveaway: entry.isBuyerGiveaway ?? false,
+      isFavorite: entry.isFavorite ?? false
+    }));
+
+    let editingGiveawayId = null;
+    let editingOriginalTiming = null;
+    let editingTimeChanged = false;
+    let editingCountdownChanged = false;
+    let duplicatedFavoritePending = false;
+
+
+    let settings = JSON.parse(
+      localStorage.getItem("giveawaySettings")
+    ) || {
+      delaySeconds: 0
+    };
+
+    // Migrate the previous checkbox-based setting once.
+    if (Object.prototype.hasOwnProperty.call(settings, "delayEnabled")) {
+      settings.delaySeconds = settings.delayEnabled
+        ? Number(settings.delaySeconds || 0)
+        : 0;
+      delete settings.delayEnabled;
+    }
+
+    settings.delaySeconds = Number.isFinite(Number(settings.delaySeconds))
+      ? Math.max(0, Math.min(60, Number(settings.delaySeconds)))
+      : 0;
+
+    function saveSettings() {
+      localStorage.setItem(
+        "giveawaySettings",
+        JSON.stringify(settings)
+      );
+    }
+
+    function applySettingsToUI() {
+      const seconds = document.getElementById("delaySeconds");
+      seconds.value = settings.delaySeconds;
+    }
+
+    function updateDelaySetting() {
+      const secondsInput = document.getElementById("delaySeconds");
+      let seconds = parseInt(secondsInput.value, 10);
+
+      if (!Number.isFinite(seconds)) {
+        seconds = 0;
+      }
+
+      seconds = Math.max(0, Math.min(60, seconds));
+      settings.delaySeconds = seconds;
+
+      saveSettings();
+      applySettingsToUI();
+    }
+
+    function toggleSettings() {
+      const panel = document.getElementById("settingsPanel");
+      const button = document.getElementById("settingsButton");
+      const open = !panel.classList.contains("open");
+
+      panel.classList.toggle("open", open);
+      button.setAttribute("aria-expanded", String(open));
+    }
+
+    document.addEventListener("click", event => {
+      const panel = document.getElementById("settingsPanel");
+      const button = document.getElementById("settingsButton");
+
+      if (
+        panel.classList.contains("open") &&
+        !panel.contains(event.target) &&
+        !button.contains(event.target)
+      ) {
+        panel.classList.remove("open");
+        button.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    function saveData() {
+      localStorage.setItem(
+        "giveaways",
+        JSON.stringify(giveaways)
+      );
+
+      localStorage.setItem(
+        "giveawayHistory",
+        JSON.stringify(history)
+      );
+    }
+
+    function addGiveaway() {
+      const liveName =
+        document.getElementById("liveName").value.trim();
+
+      const itemName =
+        document.getElementById("itemName").value.trim();
+
+      const minutesValue =
+        document.getElementById("minutes").value.trim();
+
+      const secondsValue =
+        document.getElementById("seconds").value.trim();
+
+      const minutes =
+        parseInt(minutesValue) || 0;
+
+      const seconds =
+        parseInt(secondsValue) || 0;
+
+      const countdownValue =
+        document.getElementById(
+          "countdownMinutes"
+        ).value;
+
+      const isBuyerGiveaway =
+        document.getElementById(
+          "isBuyerGiveaway"
+        ).checked;
+
+      if (!liveName) {
+        alert("Enter the live name.");
+        return;
+      }
+
+      if (!itemName) {
+        alert("Enter the giveaway item.");
+        return;
+      }
+
+      if (minutes < 0) {
+        alert("Minutes cannot be negative.");
+        return;
+      }
+
+      if (
+        seconds < 0 ||
+        seconds > 59
+      ) {
+        alert(
+          "Seconds must be between 0 and 59."
+        );
+        return;
+      }
+
+      const totalSeconds =
+        (minutes * 60) + seconds;
+
+      const isEditing =
+        editingGiveawayId !== null;
+
+      if (isEditing) {
+        editingTimeChanged =
+          minutesValue !== "" || secondsValue !== "";
+      }
+
+      if ((!isEditing || editingTimeChanged) && totalSeconds <= 0) {
+        alert(
+          "Enter the amount of time remaining."
+        );
+        return;
+      }
+
+      const now = Date.now();
+
+      const delaySeconds = settings.delaySeconds;
+
+      const adjustedSeconds =
+        Math.max(1, totalSeconds - delaySeconds);
+
+      const useCountdown =
+        countdownValue !== "none";
+
+      const countdownMinutes =
+        useCountdown
+          ? parseInt(countdownValue)
+          : null;
+
+      if (isEditing) {
+        const giveaway = giveaways.find(
+          item => String(item.id) === String(editingGiveawayId)
+        );
+
+        if (!giveaway) {
+          cancelEdit();
+          return;
+        }
+
+        const endTime =
+          editingTimeChanged
+            ? now + adjustedSeconds * 1000
+            : (editingOriginalTiming?.endTime ?? giveaway.endTime);
+
+        let countdownEndTime = null;
+
+        if (useCountdown && !giveaway.joined) {
+          if (editingCountdownChanged) {
+            countdownEndTime =
+              Math.min(
+                now +
+                countdownMinutes *
+                60 *
+                1000,
+                endTime
+              );
+          } else {
+            countdownEndTime =
+              editingOriginalTiming?.countdownEndTime ?? giveaway.countdownEndTime;
+
+            if (countdownEndTime !== null) {
+              countdownEndTime =
+                Math.min(countdownEndTime, endTime);
+            }
+          }
+        }
+
+        giveaway.liveName = liveName;
+        giveaway.itemName = itemName;
+        giveaway.endTime = endTime;
+        giveaway.doneSince =
+          endTime > now ? null : giveaway.doneSince;
+        giveaway.useCountdown = useCountdown;
+        giveaway.countdownMinutes = countdownMinutes;
+        giveaway.countdownEndTime = countdownEndTime;
+        giveaway.isBuyerGiveaway = isBuyerGiveaway;
+      } else {
+        const endTime =
+          now +
+          adjustedSeconds * 1000;
+
+        let countdownEndTime = null;
+
+        if (useCountdown) {
+          countdownEndTime =
+            Math.min(
+              now +
+              countdownMinutes *
+              60 *
+              1000,
+              endTime
+            );
+        }
+        const giveaway = {
+          id: Date.now() + Math.random(),
+          liveName,
+          itemName,
+          endTime,
+          doneSince: null,
+          useCountdown,
+          countdownMinutes,
+          countdownEndTime,
+          joined: false,
+          joinedAt: null,
+          isBuyerGiveaway,
+          isFavorite: duplicatedFavoritePending
+        };
+
+        giveaways.push(giveaway);
+      }
+
+      saveData();
+      duplicatedFavoritePending = false;
+      clearForm();
+      render();
+    }
+
+    function clearForm() {
+      editingGiveawayId = null;
+      editingOriginalTiming = null;
+      editingTimeChanged = false;
+      editingCountdownChanged = false;
+
+      document.getElementById("liveName").value = "";
+      document.getElementById("itemName").value = "";
+      document.getElementById("minutes").value = "";
+      document.getElementById("seconds").value = "";
+      document.getElementById("countdownMinutes").value = "none";
+      document.getElementById("isBuyerGiveaway").checked = false;
+
+      document.getElementById("formTitle").textContent = "Add Giveaway";
+      document.getElementById("addButton").textContent = "Add";
+      document.getElementById("editNotice").style.display = "none";
+      document.getElementById("editSync").style.display = "none";
+      document.getElementById("minutes").placeholder = "0";
+      document.getElementById("seconds").placeholder = "0";
+
+      document.getElementById("liveName").focus();
+    }
+
+    function editGiveaway(id) {
+      const giveaway = giveaways.find(
+        item => String(item.id) === String(id)
+      );
+
+      if (!giveaway || giveaway.doneSince !== null) {
+        return;
+      }
+
+      editingGiveawayId = giveaway.id;
+      editingOriginalTiming = {
+        endTime: giveaway.endTime,
+        useCountdown: giveaway.useCountdown,
+        countdownMinutes: giveaway.countdownMinutes,
+        countdownEndTime: giveaway.countdownEndTime
+      };
+      editingTimeChanged = false;
+      editingCountdownChanged = false;
+
+      document.getElementById("liveName").value = giveaway.liveName;
+      document.getElementById("itemName").value = giveaway.itemName;
+
+      // Min/Sec intentionally start blank while editing.
+      // The live "Current" value above shows the actual remaining time.
+      document.getElementById("minutes").value = "";
+      document.getElementById("seconds").value = "";
+      document.getElementById("countdownMinutes").value =
+        giveaway.useCountdown && !giveaway.joined
+          ? String(giveaway.countdownMinutes)
+          : "none";
+      document.getElementById("isBuyerGiveaway").checked =
+        giveaway.isBuyerGiveaway;
+
+      document.getElementById("formTitle").textContent = "Edit Giveaway";
+      document.getElementById("addButton").textContent = "Save";
+      document.getElementById("editNotice").style.display = "flex";
+      document.getElementById("editSync").style.display = "flex";
+      document.getElementById("minutes").placeholder = "—";
+      document.getElementById("seconds").placeholder = "—";
+      updateEditCurrentTime(Date.now());
+
+      document.querySelector(".add-card").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+      setTimeout(() => {
+        document.getElementById("liveName").focus();
+        document.getElementById("liveName").select();
+      }, 250);
+    }
+
+    function cancelEdit() {
+      clearForm();
+    }
+
+    function updateEditCurrentTime(now = Date.now()) {
+      if (editingGiveawayId === null) {
+        return;
+      }
+
+      const giveaway = giveaways.find(
+        item => String(item.id) === String(editingGiveawayId)
+      );
+
+      const display = document.getElementById("editCurrentTime");
+
+      if (!giveaway || !display) {
+        return;
+      }
+
+      display.textContent =
+        formatTime(giveaway.endTime - now);
+    }
+
+    function formatTime(milliseconds) {
+      let totalSeconds =
+        Math.max(
+          0,
+          Math.ceil(milliseconds / 1000)
+        );
+
+      const minutes =
+        Math.floor(totalSeconds / 60);
+
+      const seconds =
+        totalSeconds % 60;
+
+      return (
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(seconds).padStart(2, "0")
+      );
+    }
+
+    function duplicateHistoryEntry(id) {
+      const entry =
+        history.find(
+          item => String(item.id) === String(id)
+        );
+
+      if (!entry) {
+        return;
+      }
+
+      clearForm();
+
+      document.getElementById("liveName").value = entry.liveName || "";
+      document.getElementById("itemName").value = entry.itemName || "";
+      document.getElementById("minutes").value = "";
+      document.getElementById("seconds").value = "";
+
+      if (entry.usedCountdown) {
+        const matched = giveaways.find(
+          item => String(item.id) === String(entry.id)
+        );
+
+        document.getElementById("countdownMinutes").value =
+          matched?.countdownMinutes
+            ? String(matched.countdownMinutes)
+            : "none";
+      } else {
+        document.getElementById("countdownMinutes").value = "none";
+      }
+
+      document.getElementById("isBuyerGiveaway").checked =
+        entry.isBuyerGiveaway ?? false;
+
+      duplicatedFavoritePending =
+        entry.isFavorite ?? false;
+
+      document.getElementById("minutes").focus();
+
+      document.querySelector(".add-card").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+
+
+    function syncEditingGiveaway(deltaSeconds) {
+      if (editingGiveawayId === null) {
+        return;
+      }
+
+      const giveaway =
+        giveaways.find(
+          item => String(item.id) === String(editingGiveawayId)
+        );
+
+      if (!giveaway || giveaway.doneSince !== null) {
+        return;
+      }
+
+      const deltaMs = deltaSeconds * 1000;
+
+      giveaway.endTime += deltaMs;
+
+      if (
+        giveaway.useCountdown &&
+        !giveaway.joined &&
+        giveaway.countdownEndTime
+      ) {
+        giveaway.countdownEndTime += deltaMs;
+
+        if (giveaway.countdownEndTime > giveaway.endTime) {
+          giveaway.countdownEndTime = giveaway.endTime;
+        }
+      }
+
+      if (editingOriginalTiming) {
+        editingOriginalTiming.endTime += deltaMs;
+
+        if (editingOriginalTiming.countdownEndTime) {
+          editingOriginalTiming.countdownEndTime += deltaMs;
+
+          if (
+            editingOriginalTiming.countdownEndTime >
+            editingOriginalTiming.endTime
+          ) {
+            editingOriginalTiming.countdownEndTime =
+              editingOriginalTiming.endTime;
+          }
+        }
+      }
+
+      saveData();
+      updateEditCurrentTime(Date.now());
+      updateVisibleTimers(Date.now());
+    }
+
+
+    function toggleFavorite(id) {
+      const giveaway = giveaways.find(
+        item => String(item.id) === String(id)
+      );
+
+      if (!giveaway || giveaway.doneSince !== null) {
+        return;
+      }
+
+      giveaway.isFavorite = !giveaway.isFavorite;
+      saveData();
+      render();
+    }
+
+    function markJoined(id) {
+      const giveaway =
+        giveaways.find(
+          giveaway =>
+            String(giveaway.id) === String(id)
+        );
+
+      if (!giveaway) {
+        return;
+      }
+
+      giveaway.joined = true;
+      giveaway.joinedAt = Date.now();
+
+      saveData();
+      render();
+    }
+
+    function markMissed(id) {
+      const giveaway =
+        giveaways.find(
+          giveaway =>
+            String(giveaway.id) === String(id)
+        );
+
+      if (!giveaway) {
+        return;
+      }
+
+      history.unshift({
+        id: giveaway.id,
+        liveName: giveaway.liveName,
+        itemName: giveaway.itemName,
+        completedAt: new Date().toISOString(),
+        usedCountdown: giveaway.useCountdown,
+        joined: false,
+        missed: true,
+        isBuyerGiveaway: giveaway.isBuyerGiveaway,
+        isFavorite: giveaway.isFavorite ?? false
+      });
+
+      giveaways =
+        giveaways.filter(
+          item =>
+            String(item.id) !== String(id)
+        );
+
+      saveData();
+      render();
+    }
+
+    function getSortTime(giveaway) {
+      if (
+        giveaway.useCountdown &&
+        !giveaway.joined &&
+        giveaway.countdownEndTime
+      ) {
+        return giveaway.countdownEndTime;
+      }
+
+      return giveaway.endTime;
+    }
+
+    function updateVisibleTimers(now) {
+      const cards = document.querySelectorAll(".giveaway[data-giveaway-id]");
+
+      cards.forEach(card => {
+        const giveaway = giveaways.find(
+          item => String(item.id) === card.dataset.giveawayId
+        );
+
+        if (!giveaway || giveaway.doneSince !== null) {
+          return;
+        }
+
+        const remaining = giveaway.endTime - now;
+        const giveawayTimer = card.querySelector('[data-timer="giveaway"]');
+
+        if (giveawayTimer) {
+          giveawayTimer.textContent = formatTime(remaining);
+          giveawayTimer.classList.toggle("urgent", remaining <= 30000);
+        }
+
+        if (
+          giveaway.useCountdown &&
+          !giveaway.joined &&
+          giveaway.countdownEndTime
+        ) {
+          const countdownRemaining = giveaway.countdownEndTime - now;
+          const countdownTimer = card.querySelector('[data-timer="countdown"]');
+
+          if (countdownTimer) {
+            countdownTimer.textContent = formatTime(countdownRemaining);
+            countdownTimer.classList.toggle("urgent", countdownRemaining <= 30000);
+          }
+        }
+      });
+    }
+
+    function updateTimers() {
+      const now = Date.now();
+
+      updateEditCurrentTime(now);
+
+      let structuralChange = false;
+      let dataChanged = false;
+
+      giveaways.forEach(giveaway => {
+        if (
+          giveaway.endTime <= now &&
+          giveaway.doneSince === null
+        ) {
+          giveaway.doneSince = now;
+          structuralChange = true;
+          dataChanged = true;
+        }
+
+        if (
+          giveaway.useCountdown &&
+          !giveaway.joined &&
+          giveaway.countdownEndTime &&
+          giveaway.countdownEndTime <= now &&
+          !giveaway._joinReadyRendered
+        ) {
+          giveaway._joinReadyRendered = true;
+          structuralChange = true;
+        }
+      });
+
+      const finished =
+        giveaways.filter(giveaway => {
+          return (
+            giveaway.doneSince !== null &&
+            now - giveaway.doneSince >= 10000
+          );
+        });
+
+      if (finished.length > 0) {
+        finished.forEach(giveaway => {
+          history.unshift({
+            id: giveaway.id,
+            liveName: giveaway.liveName,
+            itemName: giveaway.itemName,
+            completedAt:
+              new Date(giveaway.endTime).toISOString(),
+            usedCountdown: giveaway.useCountdown,
+            joined: giveaway.joined,
+            missed: false,
+            isBuyerGiveaway: giveaway.isBuyerGiveaway,
+            isFavorite: giveaway.isFavorite
+          });
+        });
+
+        giveaways =
+          giveaways.filter(giveaway => {
+            return !finished.some(
+              finishedItem =>
+                String(finishedItem.id) ===
+                String(giveaway.id)
+            );
+          });
+
+        structuralChange = true;
+        dataChanged = true;
+      }
+
+      if (dataChanged) {
+        saveData();
+      }
+
+      if (structuralChange) {
+        render();
+      } else {
+        updateVisibleTimers(now);
+      }
+    }
+
+    function renderActive() {
+      const list =
+        document.getElementById("activeList");
+
+      list.innerHTML = "";
+
+      const now = Date.now();
+
+      const sorted =
+        [...giveaways].sort((a, b) => {
+          if (
+            a.doneSince !== null &&
+            b.doneSince === null
+          ) {
+            return -1;
+          }
+
+          if (
+            a.doneSince === null &&
+            b.doneSince !== null
+          ) {
+            return 1;
+          }
+
+          return (
+            getSortTime(a) -
+            getSortTime(b)
+          );
+        });
+
+      if (sorted.length === 0) {
+        list.innerHTML = `
+          <div class="empty">
+            No active giveaways yet.
+          </div>
+        `;
+        return;
+      }
+
+      sorted.forEach(
+        (giveaway, index) => {
+          const remaining =
+            giveaway.endTime - now;
+
+          const countdownRemaining =
+            giveaway.countdownEndTime
+              ? giveaway.countdownEndTime - now
+              : null;
+
+          const countdownReady =
+            giveaway.useCountdown &&
+            !giveaway.joined &&
+            giveaway.countdownEndTime &&
+            countdownRemaining <= 0;
+
+          giveaway._joinReadyRendered = countdownReady;
+
+          const card =
+            document.createElement("div");
+
+          card.className = "giveaway";
+          card.dataset.giveawayId = String(giveaway.id);
+
+          if (giveaway.isBuyerGiveaway) {
+            card.classList.add("buyer-giveaway");
+          }
+
+          if (giveaway.isFavorite) {
+            card.classList.add("favorite-giveaway");
+          }
+
+          if (
+            index === 0 &&
+            giveaway.doneSince === null
+          ) {
+            card.classList.add("next");
+          }
+
+          if (
+            countdownReady &&
+            giveaway.doneSince === null
+          ) {
+            card.classList.add("join-ready");
+          }
+
+          if (
+            giveaway.joined &&
+            giveaway.doneSince === null
+          ) {
+            card.classList.add("joined-card");
+          }
+
+          if (
+            giveaway.doneSince !== null
+          ) {
+            card.classList.add("done");
+          }
+
+          let buyerBadgeHTML = "";
+
+          if (giveaway.isBuyerGiveaway) {
+            buyerBadgeHTML = `
+              <span class="buyer-badge">
+                ★ BUYER'S
+              </span>
+            `;
+          }
+
+          let favoriteBadgeHTML = "";
+
+          if (giveaway.isFavorite) {
+            favoriteBadgeHTML = `
+              <span class="favorite-badge">
+                ★ FAVORITE
+              </span>
+            `;
+          }
+
+          let joinedBadgeHTML = "";
+
+          if (
+            giveaway.joined &&
+            giveaway.doneSince === null
+          ) {
+            joinedBadgeHTML = `
+              <span class="joined-badge">
+                ✓ Joined
+              </span>
+            `;
+          }
+
+          let timerHTML = "";
+
+          if (
+            giveaway.doneSince !== null
+          ) {
+            timerHTML = `
+              <div class="done-text">
+                DONE
+              </div>
+            `;
+          } else {
+            const giveawayUrgent =
+              remaining <= 30000
+                ? "urgent"
+                : "";
+
+            timerHTML = `
+              <div class="timer-area">
+
+                <div class="timer-block">
+
+                  <span class="timer-label">
+                    Giveaway
+                  </span>
+
+                  <span class="timer ${giveawayUrgent}" data-timer="giveaway">
+                    ${formatTime(remaining)}
+                  </span>
+
+                </div>
+            `;
+
+            if (
+              giveaway.useCountdown &&
+              !giveaway.joined
+            ) {
+              const countdownUrgent =
+                countdownRemaining <= 30000
+                  ? "urgent"
+                  : "";
+
+              timerHTML += `
+                <div class="timer-block">
+
+                  <span class="timer-label">
+                    Join
+                  </span>
+
+                  <span class="timer countdown-timer ${countdownUrgent}" data-timer="countdown">
+                    ${formatTime(countdownRemaining)}
+                  </span>
+
+                </div>
+              `;
+
+              if (countdownReady) {
+                timerHTML += `
+                  <div class="join-actions">
+
+                    <button
+                      class="joined-button"
+                      onclick="markJoined('${giveaway.id}')"
+                    >
+                      JOINED
+                    </button>
+
+                    <button
+                      class="missed-button"
+                      onclick="markMissed('${giveaway.id}')"
+                    >
+                      MISSED
+                    </button>
+
+                  </div>
+                `;
+              }
+            }
+
+            timerHTML += `
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+
+            <div class="giveaway-info">
+
+              <div class="name-row">
+
+                <div class="live-name">
+                  ${escapeHTML(giveaway.liveName)}
+                </div>
+
+                ${buyerBadgeHTML}
+
+                ${favoriteBadgeHTML}
+
+                ${joinedBadgeHTML}
+
+              </div>
+
+              <div class="item-name">
+                ${escapeHTML(giveaway.itemName)}
+              </div>
+
+            </div>
+
+            ${timerHTML}
+
+            <div class="entry-actions">
+              <button
+                class="favorite-btn ${giveaway.isFavorite ? 'active' : ''}"
+                onclick="toggleFavorite('${giveaway.id}')"
+                title="${giveaway.isFavorite ? 'Remove favorite' : 'Favorite'}"
+                aria-label="${giveaway.isFavorite ? 'Remove favorite' : 'Favorite giveaway'}"
+              >
+                ${giveaway.isFavorite ? '★' : '☆'}
+              </button>
+
+              <button
+                class="edit-btn"
+                onclick="editGiveaway('${giveaway.id}')"
+                title="Edit"
+                aria-label="Edit giveaway"
+              >
+                ✎
+              </button>
+
+              <button
+                class="delete-btn"
+                onclick="deleteGiveaway('${giveaway.id}')"
+                title="Delete"
+                aria-label="Delete giveaway"
+              >
+                ×
+              </button>
+            </div>
+
+          `;
+
+          list.appendChild(card);
+        }
+      );
+    }
+
+    function renderHistory() {
+      const list =
+        document.getElementById("historyList");
+
+      list.innerHTML = "";
+
+      if (history.length === 0) {
+        list.innerHTML = `
+          <div class="empty">
+            Completed giveaways will appear here.
+          </div>
+        `;
+        return;
+      }
+
+      history.forEach(entry => {
+        const completedDate =
+          new Date(entry.completedAt);
+
+        const card =
+          document.createElement("div");
+
+        card.className = "history-item";
+
+        if (entry.isBuyerGiveaway) {
+          card.classList.add("buyer-history");
+        }
+
+        if (entry.isFavorite) {
+          card.classList.add("favorite-history");
+        }
+
+        let buyerBadgeHTML = "";
+
+        if (entry.isBuyerGiveaway) {
+          buyerBadgeHTML = `
+            <span class="buyer-badge">
+              ★ BUYER'S
+            </span>
+          `;
+        }
+
+        let favoriteBadgeHTML = "";
+
+        if (entry.isFavorite) {
+          favoriteBadgeHTML = `
+            <span class="favorite-badge">
+              ★ FAVORITE
+            </span>
+          `;
+        }
+
+        let statusHTML = "";
+
+        if (entry.missed) {
+          statusHTML = `
+            <span class="missed-badge">
+              ✕ Missed
+            </span>
+          `;
+        } else if (
+          entry.usedCountdown &&
+          entry.joined
+        ) {
+          statusHTML = `
+            <span class="joined-badge">
+              ✓ Joined
+            </span>
+          `;
+        }
+
+        card.innerHTML = `
+
+          <div class="history-main">
+
+            <div class="history-name-row">
+
+              <div class="live-name">
+                ${escapeHTML(entry.liveName)}
+              </div>
+
+              ${buyerBadgeHTML}
+
+              ${favoriteBadgeHTML}
+
+              ${statusHTML}
+
+            </div>
+
+            <div class="item-name">
+              ${escapeHTML(entry.itemName)}
+            </div>
+
+          </div>
+
+          <div class="completed-time">
+            ${completedDate.toLocaleString()}
+          </div>
+
+          <button
+            class="duplicate-button"
+            type="button"
+            onclick="duplicateHistoryEntry('${entry.id}')"
+            title="Duplicate this giveaway"
+          >
+            Duplicate
+          </button>
+
+          <button
+            class="delete-btn"
+            onclick="deleteHistory('${entry.id}')"
+            title="Delete"
+          >
+            ×
+          </button>
+
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    function deleteGiveaway(id) {
+      giveaways =
+        giveaways.filter(
+          giveaway =>
+            String(giveaway.id) !== String(id)
+        );
+
+      saveData();
+      render();
+    }
+
+    function deleteHistory(id) {
+      history =
+        history.filter(
+          item =>
+            String(item.id) !== String(id)
+        );
+
+      saveData();
+      render();
+    }
+
+    function clearHistory() {
+      if (
+        history.length > 0 &&
+        confirm("Clear all giveaway history?")
+      ) {
+        history = [];
+        saveData();
+        render();
+      }
+    }
+
+    function showTab(tab) {
+      const activeView =
+        document.getElementById("activeView");
+
+      const historyView =
+        document.getElementById("historyView");
+
+      const activeTab =
+        document.getElementById("activeTab");
+
+      const historyTab =
+        document.getElementById("historyTab");
+
+      if (tab === "active") {
+        activeView.style.display = "block";
+        historyView.style.display = "none";
+
+        activeTab.classList.add("active");
+        historyTab.classList.remove("active");
+      } else {
+        activeView.style.display = "none";
+        historyView.style.display = "block";
+
+        activeTab.classList.remove("active");
+        historyTab.classList.add("active");
+      }
+    }
+
+    function escapeHTML(value) {
+      const div =
+        document.createElement("div");
+
+      div.textContent = value;
+      return div.innerHTML;
+    }
+
+    function render() {
+      renderActive();
+      renderHistory();
+
+      document.getElementById(
+        "activeCount"
+      ).textContent = giveaways.length;
+
+      document.getElementById(
+        "historyCount"
+      ).textContent = history.length;
+    }
+
+    document
+      .querySelectorAll("input, select")
+      .forEach(element => {
+        element.addEventListener(
+          "keydown",
+          event => {
+            if (event.key === "Enter") {
+              addGiveaway();
+            }
+          }
+        );
+      });
+
+    ["minutes", "seconds"].forEach(id => {
+      document.getElementById(id).addEventListener("input", () => {
+        if (editingGiveawayId !== null) {
+          editingTimeChanged = true;
+        }
+      });
+    });
+
+    document
+      .getElementById("countdownMinutes")
+      .addEventListener("change", () => {
+        if (editingGiveawayId !== null) {
+          editingCountdownChanged = true;
+        }
+      });
+
+    applySettingsToUI();
+    render();
+
+    setInterval(
+      updateTimers,
+      250
+    );
+  </script>
+</body>
+</html>
