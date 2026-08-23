@@ -348,6 +348,19 @@
       margin-top: 9px;
     }
 
+    .live-editor-logo-input {
+      height: auto;
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    .live-editor-logo-status {
+      display: block;
+      margin-top: 6px;
+      color: #777;
+      font-size: 11px;
+    }
+
     .live-editor-item-chip {
       display: inline-flex;
       align-items: center;
@@ -2680,6 +2693,17 @@
       </div>
 
       <div class="live-editor-field">
+        <label for="liveEditorLogo">Logo</label>
+        <input
+          id="liveEditorLogo"
+          class="live-editor-logo-input"
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+        />
+        <span id="liveEditorLogoStatus" class="live-editor-logo-status"></span>
+      </div>
+
+      <div class="live-editor-field">
         <label for="liveEditorItemInput">Giveaway Items</label>
         <div class="live-editor-item-entry">
           <input
@@ -3697,6 +3721,7 @@
             name,
             username,
             items: Array.isArray(live.items) ? live.items : [],
+            logoPath: String(live.logo_path ?? live.logoPath ?? "").trim(),
             isDefault:
               Boolean(live.is_default ?? live.isDefault) ||
               builtInQuickLiveKeys.has(key)
@@ -3798,6 +3823,7 @@
     let editingLiveLibraryName = "";
     let editingLiveLibraryItems = [];
     let editingLiveLibraryIsDefault = false;
+    let editingLiveLibraryLogoPath = "";
 
 
     let settings = JSON.parse(
@@ -4221,7 +4247,7 @@
         const logo = document.createElement("img");
         logo.className = "autocomplete-live-logo";
         logo.alt = "";
-        loadLocalLogo(logo, logoFallback, live.logoKey);
+        loadLocalLogo(logo, logoFallback, live.logoKey, live.logoPath);
 
         const copy = document.createElement("span");
         copy.className = "autocomplete-live-copy";
@@ -4378,7 +4404,8 @@
         username,
         items = [],
         isDefault = false,
-        storedKey = ""
+        storedKey = "",
+        logoPath = ""
       ) => {
         const cleanName = String(name || "").trim();
         const cleanUsername = String(username || "").trim();
@@ -4403,11 +4430,13 @@
           isDefault: defaultLive,
           isActive: activeQuickLiveKeys.has(key),
           logoKey: cleanUsername,
+          logoPath: String(logoPath || "").trim(),
           key
         };
 
         existing.isDefault = existing.isDefault || defaultLive;
         existing.isActive = activeQuickLiveKeys.has(key);
+        existing.logoPath ||= String(logoPath || "").trim();
 
         if (cleanName && existing.name === existing.username) {
           existing.name = cleanName;
@@ -4434,7 +4463,8 @@
           live.username,
           live.items,
           live.isDefault ?? true,
-          live.key
+          live.key,
+          live.logoPath
         );
       });
 
@@ -4476,6 +4506,17 @@
     }
 
 
+    function getLogoPathForLiveName(name) {
+      const key = String(name || "").trim().toLowerCase();
+      const libraryLive = starterQuickLives.find(live =>
+        live.name.trim().toLowerCase() === key ||
+        live.username.trim().toLowerCase() === key
+      );
+
+      return libraryLive?.logoPath || "";
+    }
+
+
     function getLiveInitials(name) {
       return String(name || "")
         .split(/\s+/)
@@ -4487,22 +4528,37 @@
     }
 
 
-    function loadLocalLogo(image, fallback, logoKey) {
-      if (!logoKey) {
+    const pngLogoStems = new Set([
+      "casemate",
+      "gomrpen",
+      "thatangelavibe"
+    ]);
+
+
+    function loadLocalLogo(image, fallback, logoKey, logoPath = "") {
+      if (!logoKey && !logoPath) {
         image.style.display = "none";
         return;
       }
 
-      const logoStem = String(logoKey).replace(/\./g, "");
-      const logoExtensions = ["png", "jpg", "jpeg", "webp"];
-      const logoCandidates = logoExtensions.map(
-        extension => `logos/${logoStem}.${extension}`
-      );
+      const logoStem = String(logoKey).replace(/\./g, "").toLowerCase();
+      const extension = pngLogoStems.has(logoStem) ? "png" : "jpeg";
+      const encodedLogoPath = String(logoPath || "")
+        .split("/")
+        .map(encodeURIComponent)
+        .join("/");
+      const logoCandidates = [
+        encodedLogoPath
+          ? `${SUPABASE_URL}/storage/v1/object/public/live-logos/${encodedLogoPath}`
+          : "",
+        logoStem ? `logos/${logoStem}.${extension}` : ""
+      ].filter(Boolean);
       let logoIndex = 0;
 
       const tryNextLogo = () => {
         if (logoIndex >= logoCandidates.length) {
           image.style.display = "none";
+          fallback.style.display = "flex";
           return;
         }
 
@@ -4610,7 +4666,7 @@
         const logoFallback = button.querySelector(".quick-live-logo-fallback");
         const logo = button.querySelector(".quick-live-logo");
         logoFallback.textContent = getLiveInitials(live.name);
-        loadLocalLogo(logo, logoFallback, live.logoKey);
+        loadLocalLogo(logo, logoFallback, live.logoKey, live.logoPath);
         addTikTokLiveLink(logo, logoFallback, live.username, live.name);
 
         button.querySelector(".quick-live-btn-name").textContent = live.name;
@@ -4742,10 +4798,16 @@
       editingLiveLibraryName = live.name;
       editingLiveLibraryItems = [...live.items];
       editingLiveLibraryIsDefault = live.isDefault;
+      editingLiveLibraryLogoPath = live.logoPath || "";
       document.getElementById("liveEditorTitle").textContent = "Edit Live";
       document.getElementById("liveEditorName").value = live.name;
       document.getElementById("liveEditorUsername").value = live.username;
       document.getElementById("liveEditorItemInput").value = "";
+      document.getElementById("liveEditorLogo").value = "";
+      document.getElementById("liveEditorLogoStatus").textContent =
+        editingLiveLibraryLogoPath
+          ? `Current logo: ${editingLiveLibraryLogoPath}`
+          : "No uploaded logo. The bundled logo will be used when available.";
       document.getElementById("liveEditorDeleteButton").style.display =
         live.isDefault ? "none" : "inline-flex";
       renderLiveEditorItems();
@@ -4759,10 +4821,14 @@
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
       editingLiveLibraryIsDefault = false;
+      editingLiveLibraryLogoPath = "";
       document.getElementById("liveEditorTitle").textContent = "Add Live";
       document.getElementById("liveEditorName").value = "";
       document.getElementById("liveEditorUsername").value = "";
       document.getElementById("liveEditorItemInput").value = "";
+      document.getElementById("liveEditorLogo").value = "";
+      document.getElementById("liveEditorLogoStatus").textContent =
+        "Choose an image to upload a logo.";
       document.getElementById("liveEditorDeleteButton").style.display = "none";
       renderLiveEditorItems();
       document.getElementById("liveEditorBackdrop").classList.add("open");
@@ -4831,6 +4897,69 @@
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
       editingLiveLibraryIsDefault = false;
+      editingLiveLibraryLogoPath = "";
+    }
+
+
+    async function uploadLiveLogo(file, key) {
+      if (!file) {
+        return editingLiveLibraryLogoPath;
+      }
+
+      if (!sharedDatabase) {
+        alert("Logo uploads are available on the published site after Supabase Storage is configured.");
+        throw new Error("Supabase Storage is unavailable in local mode.");
+      }
+
+      if (!file.type.startsWith("image/")) {
+        alert("Choose an image file for the logo.");
+        throw new Error("Invalid logo file type.");
+      }
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Logo files must be 2 MB or smaller.");
+        throw new Error("Logo file is too large.");
+      }
+
+      const extensionByType = {
+        "image/png": "png",
+        "image/jpeg": "jpeg",
+        "image/webp": "webp",
+        "image/gif": "gif"
+      };
+      const extension = extensionByType[file.type] ||
+        file.name.split(".").pop().toLowerCase();
+      const safeKey = String(key || "live")
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "live";
+      const logoPath = `${safeKey}-${Date.now()}.${extension}`;
+      const { error } = await sharedDatabase.storage
+        .from("live-logos")
+        .upload(logoPath, file, {
+          upsert: true,
+          contentType: file.type,
+          cacheControl: "3600"
+        });
+
+      if (error) {
+        console.error("Could not upload the live logo:", error);
+        alert("The logo could not be uploaded. Make sure the updated Supabase setup SQL has been run.");
+        throw error;
+      }
+
+      if (editingLiveLibraryLogoPath && editingLiveLibraryLogoPath !== logoPath) {
+        sharedDatabase.storage
+          .from("live-logos")
+          .remove([editingLiveLibraryLogoPath])
+          .then(({ error: removeError }) => {
+            if (removeError) {
+              console.warn("Could not remove the previous live logo:", removeError);
+            }
+          });
+      }
+
+      return logoPath;
     }
 
 
@@ -4851,6 +4980,7 @@
         String(username || name).trim().toLowerCase();
       const previousName = editingLiveLibraryName;
       const items = [...editingLiveLibraryItems];
+      const logoFile = document.getElementById("liveEditorLogo").files[0];
       const existingLives = getQuickLives();
       const duplicateUsername = username && existingLives.find(live =>
         live.key !== editingLiveLibraryKey &&
@@ -4874,11 +5004,20 @@
         return;
       }
 
+      let logoPath;
+
+      try {
+        logoPath = await uploadLiveLogo(logoFile, key);
+      } catch {
+        return;
+      }
+
       await saveSharedLive({
         key,
         name,
         username,
         items,
+        logoPath,
         isDefault: editingLiveLibraryIsDefault
       });
 
@@ -4888,6 +5027,7 @@
           name,
           username,
           items,
+          logoPath,
           isDefault: editingLiveLibraryIsDefault
         };
         const existingIndex = starterQuickLives.findIndex(
@@ -4925,6 +5065,7 @@
     function deleteEditingLive() {
       const key = editingLiveLibraryKey;
       const name = editingLiveLibraryName;
+      const logoPath = editingLiveLibraryLogoPath;
 
       if (!key || editingLiveLibraryIsDefault) {
         return;
@@ -4935,11 +5076,16 @@
       }
 
       closeLiveEditor();
-      deleteQuickLive(key, name, true);
+      deleteQuickLive(key, name, true, logoPath);
     }
 
 
-    function deleteQuickLive(username, name, skipConfirmation = false) {
+    function deleteQuickLive(
+      username,
+      name,
+      skipConfirmation = false,
+      logoPath = ""
+    ) {
       const key = String(username || "").trim().toLowerCase();
 
       if (!key || defaultQuickLiveKeys.has(key)) {
@@ -4965,6 +5111,16 @@
       );
       saveSharedData();
       deleteSharedLive(key);
+      if (sharedDatabase && logoPath) {
+        sharedDatabase.storage
+          .from("live-logos")
+          .remove([logoPath])
+          .then(({ error }) => {
+            if (error) {
+              console.warn("Could not remove the deleted live's logo:", error);
+            }
+          });
+      }
       renderQuickLives();
     }
 
@@ -5136,6 +5292,7 @@
         name: name || username,
         username,
         items: Array.isArray(live.items) ? [...new Set(live.items)] : [],
+        logo_path: String(live.logo_path ?? live.logoPath ?? "").trim(),
         is_default: live.is_default ?? live.isDefault ?? false,
         updated_at: new Date().toISOString()
       };
@@ -5145,7 +5302,7 @@
     async function loadSharedLiveLibrary() {
       const { data, error } = await sharedDatabase
         .from("lives")
-        .select("key, name, username, items, is_default")
+        .select("key, name, username, items, logo_path, is_default")
         .order("name");
 
       if (error) {
@@ -6311,11 +6468,13 @@
           const activeLogo = card.querySelector(".giveaway-logo");
           const activeLogoFallback = card.querySelector(".giveaway-logo-fallback");
           const activeUsername = getLogoKeyForLiveName(giveaway.liveName);
+          const activeLogoPath = getLogoPathForLiveName(giveaway.liveName);
           activeLogoFallback.textContent = getLiveInitials(giveaway.liveName);
           loadLocalLogo(
             activeLogo,
             activeLogoFallback,
-            activeUsername
+            activeUsername,
+            activeLogoPath
           );
           addTikTokLiveLink(
             activeLogo,
@@ -6475,11 +6634,13 @@
         const historyLogo = card.querySelector(".giveaway-logo");
         const historyLogoFallback = card.querySelector(".giveaway-logo-fallback");
         const historyUsername = getLogoKeyForLiveName(entry.liveName);
+        const historyLogoPath = getLogoPathForLiveName(entry.liveName);
         historyLogoFallback.textContent = getLiveInitials(entry.liveName);
         loadLocalLogo(
           historyLogo,
           historyLogoFallback,
-          historyUsername
+          historyUsername,
+          historyLogoPath
         );
         addTikTokLiveLink(
           historyLogo,
@@ -6586,7 +6747,7 @@
 
     document
       .querySelectorAll(
-        "input:not(#quickLivesSearch):not(.live-editor-input):not(#liveEditorItemInput):not(.settings-input), select:not(.settings-input)"
+        "input:not(#quickLivesSearch):not(.live-editor-input):not(#liveEditorItemInput):not(#liveEditorLogo):not(.settings-input), select:not(.settings-input)"
       )
       .forEach(element => {
         element.addEventListener(
