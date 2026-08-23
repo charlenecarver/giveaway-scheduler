@@ -554,7 +554,8 @@
     }
 
     .autocomplete-option:hover,
-    .autocomplete-option:focus {
+    .autocomplete-option:focus,
+    .autocomplete-option.keyboard-active {
       background: #eef2f7;
       outline: none;
     }
@@ -3841,6 +3842,51 @@
     }
 
 
+    function handleAutocompleteKeydown(event) {
+      const menuId = event.currentTarget.id === "liveName"
+        ? "liveNameAutocomplete"
+        : event.currentTarget.id === "itemName"
+          ? "itemNameAutocomplete"
+          : null;
+
+      if (!menuId) {
+        return false;
+      }
+
+      const menu = document.getElementById(menuId);
+      const options = [...menu.querySelectorAll(".autocomplete-option")];
+      const currentIndex = options.findIndex(option =>
+        option.classList.contains("keyboard-active")
+      );
+
+      if (event.key === "ArrowDown" && menu.classList.contains("open") && options.length) {
+        event.preventDefault();
+        options.forEach(option => option.classList.remove("keyboard-active"));
+        const nextIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
+        options[nextIndex].classList.add("keyboard-active");
+        options[nextIndex].scrollIntoView({ block: "nearest" });
+        return true;
+      }
+
+      if (event.key === "ArrowUp" && menu.classList.contains("open") && options.length) {
+        event.preventDefault();
+        options.forEach(option => option.classList.remove("keyboard-active"));
+        const nextIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
+        options[nextIndex].classList.add("keyboard-active");
+        options[nextIndex].scrollIntoView({ block: "nearest" });
+        return true;
+      }
+
+      if (event.key === "Enter" && currentIndex >= 0) {
+        event.preventDefault();
+        options[currentIndex].click();
+        return true;
+      }
+
+      return false;
+    }
+
+
     function getQuickLives() {
       const lives = new Map();
       const libraryLiveKeys = new Set(
@@ -5997,12 +6043,16 @@
 
     document
       .querySelectorAll(
-        "input:not(#quickLivesSearch):not(.live-editor-input), select"
+        "input:not(#quickLivesSearch):not(.live-editor-input):not(#liveEditorItemInput), select"
       )
       .forEach(element => {
         element.addEventListener(
           "keydown",
           event => {
+            if (handleAutocompleteKeydown(event)) {
+              return;
+            }
+
             if (event.key === "Enter") {
               addGiveaway();
             }
