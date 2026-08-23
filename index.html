@@ -1814,6 +1814,16 @@
       gap: 6px;
     }
 
+    .entry-action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .actions-menu-btn {
+      display: none;
+    }
+
     .favorite-btn,
     .edit-btn {
       width: 31px;
@@ -2078,8 +2088,23 @@
     /* Mobile layout: keep Quick Lives in normal page flow so it cannot cover
        the form or giveaway cards. Only the lives list itself scrolls. */
     @media (max-width: 760px) {
+      html,
       body {
+        width: 100%;
+        max-width: 100%;
         overflow-x: hidden;
+      }
+
+      input,
+      select,
+      textarea {
+        max-width: 100%;
+        font-size: 16px !important;
+        touch-action: manipulation;
+      }
+
+      button {
+        touch-action: manipulation;
       }
 
       .app-layout {
@@ -2104,6 +2129,19 @@
 
       .autocomplete-menu {
         z-index: 200;
+        max-height: min(32dvh, 196px);
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .add-card,
+      .field,
+      .one-line-form {
+        min-width: 0;
+      }
+
+      .add-card {
+        scroll-margin-top: 12px;
       }
 
       .add-form-toggle {
@@ -2144,6 +2182,84 @@
       .add-card.mobile-collapsed .one-line-form {
         display: none !important;
       }
+
+      .giveaway {
+        grid-template-columns: 64px minmax(0, 1fr) auto 31px;
+      }
+
+      .giveaway .entry-actions {
+        grid-column: 4;
+        grid-row: 1;
+        align-self: center;
+        justify-self: end;
+        position: relative;
+        width: auto;
+      }
+
+      .giveaway .timer-area {
+        grid-column: 3;
+        grid-row: 1;
+        align-self: center;
+        align-items: flex-end;
+        flex-direction: column;
+        width: auto;
+        min-width: 0;
+        justify-content: center;
+        flex-wrap: nowrap;
+        gap: 6px;
+        padding-top: 0;
+        border-top: 0;
+      }
+
+      .giveaway .done-text {
+        grid-column: 3;
+        grid-row: 1;
+        align-self: center;
+      }
+
+      .giveaway .actions-menu-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 31px;
+        height: 31px;
+        padding: 0;
+        border-radius: 50%;
+        background: #eef0f3;
+        color: #5f6670;
+        box-shadow: none;
+        font-size: 0;
+        line-height: 0;
+      }
+
+      .giveaway .actions-menu-btn::before {
+        content: "";
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow:
+          -7px 0 currentColor,
+          7px 0 currentColor;
+      }
+
+      .giveaway .entry-action-buttons {
+        display: none;
+        position: absolute;
+        top: 36px;
+        right: 0;
+        z-index: 20;
+        flex-direction: column;
+        padding: 6px;
+        border: 1px solid #dde1e7;
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+      }
+
+      .giveaway .entry-actions.open .entry-action-buttons {
+        display: flex;
+      }
     }
 
     @media (max-width: 560px) {
@@ -2179,7 +2295,7 @@
       }
 
       .giveaway {
-        grid-template-columns: 48px minmax(0, 1fr);
+        grid-template-columns: 48px minmax(0, 1fr) auto 31px;
       }
 
       .giveaway-logo-slot {
@@ -2195,16 +2311,26 @@
       }
 
       .giveaway .entry-actions {
-        grid-column: 1 / -1;
-        grid-row: 2;
-        justify-self: start;
-        width: 100%;
-        flex-wrap: wrap;
+        grid-column: 4;
+        grid-row: 1;
+        align-self: center;
+        justify-self: end;
+        width: auto;
       }
 
       .giveaway .timer-area {
-        grid-column: 1 / -1;
-        grid-row: 3;
+        grid-column: 3;
+        grid-row: 1;
+        justify-content: center;
+      }
+
+      .giveaway .timer-label {
+        display: none;
+      }
+
+      .giveaway .timer {
+        min-width: 58px;
+        text-align: right;
       }
     }
 
@@ -3155,7 +3281,38 @@
       );
     }
 
+    function closeGiveawayActions(except = null) {
+      document.querySelectorAll(".entry-actions.open").forEach(actions => {
+        if (actions === except) {
+          return;
+        }
+
+        actions.classList.remove("open");
+        actions
+          .querySelector(".actions-menu-btn")
+          ?.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    function toggleGiveawayActions(event) {
+      event.stopPropagation();
+
+      const actions = event.currentTarget.closest(".entry-actions");
+      const shouldOpen = !actions.classList.contains("open");
+
+      closeGiveawayActions(actions);
+      actions.classList.toggle("open", shouldOpen);
+      event.currentTarget.setAttribute(
+        "aria-expanded",
+        String(shouldOpen)
+      );
+    }
+
     document.addEventListener("click", event => {
+      if (!event.target.closest(".entry-actions")) {
+        closeGiveawayActions();
+      }
+
       const panel = document.getElementById("settingsPanel");
       const button = document.getElementById("settingsButton");
 
@@ -3244,7 +3401,9 @@
           input.value = live.name;
           menu.classList.remove("open");
           updateGiveawayItemSuggestions();
-          document.getElementById("itemName").focus();
+          document
+            .getElementById("itemName")
+            .focus({ preventScroll: true });
         });
         menu.appendChild(option);
       });
@@ -4267,7 +4426,9 @@
       document.getElementById("minutes").placeholder = "0";
       document.getElementById("seconds").placeholder = "0";
 
-      document.getElementById("liveName").focus();
+      if (!window.matchMedia("(max-width: 760px)").matches) {
+        document.getElementById("liveName").focus();
+      }
     }
 
     function editGiveaway(id) {
@@ -4319,8 +4480,9 @@
       });
 
       setTimeout(() => {
-        document.getElementById("liveName").focus();
-        document.getElementById("liveName").select();
+        const liveNameInput = document.getElementById("liveName");
+        liveNameInput.focus({ preventScroll: true });
+        liveNameInput.select();
       }, 250);
     }
 
@@ -4404,12 +4566,16 @@
         entry.isFavorite ?? false;
 
       setAddFormCollapsed(false);
-      document.getElementById("minutes").focus();
-
       document.querySelector(".add-card").scrollIntoView({
         behavior: "smooth",
         block: "start"
       });
+
+      setTimeout(() => {
+        document
+          .getElementById("minutes")
+          .focus({ preventScroll: true });
+      }, 250);
     }
 
 
@@ -4903,31 +5069,44 @@
 
             <div class="entry-actions">
               <button
-                class="favorite-btn ${giveaway.isFavorite ? 'active' : ''}"
-                onclick="toggleFavorite('${giveaway.id}')"
-                title="${giveaway.isFavorite ? 'Remove favorite' : 'Favorite'}"
-                aria-label="${giveaway.isFavorite ? 'Remove favorite' : 'Favorite giveaway'}"
+                class="actions-menu-btn"
+                type="button"
+                onclick="toggleGiveawayActions(event)"
+                title="Giveaway actions"
+                aria-label="Show giveaway actions"
+                aria-expanded="false"
               >
-                ${giveaway.isFavorite ? '★' : '☆'}
+                …
               </button>
 
-              <button
-                class="edit-btn"
-                onclick="editGiveaway('${giveaway.id}')"
-                title="Edit"
-                aria-label="Edit giveaway"
-              >
-                ✎
-              </button>
+              <div class="entry-action-buttons">
+                <button
+                  class="favorite-btn ${giveaway.isFavorite ? 'active' : ''}"
+                  onclick="toggleFavorite('${giveaway.id}')"
+                  title="${giveaway.isFavorite ? 'Remove favorite' : 'Favorite'}"
+                  aria-label="${giveaway.isFavorite ? 'Remove favorite' : 'Favorite giveaway'}"
+                >
+                  ${giveaway.isFavorite ? '★' : '☆'}
+                </button>
 
-              <button
-                class="delete-btn"
-                onclick="deleteGiveaway('${giveaway.id}')"
-                title="Delete"
-                aria-label="Delete giveaway"
-              >
-                ×
-              </button>
+                <button
+                  class="edit-btn"
+                  onclick="closeGiveawayActions(); editGiveaway('${giveaway.id}')"
+                  title="Edit"
+                  aria-label="Edit giveaway"
+                >
+                  ✎
+                </button>
+
+                <button
+                  class="delete-btn"
+                  onclick="deleteGiveaway('${giveaway.id}')"
+                  title="Delete"
+                  aria-label="Delete giveaway"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
           `;
