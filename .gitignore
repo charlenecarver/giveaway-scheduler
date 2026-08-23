@@ -1,0 +1,10 @@
+.DS_Store
+list
+supabase-setup.sql
+logos/*_files/
+logos/*.html
+logos/README.md
+logos/.gitkeep
+logos/aminnahskincare2.jpeg
+logos/happyplantclub.jpeg
+logos/heydudeshop_us .jpeg

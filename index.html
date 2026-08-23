@@ -29,9 +29,314 @@
     }
 
     .container {
-      width: min(850px, 80%);
+      width: 94%;
+      max-width: none;
       margin: 0 auto;
       padding: 30px 0 60px;
+    }
+
+    .app-layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .scheduler-column {
+      min-width: 0;
+    }
+
+    .quick-lives-panel {
+      position: sticky;
+      top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-self: start;
+      z-index: 10;
+      height: calc(100vh - 40px);
+      max-height: calc(100vh - 40px);
+      overflow: hidden;
+      overscroll-behavior: contain;
+      background: white;
+      border: 1px solid #e4e6ea;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 3px 14px rgba(0, 0, 0, 0.05);
+    }
+
+    .quick-lives-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .quick-lives-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: #2d3138;
+    }
+
+    .quick-lives-reset {
+      padding: 4px 7px;
+      border: 1px solid #d9dbe1;
+      border-radius: 6px;
+      background: #f8f9fb;
+      color: #656a73;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .quick-lives-reset:hover:not(:disabled) {
+      border-color: #bfc2ca;
+      background: #f0f1f4;
+      color: #2d3138;
+    }
+
+    .quick-lives-reset:disabled {
+      cursor: default;
+      opacity: 0.45;
+    }
+
+    .quick-lives-subtitle {
+      margin: 0 0 10px;
+      color: #8a9099;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .quick-lives-search {
+      width: 100%;
+      height: 36px;
+      margin-bottom: 10px;
+      padding: 7px 10px;
+      border: 1px solid #d9dbe1;
+      border-radius: 8px;
+      background: #f8f9fb;
+      color: #333;
+      font-size: 12px;
+    }
+
+    .quick-lives-search:focus {
+      border-color: #777b85;
+      box-shadow: 0 0 0 3px rgba(90, 94, 104, 0.10);
+      outline: none;
+    }
+
+    .quick-lives-list {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      gap: 6px;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      scrollbar-gutter: stable;
+      -webkit-overflow-scrolling: touch;
+      padding-right: 4px;
+      padding-top: 2px;
+      padding-bottom: 32px;
+      scroll-padding-bottom: 32px;
+    }
+
+    .quick-live-row {
+      display: block;
+    }
+
+    .quick-live-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+      min-width: 0;
+      min-height: 52px;
+      padding: 7px 64px 7px 50px;
+      border: 1px solid #e4e6ea;
+      border-radius: 9px;
+      background: #f8f9fb;
+      color: #454a52;
+      text-align: left;
+      font-weight: 700;
+      overflow: hidden;
+      transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+      cursor: pointer;
+    }
+
+    .quick-live-btn-name,
+    .quick-live-btn-username {
+      align-self: stretch;
+    }
+
+    .quick-live-logo,
+    .quick-live-logo-fallback {
+      position: absolute;
+      top: 50%;
+      left: 9px;
+      width: 32px;
+      height: 32px;
+      transform: translateY(-50%);
+      border-radius: 50%;
+    }
+
+    .quick-live-logo {
+      object-fit: contain;
+      background: white;
+    }
+
+    .quick-live-logo-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e5e7eb;
+      color: #555d68;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .giveaway-logo,
+    .giveaway-logo-fallback {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      border-radius: 50%;
+    }
+
+    .giveaway-logo {
+      object-fit: contain;
+      background: white;
+    }
+
+    .giveaway-logo-fallback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #e5e7eb;
+      color: #555d68;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .quick-live-btn:hover {
+      background: #eef2f7;
+      border-color: #cfd5de;
+      color: #222;
+      transform: translateY(-1px);
+    }
+
+    .quick-live-btn.active {
+      border-color: #65a978;
+      background: #dff3e5;
+      color: #1d643b;
+      box-shadow: 0 3px 10px rgba(55, 133, 77, 0.18);
+    }
+
+    .quick-live-btn.active:hover {
+      border-color: #4d965f;
+      background: #d1ecd9;
+      color: #15542f;
+    }
+
+    .quick-live-delete {
+      position: absolute;
+      right: 8px;
+      bottom: 5px;
+      width: 24px;
+      height: 20px;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: #9aa0a8;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .quick-live-delete:hover {
+      background: #fff1f1;
+      color: #bd4848;
+    }
+
+    .quick-live-logo {
+      object-fit: contain;
+      background: white;
+    }
+
+    .quick-live-logo-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e5e7eb;
+      color: #555d68;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .quick-live-status-tag {
+      position: absolute;
+      top: 7px;
+      right: 8px;
+      border: 1px solid transparent;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      color: #777e88;
+      cursor: pointer;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .quick-live-status-tag:hover {
+      background: #d5d8dd;
+      color: #454a52;
+    }
+
+    .quick-live-btn.active .quick-live-status-tag {
+      background: #4b9d6c;
+      color: white;
+    }
+
+    .quick-live-btn.active .quick-live-status-tag:hover {
+      background: #378255;
+    }
+
+    .quick-live-btn-name,
+    .quick-live-btn-username {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .quick-live-btn-name {
+      font-size: 12px;
+    }
+
+    .quick-live-btn-username {
+      margin-top: 2px;
+      color: #8a9099;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .quick-live-btn-username:empty {
+      display: none;
+    }
+
+    .quick-lives-empty {
+      padding: 10px 4px 2px;
+      color: #9aa0a8;
+      font-size: 11px;
+      line-height: 1.4;
     }
 
     h1 {
@@ -209,7 +514,7 @@
       padding: 16px 18px;
       min-height: 94px;
       display: grid;
-      grid-template-columns: minmax(240px, 1fr) auto auto;
+      grid-template-columns: 64px minmax(240px, 1fr) auto auto;
       align-items: center;
       gap: 16px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -303,9 +608,29 @@
     .giveaway-info {
       min-width: 0;
       height: 100%;
+      grid-column: 2;
+      grid-row: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
+    }
+
+    .giveaway-logo-slot {
+      grid-column: 1;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 100%;
+      min-height: 64px;
+    }
+
+    .giveaway-logo-slot .giveaway-logo,
+    .giveaway-logo-slot .giveaway-logo-fallback {
+      width: 56px;
+      height: 56px;
+      flex-basis: 56px;
     }
 
     .name-row {
@@ -618,6 +943,36 @@
        RESPONSIVE
     ------------------------------ */
 
+    @media (max-width: 1050px) {
+      .app-layout {
+        grid-template-columns: 230px minmax(0, 1fr);
+        gap: 14px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-lives-panel {
+        position: sticky;
+        top: 20px;
+        max-height: calc(100vh - 40px);
+        overflow: hidden;
+      }
+
+      .quick-lives-list {
+        flex-direction: column;
+        flex-wrap: nowrap;
+      }
+
+      .quick-live-btn {
+        width: 100%;
+        max-width: none;
+      }
+    }
+
     @media (max-width: 1080px) {
       .one-line-form {
         grid-template-columns:
@@ -782,7 +1137,7 @@
     /* Replace the older breakpoint behavior with smoother responsive sizing. */
     @media (max-width: 980px) {
       .container {
-        width: min(92%, 850px);
+        width: min(92%, 1000px);
       }
 
       .one-line-form {
@@ -935,7 +1290,7 @@
       .buyer-field,
       .add-button {
         grid-column: 1;
-        width: 100%;
+        width: max-content;
       }
 
       .buyer-checkbox-holder {
@@ -951,19 +1306,27 @@
     ------------------------------ */
 
     .container {
-      width: min(850px, calc(100% - 32px));
+      width: min(1200px, calc(100% - 32px));
     }
 
     .one-line-form {
       grid-template-columns:
-        minmax(110px, 150px)
-        minmax(150px, 200px)
-        60px
-        60px
-        115px
-        50px
-        minmax(72px, 1fr);
-      gap: 8px;
+        minmax(0, 24fr)
+        minmax(0, 30fr)
+        minmax(0, 9fr)
+        minmax(0, 9fr)
+        minmax(0, 13fr)
+        minmax(0, 7fr)
+        minmax(0, 8fr);
+      gap: 6px;
+    }
+
+    .add-button {
+      width: 100%;
+      min-width: 0;
+      padding-left: 12px;
+      padding-right: 12px;
+      justify-self: stretch;
     }
 
     .giveaway,
@@ -978,9 +1341,25 @@
       min-width: 0;
     }
 
+    @media (max-width: 900px) and (min-width: 761px) {
+      .one-line-form {
+        grid-template-columns:
+          minmax(0, 1fr)
+          minmax(0, 1.5fr)
+          60px
+          60px
+          115px
+          50px;
+      }
+
+      .add-button {
+        grid-column: span 2;
+      }
+    }
+
     @media (max-width: 760px) {
       .container {
-        width: min(100% - 24px, 850px);
+        width: min(100% - 24px, 1000px);
         padding-top: 18px;
       }
 
@@ -1025,9 +1404,9 @@
 
       .add-button {
         grid-column: span 1;
-        width: 100%;
-        padding-left: 8px;
-        padding-right: 8px;
+        width: max-content;
+        padding-left: 12px;
+        padding-right: 12px;
       }
 
       .buyer-checkbox-holder {
@@ -1037,15 +1416,39 @@
 
       .giveaway,
       .history-item {
-        grid-template-columns: minmax(0, 1fr) auto;
         gap: 10px;
         padding: 14px;
         min-height: 0;
       }
 
-      .giveaway-info,
+      .giveaway {
+        grid-template-columns: 64px minmax(0, 1fr) auto;
+      }
+
+      .history-item {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
       .history-main {
         grid-column: 1;
+        grid-row: 1;
+      }
+
+      .giveaway .giveaway-info {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .giveaway-logo-slot {
+        grid-column: 1;
+        grid-row: 1;
+        width: 64px;
+        height: 64px;
+        min-height: 0;
+      }
+
+      .giveaway .entry-actions {
+        grid-column: 3;
         grid-row: 1;
       }
 
@@ -1117,7 +1520,7 @@
 
       .add-button {
         grid-column: 2;
-        width: 100%;
+        width: max-content;
       }
 
       input,
@@ -1154,10 +1557,14 @@
       .item-field,
       .time-field,
       .countdown-field,
-      .buyer-field,
-      .add-button {
+      .buyer-field {
         grid-column: 1;
         width: 100%;
+      }
+
+      .add-button {
+        grid-column: 1;
+        width: max-content;
       }
 
       .buyer-checkbox-holder {
@@ -1503,6 +1910,37 @@
 
   <div class="container">
 
+    <div class="app-layout">
+
+      <aside class="quick-lives-panel">
+        <div class="quick-lives-header">
+          <h2 class="quick-lives-title">Quick Lives</h2>
+          <button
+            id="resetQuickLivesButton"
+            class="quick-lives-reset"
+            type="button"
+            onclick="resetQuickLiveStatuses()"
+          >
+            All off
+          </button>
+        </div>
+        <p class="quick-lives-subtitle">
+          Click a tile to prefill the form with that live’s information. Use the status tag to mark the live as on or off.
+        </p>
+
+        <input
+          id="quickLivesSearch"
+          class="quick-lives-search"
+          type="search"
+          placeholder="Search lives"
+          aria-label="Search lives"
+        />
+
+        <div id="quickLivesList" class="quick-lives-list"></div>
+      </aside>
+
+      <div class="scheduler-column">
+
     <h1>Giveaway Scheduler</h1>
 
     <div class="subtitle">
@@ -1618,7 +2056,10 @@
             id="itemName"
             type="text"
             placeholder="Giveaway item"
+            list="commonGiveawayItems"
           />
+
+          <datalist id="commonGiveawayItems"></datalist>
         </div>
 
         <div class="field time-field">
@@ -1665,6 +2106,9 @@
             </option>
             <option value="5">
               5 minutes
+            </option>
+            <option value="7">
+              7 minutes
             </option>
             <option value="10">
               10 minutes
@@ -1748,9 +2192,391 @@
 
     </div>
 
+      </div>
+
+    </div>
+
   </div>
 
+  <script id="starterQuickLives" type="application/json">
+    [
+      {
+        "name": "Glamnetic",
+        "username": "glamnetic",
+        "items": ["Nails"]
+      },
+      {
+        "name": "HSN, Inc",
+        "username": "hsn",
+        "items": ["Teacups", "Tupperware"]
+      },
+      {
+        "name": "Kodak Photo Printer",
+        "username": "kodakphotoprinter",
+        "items": ["Label Maker", "Labels"]
+      },
+      {
+        "name": "Mozi Wash",
+        "username": "moziwash",
+        "items": ["Mozi Wash"]
+      },
+      {
+        "name": "Miracle Gro",
+        "username": "miraclegro",
+        "items": ["Starter Bundle"]
+      },
+      {
+        "name": "CHOCBOX",
+        "username": "chocboxla",
+        "items": ["Chocbox Dubai Chocolate"]
+      },
+      {
+        "name": "TOMS",
+        "username": "toms",
+        "items": ["Espadrilles"]
+      },
+      {
+        "name": "PORTLAND LEATHER",
+        "username": "portlandleather",
+        "items": ["Bag", "Wallet"]
+      },
+      {
+        "name": "Nailphoria",
+        "username": "nailphoria_official",
+        "items": ["Nails"]
+      },
+      {
+        "name": "sxsguy",
+        "username": "brp2019",
+        "items": ["Propane Torch"]
+      },
+      {
+        "name": "KarmaNepalCrafts",
+        "username": "karmanepalcrafts",
+        "items": ["Bandana"]
+      },
+      {
+        "name": "Sterling Forever",
+        "username": "sterlingforever",
+        "items": ["Random Jewelry", "Earrings", "Necklace"]
+      },
+      {
+        "name": "Shark Home",
+        "username": "sharkhome",
+        "items": ["Shark VACMOP"]
+      },
+      {
+        "name": "BlitzBreakz",
+        "username": "blitzbreakzz",
+        "items": ["Pokemon Booster Pack"]
+      },
+      {
+        "name": "GuruNanda LLC",
+        "username": "gurunanda.official",
+        "items": ["Whitening Strips", "Toothbrush"]
+      },
+      {
+        "name": "Dani Morgan's Boutique",
+        "username": "danimorgansboutique",
+        "items": ["Purse", "Earrings", "Necklace", "Wallet"]
+      },
+      {
+        "name": "QVC, Inc",
+        "username": "qvc",
+        "items": ["Apron"]
+      },
+      {
+        "name": "QVCJewelry",
+        "username": "qvcjewelry",
+        "items": ["Earrings"]
+      },
+      {
+        "name": "Ello honey",
+        "username": "ellohoney",
+        "items": ["Purse", "Wallet"]
+      },
+      {
+        "name": "The Original MakeUp Eraser",
+        "username": "makeuperaser",
+        "items": ["MakeUp Eraser"]
+      },
+      {
+        "name": "CROCS US SHOP",
+        "username": "crocsshop_us",
+        "items": ["Jibbitz", "Jibbitz Pack"]
+      },
+      {
+        "name": "MAGIC JOHN",
+        "username": "magicjohn_officialshop",
+        "items": ["Cord"]
+      },
+      {
+        "name": "TYMO BEAUTY US",
+        "username": "tymobeauty_official",
+        "items": ["Hair Clips"]
+      },
+      {
+        "name": "PLA Nails",
+        "username": "pla.nails",
+        "items": ["Nail Polish Duo"]
+      },
+      {
+        "name": "Notpolishinc",
+        "username": "notpolish_nail",
+        "items": ["Nail Polish Duo"]
+      },
+      {
+        "name": "OEAK Apparel",
+        "username": "oeak_official",
+        "items": ["OEAK Nipple Covers"]
+      },
+      {
+        "name": "Hsia-Bras",
+        "username": "hsia_official",
+        "items": ["Tote Bag", "Lingerie Organizer"]
+      },
+      {
+        "name": "PokeGram",
+        "username": "pokegram.net",
+        "items": ["Pokemon Booster Pack"]
+      },
+      {
+        "name": "AMINNAH SKINCARE",
+        "username": "amnhskincare",
+        "items": ["Lip Gloss", "Doughnut Spoon"]
+      },
+      {
+        "name": "Yva Expressions",
+        "username": "yvaexpressions",
+        "items": ["Eyelashes", "Eyeshadow"]
+      },
+      {
+        "name": "CAKES Body",
+        "username": "cakesbody",
+        "items": ["CAKES", "CAKES Tape"]
+      },
+      {
+        "name": "Ello",
+        "username": "elloparty",
+        "items": ["Daschund Charm"]
+      },
+      {
+        "name": "bareMinerals",
+        "username": "bareminerals",
+        "items": ["BareMinerals Mineral Veil"]
+      },
+      {
+        "name": "buxomcosmetics",
+        "username": "buxomcosmetics",
+        "items": ["BUXOM Plumping Lip Glow"]
+      },
+      {
+        "name": "ANKER",
+        "username": "ankerofficial",
+        "items": ["Charging Cable"]
+      },
+      {
+        "name": "Edikted",
+        "username": "edikted",
+        "items": ["Tote Bag"]
+      },
+      {
+        "name": "FEELINGIRL",
+        "username": "feelingirlus",
+        "items": ["Bra"]
+      },
+      {
+        "name": "JOOCAR US",
+        "username": "joocar.us",
+        "items": ["Ramen Blanket"]
+      },
+      {
+        "name": "KINDNESSMOM",
+        "username": "kindnessmom",
+        "items": ["Snoopy Plushie", "Keychain"]
+      },
+      {
+        "name": "Lurellacosmetics",
+        "username": "lurellacosmetics",
+        "items": ["Eyeshadow Palette"]
+      },
+      {
+        "name": "NOX JEWELS",
+        "username": "nox_jewels_sf",
+        "items": ["Surprise Jewelry"]
+      },
+      {
+        "name": "SHAPELLX",
+        "username": "shapellxofficial",
+        "items": ["Bra"]
+      },
+      {
+        "name": "Surfside Succulents",
+        "username": "surfsidesucculents",
+        "items": ["Succulent"]
+      },
+      {
+        "name": "FHI HEAT",
+        "username": "fhiheat",
+        "items": ["Mini Brush"]
+      },
+      {
+        "name": "ElloByEvol",
+        "username": "ellobyevol",
+        "items": ["Purse"]
+      },
+      {
+        "name": "OTBREAKS",
+        "username": "ot.breaks",
+        "items": ["Pokemon Booster Pack"]
+      },
+      {
+        "name": "Angela",
+        "username": "angelafindsdeals",
+        "items": ["Portland Leather Bag"]
+      },
+      {
+        "name": "𝓣𝓱𝓪𝓽𝓐𝓷𝓰𝓮𝓵𝓪𝓥𝓲𝓫𝓮",
+        "username": "thatangelavibe",
+        "items": ["Nails"]
+      },
+      {
+        "name": "QVCBeauty",
+        "username": "qvcbeauty",
+        "items": ["Makeup"]
+      },
+      {
+        "name": "QVC Fashion",
+        "username": "qvcfashion",
+        "items": []
+      },
+      {
+        "name": "QVC Home",
+        "username": "qvchome",
+        "items": []
+      },
+      {
+        "name": "OEAK-Bras",
+        "username": "oeak_bras",
+        "items": []
+      },
+      {
+        "name": "Shark BEAUTY",
+        "username": "sharkbeauty",
+        "items": ["Makeup Bag"]
+      },
+      {
+        "name": "Ninja Kitchen",
+        "username": "ninjakitchen",
+        "items": ["Knife Set", "Thermos", "Blender"]
+      },
+      {
+        "name": "Chefman",
+        "username": "my_chefman",
+        "items": ["Appliance"]
+      },
+      {
+        "name": "Fanttik",
+        "username": "fanttik_official",
+        "items": ["Vaccuum"]
+      },
+      {
+        "name": "filthyhits",
+        "username": "filthy.hits",
+        "items": ["Pokemon Keychain", "Pokemon Booster Pack"]
+      },
+      {
+        "name": "RIPPNHITS",
+        "username": "ripnhitts",
+        "items": ["Pokemon Booster Pack"]
+      },
+      {
+        "name": "tonies US",
+        "username": "tonies.us",
+        "items": ["Tonie"]
+      },
+      {
+        "name": "Mr. Pen",
+        "username": "gomrpen",
+        "items": ["Pen Set", "Stationery Bundle", "Notebook"]
+      },
+      {
+        "name": "ShdwBallTCG",
+        "username": "shdwballtcg",
+        "items": ["Pokemon Booster Pack", "Pokemon Illustration Box"]
+      },
+      {
+        "name": "Case-Mate",
+        "username": "case.mate",
+        "items": ["Tote Bag", "Phone Charm", "Makeup Bag", "Jelly Bag", "Phone Holder"]
+      },
+      {
+        "name": "Hulken",
+        "username": "hulkenbag",
+        "items": ["Hat", "Luggage Tag", "Hulken"]
+      },
+      {
+        "name": "Heydudeshoesus",
+        "username": "heydudeshop_us",
+        "items": ["Hat"]
+      },
+      {
+        "name": "PullingPoke",
+        "username": "pullingpokemon",
+        "items": ["Pokemon Booster Pack"]
+      },
+      {
+        "name": "NailVesta",
+        "username": "nailvesta_official",
+        "items": ["Nails"]
+      },
+      {
+        "name": "Tina Beauty Babe",
+        "username": "prestonandtina7",
+        "items": ["Nails"]
+      },
+      {
+        "name": "South Texas Red",
+        "username": "madelisabeth",
+        "items": ["Nails"]
+      }
+    ]
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
+    const SUPABASE_URL = "https://arlpqgcuoprznagadnau.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_V3jf_H8m4UXNlTb50iW7jw_NUoZ0rhl";
+    const sharedDatabase = window.supabase
+      ? window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_PUBLISHABLE_KEY
+        )
+      : null;
+    let pendingSharedSaves = 0;
+    let sharedSaveQueue = Promise.resolve();
+
+    const starterQuickLives = JSON.parse(
+      document.getElementById("starterQuickLives").textContent
+    ).sort((a, b) => a.name.localeCompare(b.name, undefined, {
+      sensitivity: "base"
+    }));
+
+    const defaultQuickLiveKeys = new Set(
+      starterQuickLives.map(live => String(live.username).trim().toLowerCase())
+    );
+
+    let hiddenQuickLiveKeys = new Set(
+      JSON.parse(localStorage.getItem("hiddenQuickLives") || "[]")
+    );
+
+    let activeQuickLiveKeys = new Set(
+      JSON.parse(localStorage.getItem("activeQuickLives") || "[]")
+    );
+
+    let quickLivesSearchClearTimer = null;
+
     let giveaways =
       JSON.parse(
         localStorage.getItem("giveaways")
@@ -1853,6 +2679,362 @@
       }
     });
 
+    function fillQuickLive(live) {
+      const input = document.getElementById("liveName");
+      const itemInput = document.getElementById("itemName");
+      const itemList = document.getElementById("commonGiveawayItems");
+      const sortedItems = [...live.items].sort((a, b) => a.localeCompare(b));
+
+      input.value = live.name;
+      itemList.innerHTML = "";
+
+      sortedItems.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item;
+        itemList.appendChild(option);
+      });
+
+      itemInput.placeholder = sortedItems.length
+        ? sortedItems[0]
+        : "Giveaway item";
+      input.focus();
+      input.select();
+    }
+
+
+    function getQuickLives() {
+      const lives = new Map();
+      const libraryLiveKeys = new Set(
+        starterQuickLives.flatMap(live => [live.name, live.username])
+          .map(value => String(value || "").trim().toLowerCase())
+          .filter(Boolean)
+      );
+
+      const addLive = (name, username, items = [], isDefault = false) => {
+        const cleanName = String(name || "").trim();
+        const cleanUsername = String(username || "").trim();
+        const key = (cleanUsername || cleanName).toLowerCase();
+
+        if (!key) {
+          return;
+        }
+
+        const defaultLive = isDefault || defaultQuickLiveKeys.has(key);
+
+        if (!defaultLive && hiddenQuickLiveKeys.has(key)) {
+          return;
+        }
+
+        const existing = lives.get(key) || {
+          name: cleanName || cleanUsername,
+          username: cleanUsername,
+          items: [],
+          isDefault: defaultLive,
+          isActive: activeQuickLiveKeys.has(key),
+          logoKey: cleanUsername,
+          key
+        };
+
+        existing.isDefault = existing.isDefault || defaultLive;
+        existing.isActive = activeQuickLiveKeys.has(key);
+
+        if (cleanName && existing.name === existing.username) {
+          existing.name = cleanName;
+        }
+
+        items.forEach(item => {
+          const cleanItem = String(item || "").trim();
+
+          if (
+            cleanItem &&
+            !existing.items.some(
+              savedItem => savedItem.toLowerCase() === cleanItem.toLowerCase()
+            )
+          ) {
+            existing.items.push(cleanItem);
+          }
+        });
+
+        lives.set(key, existing);
+      };
+      starterQuickLives.forEach(live => {
+        addLive(live.name, live.username, live.items, true);
+      });
+
+      giveaways.forEach(item => {
+        const liveName = String(item.liveName || "").trim();
+
+        if (!libraryLiveKeys.has(liveName.toLowerCase())) {
+          addLive(liveName, "", [item.itemName]);
+        }
+      });
+
+      history.forEach(item => {
+        const liveName = String(item.liveName || "").trim();
+
+        if (!libraryLiveKeys.has(liveName.toLowerCase())) {
+          addLive(liveName, "", [item.itemName]);
+        }
+      });
+
+      return [...lives.values()]
+        .sort((a, b) => {
+          if (a.isActive !== b.isActive) {
+            return a.isActive ? -1 : 1;
+          }
+
+          return a.name.localeCompare(b.name);
+        });
+    }
+
+
+    function getLogoKeyForLiveName(name) {
+      const key = String(name || "").trim().toLowerCase();
+      const libraryLive = starterQuickLives.find(live =>
+        live.name.trim().toLowerCase() === key ||
+        live.username.trim().toLowerCase() === key
+      );
+
+      return libraryLive?.username || "";
+    }
+
+
+    function getLiveInitials(name) {
+      return String(name || "")
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(word => word[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+    }
+
+
+    function loadLocalLogo(image, fallback, logoKey) {
+      if (!logoKey) {
+        image.style.display = "none";
+        return;
+      }
+
+      const logoStem = String(logoKey).replace(/\./g, "");
+      const logoExtensions = ["png", "jpg", "jpeg", "webp"];
+      const logoCandidates = logoExtensions.map(
+        extension => `logos/${logoStem}.${extension}`
+      );
+      let logoIndex = 0;
+
+      const tryNextLogo = () => {
+        if (logoIndex >= logoCandidates.length) {
+          image.style.display = "none";
+          return;
+        }
+
+        image.src = logoCandidates[logoIndex];
+        logoIndex += 1;
+      };
+
+      image.addEventListener("load", () => {
+        fallback.style.display = "none";
+      });
+      image.addEventListener("error", tryNextLogo);
+      tryNextLogo();
+    }
+
+
+    function renderQuickLives() {
+      const list =
+        document.getElementById("quickLivesList");
+      const resetButton =
+        document.getElementById("resetQuickLivesButton");
+
+      if (!list) {
+        return;
+      }
+
+      if (resetButton) {
+        resetButton.disabled = activeQuickLiveKeys.size === 0;
+      }
+
+      const lives = getQuickLives();
+      const query = document
+        .getElementById("quickLivesSearch")
+        .value
+        .trim()
+        .toLowerCase();
+      const filteredLives = query
+        ? lives.filter(live =>
+            `${live.name} ${live.username}`.toLowerCase().includes(query)
+          )
+        : lives;
+
+      if (filteredLives.length === 0) {
+        list.innerHTML = `
+          <div class="quick-lives-empty">
+            ${query ? "No matching lives found." : "Add a few giveaways and your most-used live names will show up here."}
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = "";
+
+      filteredLives.forEach(live => {
+        const row = document.createElement("div");
+        row.className = "quick-live-row";
+
+        const button = document.createElement("div");
+
+        button.className = `quick-live-btn${live.isActive ? " active" : ""}`;
+        button.setAttribute("role", "button");
+        button.setAttribute("tabindex", "0");
+        button.innerHTML = `
+          <span class="quick-live-logo-fallback"></span>
+          <img class="quick-live-logo" alt="" />
+          <span class="quick-live-btn-name"></span>
+          <span class="quick-live-btn-username"></span>
+          <button type="button" class="quick-live-status-tag"></button>
+        `;
+        const logoFallback = button.querySelector(".quick-live-logo-fallback");
+        const logo = button.querySelector(".quick-live-logo");
+        logoFallback.textContent = getLiveInitials(live.name);
+        loadLocalLogo(logo, logoFallback, live.logoKey);
+
+        button.querySelector(".quick-live-btn-name").textContent = live.name;
+        button.querySelector(".quick-live-btn-username").textContent = live.username;
+        button.querySelector(".quick-live-status-tag").textContent = live.isActive
+          ? "LIVE"
+          : "OFFLINE";
+        button.title = `Fill the form with ${live.name}`;
+
+        button.addEventListener(
+          "click",
+          () => fillQuickLive(live)
+        );
+
+        button.addEventListener(
+          "keydown",
+          event => {
+            if (event.target !== button) {
+              return;
+            }
+
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              fillQuickLive(live);
+            }
+          }
+        );
+
+        row.appendChild(button);
+
+        const statusTag = button.querySelector(".quick-live-status-tag");
+        statusTag.textContent = live.isActive
+          ? "LIVE"
+          : "OFFLINE";
+        statusTag.title = live.isActive
+          ? `Mark ${live.name} as offline`
+          : `Mark ${live.name} as live`;
+        statusTag.setAttribute(
+          "aria-label",
+          live.isActive
+            ? `Mark ${live.name} as offline`
+            : `Mark ${live.name} as live`
+        );
+        statusTag.addEventListener(
+          "click",
+          event => {
+            event.stopPropagation();
+            toggleQuickLiveStatus(live.key);
+          }
+        );
+
+        if (!live.isDefault) {
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "quick-live-delete";
+          deleteButton.textContent = "🗑";
+          deleteButton.title = `Remove ${live.name} from Quick Lives`;
+          deleteButton.setAttribute(
+            "aria-label",
+            `Remove ${live.name} from Quick Lives`
+          );
+          deleteButton.addEventListener(
+            "click",
+            event => {
+              event.stopPropagation();
+              deleteQuickLive(live.key);
+            }
+          );
+          button.appendChild(deleteButton);
+        }
+
+        list.appendChild(row);
+      });
+    }
+
+
+    function scheduleQuickLivesSearchClear() {
+      const search = document.getElementById("quickLivesSearch");
+
+      clearTimeout(quickLivesSearchClearTimer);
+
+      if (!search.value) {
+        quickLivesSearchClearTimer = null;
+        return;
+      }
+
+      quickLivesSearchClearTimer = setTimeout(() => {
+        search.value = "";
+        quickLivesSearchClearTimer = null;
+        renderQuickLives();
+      }, 10000);
+    }
+
+
+    function toggleQuickLiveStatus(username) {
+      const key = String(username || "").trim().toLowerCase();
+
+      if (!key) {
+        return;
+      }
+
+      if (activeQuickLiveKeys.has(key)) {
+        activeQuickLiveKeys.delete(key);
+      } else {
+        activeQuickLiveKeys.add(key);
+      }
+
+      localStorage.setItem(
+        "activeQuickLives",
+        JSON.stringify([...activeQuickLiveKeys])
+      );
+      renderQuickLives();
+    }
+
+
+    function resetQuickLiveStatuses() {
+      activeQuickLiveKeys.clear();
+      localStorage.setItem("activeQuickLives", "[]");
+      renderQuickLives();
+    }
+
+
+    function deleteQuickLive(username) {
+      const key = String(username || "").trim().toLowerCase();
+
+      if (!key || defaultQuickLiveKeys.has(key)) {
+        return;
+      }
+
+      hiddenQuickLiveKeys.add(key);
+      localStorage.setItem(
+        "hiddenQuickLives",
+        JSON.stringify([...hiddenQuickLiveKeys])
+      );
+      renderQuickLives();
+    }
+
+
     function saveData() {
       localStorage.setItem(
         "giveaways",
@@ -1863,6 +3045,119 @@
         "giveawayHistory",
         JSON.stringify(history)
       );
+
+      saveSharedData();
+    }
+
+
+    function applySharedData(state) {
+      giveaways = Array.isArray(state.giveaways)
+        ? state.giveaways.map(giveaway => ({
+            ...giveaway,
+            useCountdown: giveaway.useCountdown ?? false,
+            countdownMinutes: giveaway.countdownMinutes ?? null,
+            countdownEndTime: giveaway.countdownEndTime ?? null,
+            joined: giveaway.joined ?? false,
+            joinedAt: giveaway.joinedAt ?? null,
+            isBuyerGiveaway: giveaway.isBuyerGiveaway ?? false,
+            isFavorite: giveaway.isFavorite ?? false
+          }))
+        : [];
+      history = Array.isArray(state.history)
+        ? state.history.map(entry => ({
+            ...entry,
+            isBuyerGiveaway: entry.isBuyerGiveaway ?? false,
+            isFavorite: entry.isFavorite ?? false
+          }))
+        : [];
+
+      localStorage.setItem("giveaways", JSON.stringify(giveaways));
+      localStorage.setItem("giveawayHistory", JSON.stringify(history));
+      render();
+    }
+
+
+    function saveSharedData() {
+      if (!sharedDatabase) {
+        return;
+      }
+
+      const state = {
+        id: "shared",
+        giveaways: JSON.parse(JSON.stringify(giveaways)),
+        history: JSON.parse(JSON.stringify(history)),
+        updated_at: new Date().toISOString()
+      };
+
+      pendingSharedSaves += 1;
+      sharedSaveQueue = sharedSaveQueue
+        .then(async () => {
+          const { error } = await sharedDatabase
+            .from("giveaway_state")
+            .upsert(state, { onConflict: "id" });
+
+          if (error) {
+            console.error("Could not save shared giveaway data:", error);
+          }
+        })
+        .catch(error => {
+          console.error("Could not save shared giveaway data:", error);
+        })
+        .finally(() => {
+          pendingSharedSaves -= 1;
+        });
+    }
+
+
+    async function initializeSharedData() {
+      if (!sharedDatabase) {
+        console.error(
+          "Supabase could not load. The app will continue using local storage."
+        );
+        return;
+      }
+
+      const { data, error } = await sharedDatabase
+        .from("giveaway_state")
+        .select("giveaways, history, updated_at")
+        .eq("id", "shared")
+        .maybeSingle();
+
+      if (error) {
+        console.error(
+          "Shared database is not ready. Using local storage:",
+          error
+        );
+        return;
+      }
+
+      if (data) {
+        applySharedData(data);
+      } else {
+        applySharedData({
+          giveaways: [],
+          history: []
+        });
+        saveSharedData();
+      }
+
+      sharedDatabase
+        .channel("shared-giveaway-state")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "giveaway_state",
+            filter: "id=eq.shared"
+          },
+          payload => {
+            if (pendingSharedSaves === 0 && payload.new) {
+              applySharedData(payload.new);
+            }
+          }
+        )
+        .subscribe();
     }
 
     function addGiveaway() {
@@ -1924,6 +3219,15 @@
 
       const isEditing =
         editingGiveawayId !== null;
+
+      const liveKey = liveName.toLowerCase();
+      const matchedQuickLive = !isEditing
+        ? getQuickLives().find(live =>
+            live.name.trim().toLowerCase() === liveKey ||
+            live.username.trim().toLowerCase() === liveKey
+          )
+        : null;
+      const isNewQuickLive = !isEditing && !matchedQuickLive;
 
       if (isEditing) {
         editingTimeChanged =
@@ -2032,6 +3336,25 @@
         };
 
         giveaways.push(giveaway);
+
+        if (!isEditing) {
+          const quickLiveKey = matchedQuickLive?.key || liveKey;
+
+          activeQuickLiveKeys.add(quickLiveKey);
+
+          if (isNewQuickLive) {
+            hiddenQuickLiveKeys.delete(liveKey);
+          }
+
+          localStorage.setItem(
+            "hiddenQuickLives",
+            JSON.stringify([...hiddenQuickLiveKeys])
+          );
+          localStorage.setItem(
+            "activeQuickLives",
+            JSON.stringify([...activeQuickLiveKeys])
+          );
+        }
       }
 
       saveData();
@@ -2048,6 +3371,8 @@
 
       document.getElementById("liveName").value = "";
       document.getElementById("itemName").value = "";
+      document.getElementById("itemName").placeholder = "Giveaway item";
+      document.getElementById("commonGiveawayItems").innerHTML = "";
       document.getElementById("minutes").value = "";
       document.getElementById("seconds").value = "";
       document.getElementById("countdownMinutes").value = "none";
@@ -2684,6 +4009,11 @@
 
             </div>
 
+            <div class="giveaway-logo-slot">
+              <span class="giveaway-logo-fallback"></span>
+              <img class="giveaway-logo" alt="" />
+            </div>
+
             ${timerHTML}
 
             <div class="entry-actions">
@@ -2716,6 +4046,15 @@
             </div>
 
           `;
+
+          const activeLogo = card.querySelector(".giveaway-logo");
+          const activeLogoFallback = card.querySelector(".giveaway-logo-fallback");
+          activeLogoFallback.textContent = getLiveInitials(giveaway.liveName);
+          loadLocalLogo(
+            activeLogo,
+            activeLogoFallback,
+            getLogoKeyForLiveName(giveaway.liveName)
+          );
 
           list.appendChild(card);
         }
@@ -2799,6 +4138,9 @@
 
             <div class="history-name-row">
 
+              <span class="giveaway-logo-fallback"></span>
+              <img class="giveaway-logo" alt="" />
+
               <div class="live-name">
                 ${escapeHTML(entry.liveName)}
               </div>
@@ -2839,6 +4181,15 @@
           </button>
 
         `;
+
+        const historyLogo = card.querySelector(".giveaway-logo");
+        const historyLogoFallback = card.querySelector(".giveaway-logo-fallback");
+        historyLogoFallback.textContent = getLiveInitials(entry.liveName);
+        loadLocalLogo(
+          historyLogo,
+          historyLogoFallback,
+          getLogoKeyForLiveName(entry.liveName)
+        );
 
         list.appendChild(card);
       });
@@ -2916,6 +4267,7 @@
     function render() {
       renderActive();
       renderHistory();
+      renderQuickLives();
 
       document.getElementById(
         "activeCount"
@@ -2927,7 +4279,7 @@
     }
 
     document
-      .querySelectorAll("input, select")
+      .querySelectorAll("input:not(#quickLivesSearch), select")
       .forEach(element => {
         element.addEventListener(
           "keydown",
@@ -2937,6 +4289,26 @@
             }
           }
         );
+      });
+
+    document
+      .getElementById("quickLivesSearch")
+      .addEventListener("input", () => {
+        renderQuickLives();
+        scheduleQuickLivesSearchClear();
+      });
+
+    document
+      .getElementById("itemName")
+      .addEventListener("keydown", event => {
+        if (
+          event.key === "Tab" &&
+          !event.shiftKey &&
+          !event.currentTarget.value.trim() &&
+          event.currentTarget.placeholder !== "Giveaway item"
+        ) {
+          event.currentTarget.value = event.currentTarget.placeholder;
+        }
       });
 
     ["minutes", "seconds"].forEach(id => {
@@ -2957,6 +4329,7 @@
 
     applySettingsToUI();
     render();
+    initializeSharedData();
 
     setInterval(
       updateTimers,
