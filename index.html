@@ -433,6 +433,10 @@
       font-size: 20px;
     }
 
+    .add-form-toggle {
+      display: none;
+    }
+
     .one-line-form {
       display: grid;
       grid-template-columns:
@@ -448,7 +452,110 @@
     }
 
     .field {
+      position: relative;
       min-width: 0;
+    }
+
+    .autocomplete-menu {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: none;
+      max-height: 196px;
+      overflow-y: auto;
+      padding: 5px;
+      border: 1px solid #d9dbe1;
+      border-radius: 9px;
+      background: white;
+      box-shadow: 0 10px 24px rgba(20, 22, 27, 0.14);
+    }
+
+    .autocomplete-menu.open {
+      display: block;
+    }
+
+    .autocomplete-option {
+      display: block;
+      width: 100%;
+      padding: 8px 9px;
+      border-radius: 6px;
+      background: transparent;
+      color: #343941;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    .autocomplete-option:hover,
+    .autocomplete-option:focus {
+      background: #eef2f7;
+      outline: none;
+    }
+
+    .autocomplete-option small {
+      display: block;
+      margin-top: 2px;
+      color: #8a9099;
+      font-size: 10px;
+    }
+
+    .autocomplete-live-option {
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .autocomplete-live-copy {
+      min-width: 0;
+    }
+
+    .autocomplete-live-name {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .autocomplete-live-logo,
+    .autocomplete-live-logo-fallback {
+      grid-column: 1;
+      grid-row: 1;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .autocomplete-live-logo {
+      object-fit: contain;
+      background: white;
+    }
+
+    .autocomplete-live-logo-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e5e7eb;
+      color: #555d68;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .autocomplete-live-badge {
+      padding: 3px 5px;
+      border-radius: 5px;
+      background: #dff3e5;
+      color: #1d643b;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .autocomplete-empty {
+      padding: 10px;
+      color: #8a9099;
+      font-size: 11px;
+      text-align: center;
     }
 
     label {
@@ -1968,6 +2075,163 @@
       }
     }
 
+    /* Mobile layout: keep Quick Lives in normal page flow so it cannot cover
+       the form or giveaway cards. Only the lives list itself scrolls. */
+    @media (max-width: 760px) {
+      body {
+        overflow-x: hidden;
+      }
+
+      .app-layout {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .quick-lives-panel {
+        display: none;
+      }
+
+      .quick-lives-list {
+        flex: none;
+        max-height: 300px;
+        max-height: min(42dvh, 300px);
+        overscroll-behavior-y: contain;
+      }
+
+      .scheduler-column {
+        width: 100%;
+      }
+
+      .autocomplete-menu {
+        z-index: 200;
+      }
+
+      .add-form-toggle {
+        position: absolute;
+        top: 13px;
+        right: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 4px 9px;
+        border: 1px solid #d9dee7;
+        border-radius: 8px;
+        background: #f5f7fa;
+        color: #4c5667;
+        box-shadow: none;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .add-form-toggle:hover {
+        background: #e9eef5;
+        color: #2f5f91;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .add-card.mobile-collapsed {
+        padding-bottom: 16px;
+      }
+
+      .add-card.mobile-collapsed h2 {
+        margin-bottom: 0;
+      }
+
+      .add-card.mobile-collapsed .edit-notice,
+      .add-card.mobile-collapsed .one-line-form {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .one-line-form {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+
+      .live-field,
+      .item-field {
+        grid-column: 1 / -1;
+        width: auto;
+      }
+
+      .time-field {
+        grid-column: span 3;
+      }
+
+      .countdown-field {
+        grid-column: span 4;
+        width: auto;
+      }
+
+      .buyer-field {
+        grid-column: span 1;
+        width: auto;
+      }
+
+      .add-button {
+        grid-column: span 1;
+        width: 100%;
+        padding-left: 6px;
+        padding-right: 6px;
+      }
+
+      .giveaway {
+        grid-template-columns: 48px minmax(0, 1fr);
+      }
+
+      .giveaway-logo-slot {
+        grid-column: 1;
+        grid-row: 1;
+        width: 48px;
+        height: 48px;
+      }
+
+      .giveaway .giveaway-info {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .giveaway .entry-actions {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: start;
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .giveaway .timer-area {
+        grid-column: 1 / -1;
+        grid-row: 3;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .one-line-form {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+
+      .live-field,
+      .item-field {
+        grid-column: 1 / -1;
+      }
+
+      .time-field {
+        grid-column: span 3;
+      }
+
+      .countdown-field {
+        grid-column: span 4;
+      }
+
+      .buyer-field,
+      .add-button {
+        grid-column: span 1;
+      }
+    }
+
   </style>
 </head>
 
@@ -2103,6 +2367,17 @@
 
       <h2 id="formTitle">Add Giveaway</h2>
 
+      <button
+        id="addFormToggle"
+        class="add-form-toggle"
+        type="button"
+        aria-expanded="true"
+        aria-controls="editNotice giveawayForm"
+        onclick="toggleAddForm()"
+      >
+        Hide form
+      </button>
+
       <div id="editNotice" class="edit-notice">
         <div>
           <div class="edit-notice-copy">
@@ -2148,7 +2423,7 @@
         </button>
       </div>
 
-      <div class="one-line-form">
+      <div id="giveawayForm" class="one-line-form">
 
         <div class="field live-field">
           <label for="liveName">
@@ -2159,7 +2434,13 @@
             id="liveName"
             type="text"
             placeholder="@username"
+            autocomplete="off"
           />
+
+          <div
+            id="liveNameAutocomplete"
+            class="autocomplete-menu"
+          ></div>
         </div>
 
         <div class="field item-field">
@@ -2171,10 +2452,13 @@
             id="itemName"
             type="text"
             placeholder="Giveaway item"
-            list="commonGiveawayItems"
+            autocomplete="off"
           />
 
-          <datalist id="commonGiveawayItems"></datalist>
+          <div
+            id="itemNameAutocomplete"
+            class="autocomplete-menu"
+          ></div>
         </div>
 
         <div class="field time-field">
@@ -2734,6 +3018,7 @@
     );
 
     let quickLivesSearchClearTimer = null;
+    let addFormInitialStateApplied = false;
 
     let giveaways =
       JSON.parse(
@@ -2826,6 +3111,50 @@
       button.setAttribute("aria-expanded", String(open));
     }
 
+    function setAddFormCollapsed(collapsed) {
+      const card = document.querySelector(".add-card");
+      const button = document.getElementById("addFormToggle");
+
+      if (!card || !button) {
+        return;
+      }
+
+      card.classList.toggle("mobile-collapsed", collapsed);
+      button.setAttribute("aria-expanded", String(!collapsed));
+      button.textContent = collapsed ? "Show form" : "Hide form";
+
+      if (collapsed) {
+        const settingsPanel = document.getElementById("settingsPanel");
+        const settingsButton = document.getElementById("settingsButton");
+        settingsPanel.classList.remove("open");
+        settingsButton.setAttribute("aria-expanded", "false");
+      }
+    }
+
+    function applyInitialMobileFormState() {
+      if (addFormInitialStateApplied) {
+        return;
+      }
+
+      addFormInitialStateApplied = true;
+
+      if (window.matchMedia("(max-width: 760px)").matches) {
+        setAddFormCollapsed(giveaways.length > 0);
+      }
+    }
+
+    function toggleAddForm() {
+      const card = document.querySelector(".add-card");
+
+      if (!card) {
+        return;
+      }
+
+      setAddFormCollapsed(
+        !card.classList.contains("mobile-collapsed")
+      );
+    }
+
     document.addEventListener("click", event => {
       const panel = document.getElementById("settingsPanel");
       const button = document.getElementById("settingsButton");
@@ -2842,24 +3171,141 @@
 
     function fillQuickLive(live) {
       const input = document.getElementById("liveName");
-      const itemInput = document.getElementById("itemName");
-      const itemList = document.getElementById("commonGiveawayItems");
-      const sortedItems = [...live.items].sort((a, b) => a.localeCompare(b));
 
       input.value = live.name;
-      itemList.innerHTML = "";
-
-      sortedItems.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item;
-        itemList.appendChild(option);
-      });
-
-      itemInput.placeholder = sortedItems.length
-        ? sortedItems[0]
-        : "Giveaway item";
+      updateGiveawayItemSuggestions();
       input.focus();
       input.select();
+    }
+
+
+    function renderLiveNameSuggestions() {
+      const input = document.getElementById("liveName");
+      const menu = document.getElementById("liveNameAutocomplete");
+      const query = input.value.trim().toLowerCase();
+      const mobileLivePicker = window.matchMedia("(max-width: 760px)").matches;
+      const matches = getQuickLives()
+        .filter(live =>
+          !query ||
+          live.name.toLowerCase().includes(query) ||
+          live.username.toLowerCase().includes(query)
+        );
+
+      menu.innerHTML = "";
+
+      if (mobileLivePicker && matches.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "autocomplete-empty";
+        empty.textContent = "No matching lives.";
+        menu.appendChild(empty);
+      }
+
+      matches.forEach(live => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "autocomplete-option autocomplete-live-option";
+
+        const logoFallback = document.createElement("span");
+        logoFallback.className = "autocomplete-live-logo-fallback";
+        logoFallback.textContent = getLiveInitials(live.name);
+
+        const logo = document.createElement("img");
+        logo.className = "autocomplete-live-logo";
+        logo.alt = "";
+        loadLocalLogo(logo, logoFallback, live.logoKey);
+
+        const copy = document.createElement("span");
+        copy.className = "autocomplete-live-copy";
+
+        const name = document.createElement("span");
+        name.className = "autocomplete-live-name";
+        name.textContent = live.name;
+        copy.appendChild(name);
+
+        if (live.username) {
+          const username = document.createElement("small");
+          username.textContent = `@${live.username}`;
+          copy.appendChild(username);
+        }
+
+        option.append(logoFallback, logo, copy);
+
+        if (live.isActive) {
+          const badge = document.createElement("span");
+          badge.className = "autocomplete-live-badge";
+          badge.textContent = "LIVE";
+          option.appendChild(badge);
+        }
+
+        option.addEventListener("mousedown", event => {
+          event.preventDefault();
+        });
+        option.addEventListener("click", () => {
+          input.value = live.name;
+          menu.classList.remove("open");
+          updateGiveawayItemSuggestions();
+          document.getElementById("itemName").focus();
+        });
+        menu.appendChild(option);
+      });
+
+      menu.classList.toggle(
+        "open",
+        document.activeElement === input &&
+        (matches.length > 0 || mobileLivePicker)
+      );
+    }
+
+
+    function updateGiveawayItemSuggestions() {
+      const liveValue = document
+        .getElementById("liveName")
+        .value
+        .trim()
+        .toLowerCase();
+      const itemInput = document.getElementById("itemName");
+      const itemMenu = document.getElementById("itemNameAutocomplete");
+      const lives = getQuickLives();
+      const matchedLive = lives.find(live =>
+        live.name.toLowerCase() === liveValue ||
+        live.username.toLowerCase() === liveValue
+      );
+      const sourceItems = matchedLive
+        ? matchedLive.items
+        : lives.flatMap(live => live.items);
+      const sortedItems = [...new Set(sourceItems)]
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
+      const itemQuery = itemInput.value.trim().toLowerCase();
+      const matches = sortedItems
+        .filter(item => !itemQuery || item.toLowerCase().includes(itemQuery))
+        .slice(0, 6);
+
+      itemMenu.innerHTML = "";
+      matches.forEach(item => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "autocomplete-option";
+        option.textContent = item;
+        option.addEventListener("mousedown", event => {
+          event.preventDefault();
+        });
+        option.addEventListener("click", () => {
+          itemInput.value = item;
+          itemMenu.classList.remove("open");
+          itemInput.focus();
+        });
+        itemMenu.appendChild(option);
+      });
+
+      itemMenu.classList.toggle(
+        "open",
+        document.activeElement === itemInput && matches.length > 0
+      );
+
+      itemInput.placeholder = matchedLive && sortedItems.length
+        ? sortedItems[0]
+        : "Giveaway item";
     }
 
 
@@ -3029,6 +3475,8 @@
       if (resetButton) {
         resetButton.disabled = activeQuickLiveKeys.size === 0;
       }
+
+      renderLiveNameSuggestions();
 
       const lives = getQuickLives();
       const query = document
@@ -3413,6 +3861,7 @@
         console.error(
           "Supabase could not load. The app will continue using local storage."
         );
+        applyInitialMobileFormState();
         return;
       }
 
@@ -3427,6 +3876,7 @@
           "Shared database is not ready. Using local storage:",
           error
         );
+        applyInitialMobileFormState();
         return;
       }
 
@@ -3441,6 +3891,8 @@
         });
         saveSharedData();
       }
+
+      applyInitialMobileFormState();
 
       sharedDatabase
         .channel("shared-giveaway-state")
@@ -3801,7 +4253,8 @@
       document.getElementById("liveName").value = "";
       document.getElementById("itemName").value = "";
       document.getElementById("itemName").placeholder = "Giveaway item";
-      document.getElementById("commonGiveawayItems").innerHTML = "";
+      document.getElementById("liveNameAutocomplete").classList.remove("open");
+      document.getElementById("itemNameAutocomplete").classList.remove("open");
       document.getElementById("minutes").value = "";
       document.getElementById("seconds").value = "";
       document.getElementById("countdownMinutes").value = "none";
@@ -3857,6 +4310,8 @@
       document.getElementById("minutes").placeholder = "—";
       document.getElementById("seconds").placeholder = "—";
       updateEditCurrentTime(Date.now());
+
+      setAddFormCollapsed(false);
 
       document.querySelector(".add-card").scrollIntoView({
         behavior: "smooth",
@@ -3948,6 +4403,7 @@
       duplicatedFavoritePending =
         entry.isFavorite ?? false;
 
+      setAddFormCollapsed(false);
       document.getElementById("minutes").focus();
 
       document.querySelector(".add-card").scrollIntoView({
@@ -4756,6 +5212,35 @@
         renderQuickLives();
         scheduleQuickLivesSearchClear();
       });
+
+    document
+      .getElementById("liveName")
+      .addEventListener("input", () => {
+        renderLiveNameSuggestions();
+        updateGiveawayItemSuggestions();
+      });
+
+    document
+      .getElementById("liveName")
+      .addEventListener("focus", renderLiveNameSuggestions);
+
+    document
+      .getElementById("itemName")
+      .addEventListener("input", updateGiveawayItemSuggestions);
+
+    document
+      .getElementById("itemName")
+      .addEventListener("focus", updateGiveawayItemSuggestions);
+
+    document.addEventListener("click", event => {
+      if (!event.target.closest(".live-field")) {
+        document.getElementById("liveNameAutocomplete").classList.remove("open");
+      }
+
+      if (!event.target.closest(".item-field")) {
+        document.getElementById("itemNameAutocomplete").classList.remove("open");
+      }
+    });
 
     document
       .getElementById("itemName")
