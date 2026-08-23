@@ -2975,25 +2975,23 @@
           }
         );
 
-        if (!live.isDefault) {
-          const deleteButton = document.createElement("button");
-          deleteButton.type = "button";
-          deleteButton.className = "quick-live-delete";
-          deleteButton.textContent = "🗑";
-          deleteButton.title = `Remove ${live.name} from Quick Lives`;
-          deleteButton.setAttribute(
-            "aria-label",
-            `Remove ${live.name} from Quick Lives`
-          );
-          deleteButton.addEventListener(
-            "click",
-            event => {
-              event.stopPropagation();
-              deleteQuickLive(live.key);
-            }
-          );
-          button.appendChild(deleteButton);
-        }
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "quick-live-delete";
+        deleteButton.textContent = "🗑";
+        deleteButton.title = `Remove ${live.name} from Quick Lives`;
+        deleteButton.setAttribute(
+          "aria-label",
+          `Remove ${live.name} from Quick Lives`
+        );
+        deleteButton.addEventListener(
+          "click",
+          event => {
+            event.stopPropagation();
+            deleteQuickLive(live.key, live.name);
+          }
+        );
+        button.appendChild(deleteButton);
 
         list.appendChild(row);
       });
@@ -3048,18 +3046,29 @@
     }
 
 
-    function deleteQuickLive(username) {
+    function deleteQuickLive(username, name) {
       const key = String(username || "").trim().toLowerCase();
 
-      if (!key || defaultQuickLiveKeys.has(key)) {
+      if (!key) {
+        return;
+      }
+
+      if (!confirm(`Remove ${name || "this live"} from the shared live library?`)) {
         return;
       }
 
       hiddenQuickLiveKeys.add(key);
+      activeQuickLiveKeys.delete(key);
       localStorage.setItem(
         "hiddenQuickLives",
         JSON.stringify([...hiddenQuickLiveKeys])
       );
+      localStorage.setItem(
+        "activeQuickLives",
+        JSON.stringify([...activeQuickLiveKeys])
+      );
+      saveSharedData();
+      deleteSharedLive(key);
       renderQuickLives();
     }
 
@@ -3104,12 +3113,21 @@
           ? state.active_live_keys
           : []
       );
+      hiddenQuickLiveKeys = new Set(
+        Array.isArray(state.hidden_live_keys)
+          ? state.hidden_live_keys
+          : []
+      );
 
       localStorage.setItem("giveaways", JSON.stringify(giveaways));
       localStorage.setItem("giveawayHistory", JSON.stringify(history));
       localStorage.setItem(
         "activeQuickLives",
         JSON.stringify([...activeQuickLiveKeys])
+      );
+      localStorage.setItem(
+        "hiddenQuickLives",
+        JSON.stringify([...hiddenQuickLiveKeys])
       );
       render();
     }
@@ -3125,6 +3143,7 @@
         giveaways: JSON.parse(JSON.stringify(giveaways)),
         history: JSON.parse(JSON.stringify(history)),
         active_live_keys: [...activeQuickLiveKeys],
+        hidden_live_keys: [...hiddenQuickLiveKeys],
         updated_at: new Date().toISOString()
       };
 
@@ -3158,7 +3177,7 @@
 
       const { data, error } = await sharedDatabase
         .from("giveaway_state")
-        .select("giveaways, history, active_live_keys, updated_at")
+        .select("giveaways, history, active_live_keys, hidden_live_keys, updated_at")
         .eq("id", "shared")
         .maybeSingle();
 
@@ -3176,7 +3195,8 @@
         applySharedData({
           giveaways: [],
           history: [],
-          active_live_keys: []
+          active_live_keys: [],
+          hidden_live_keys: []
         });
         saveSharedData();
       }
@@ -3255,6 +3275,22 @@
 
       if (error) {
         console.error("Could not save the live to the shared library:", error);
+      }
+    }
+
+
+    async function deleteSharedLive(key) {
+      if (!sharedDatabase) {
+        return;
+      }
+
+      const { error } = await sharedDatabase
+        .from("lives")
+        .delete()
+        .eq("key", key);
+
+      if (error) {
+        console.error("Could not delete the live from the shared library:", error);
       }
     }
 
