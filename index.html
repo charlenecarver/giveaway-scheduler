@@ -2563,17 +2563,32 @@
       sensitivity: "base"
     }));
 
+    const builtInQuickLiveKeys = new Set(
+      starterQuickLives.map(live =>
+        String(live.username || live.name).trim().toLowerCase()
+      )
+    );
+
     const defaultQuickLiveKeys = new Set(
-      starterQuickLives.map(live => String(live.username).trim().toLowerCase())
+      builtInQuickLiveKeys
     );
 
     function replaceLiveLibrary(lives) {
       const normalizedLives = lives
-        .map(live => ({
-          name: String(live.name || "").trim(),
-          username: String(live.username || "").trim(),
-          items: Array.isArray(live.items) ? live.items : []
-        }))
+        .map(live => {
+          const name = String(live.name || "").trim();
+          const username = String(live.username || "").trim();
+          const key = String(live.key || username || name).trim().toLowerCase();
+
+          return {
+            name,
+            username,
+            items: Array.isArray(live.items) ? live.items : [],
+            isDefault:
+              Boolean(live.is_default ?? live.isDefault) ||
+              builtInQuickLiveKeys.has(key)
+          };
+        })
         .filter(live => live.name || live.username)
         .sort((a, b) => a.name.localeCompare(b.name, undefined, {
           sensitivity: "base"
@@ -2588,7 +2603,7 @@
       starterQuickLives.forEach(live => {
         const key = (live.username || live.name).trim().toLowerCase();
 
-        if (key) {
+        if (key && live.isDefault) {
           defaultQuickLiveKeys.add(key);
         }
       });
@@ -2785,7 +2800,12 @@
         lives.set(key, existing);
       };
       starterQuickLives.forEach(live => {
-        addLive(live.name, live.username, live.items, true);
+        addLive(
+          live.name,
+          live.username,
+          live.items,
+          live.isDefault ?? true
+        );
       });
 
       giveaways.forEach(item => {
@@ -2975,23 +2995,25 @@
           }
         );
 
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.className = "quick-live-delete";
-        deleteButton.textContent = "🗑";
-        deleteButton.title = `Remove ${live.name} from Quick Lives`;
-        deleteButton.setAttribute(
-          "aria-label",
-          `Remove ${live.name} from Quick Lives`
-        );
-        deleteButton.addEventListener(
-          "click",
-          event => {
-            event.stopPropagation();
-            deleteQuickLive(live.key, live.name);
-          }
-        );
-        button.appendChild(deleteButton);
+        if (!live.isDefault) {
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "quick-live-delete";
+          deleteButton.textContent = "🗑";
+          deleteButton.title = `Remove ${live.name} from Quick Lives`;
+          deleteButton.setAttribute(
+            "aria-label",
+            `Remove ${live.name} from Quick Lives`
+          );
+          deleteButton.addEventListener(
+            "click",
+            event => {
+              event.stopPropagation();
+              deleteQuickLive(live.key, live.name);
+            }
+          );
+          button.appendChild(deleteButton);
+        }
 
         list.appendChild(row);
       });
@@ -3019,7 +3041,7 @@
     function toggleQuickLiveStatus(username) {
       const key = String(username || "").trim().toLowerCase();
 
-      if (!key) {
+      if (!key || defaultQuickLiveKeys.has(key)) {
         return;
       }
 
@@ -3230,6 +3252,7 @@
         name: name || username,
         username,
         items: Array.isArray(live.items) ? [...new Set(live.items)] : [],
+        is_default: live.is_default ?? live.isDefault ?? false,
         updated_at: new Date().toISOString()
       };
     }
@@ -3238,7 +3261,7 @@
     async function loadSharedLiveLibrary() {
       const { data, error } = await sharedDatabase
         .from("lives")
-        .select("key, name, username, items")
+        .select("key, name, username, items, is_default")
         .order("name");
 
       if (error) {
@@ -3249,10 +3272,30 @@
       if (data.length > 0) {
         replaceLiveLibrary(data);
         renderQuickLives();
+
+        const correctedDefaults = data
+          .filter(live => builtInQuickLiveKeys.has(live.key) && !live.is_default)
+          .map(live => ({
+            ...live,
+            is_default: true,
+            updated_at: new Date().toISOString()
+          }));
+
+        if (correctedDefaults.length > 0) {
+          const { error: correctionError } = await sharedDatabase
+            .from("lives")
+            .upsert(correctedDefaults, { onConflict: "key" });
+
+          if (correctionError) {
+            console.error("Could not protect the default lives:", correctionError);
+          }
+        }
         return;
       }
 
-      const seedLives = starterQuickLives.map(getSharedLiveRecord);
+      const seedLives = starterQuickLives.map(live =>
+        getSharedLiveRecord({ ...live, isDefault: true })
+      );
       const { error: seedError } = await sharedDatabase
         .from("lives")
         .upsert(seedLives, { onConflict: "key" });
