@@ -2211,6 +2211,10 @@
         border-top: 0;
       }
 
+      .giveaway .countdown-timer-block {
+        order: -1;
+      }
+
       .giveaway .done-text {
         grid-column: 3;
         grid-row: 1;
@@ -2326,6 +2330,19 @@
 
       .giveaway .timer-label {
         display: none;
+      }
+
+      .giveaway .countdown-timer-block {
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .giveaway .countdown-timer-block .timer-label {
+        display: block;
+        align-self: center;
+        font-size: 9px;
+        line-height: 1;
       }
 
       .giveaway .timer {
@@ -3397,13 +3414,13 @@
         option.addEventListener("mousedown", event => {
           event.preventDefault();
         });
-        option.addEventListener("click", () => {
+        option.addEventListener("click", event => {
+          event.stopPropagation();
           input.value = live.name;
           menu.classList.remove("open");
+          const itemInput = document.getElementById("itemName");
+          itemInput.focus({ preventScroll: true });
           updateGiveawayItemSuggestions();
-          document
-            .getElementById("itemName")
-            .focus({ preventScroll: true });
         });
         menu.appendChild(option);
       });
@@ -4401,6 +4418,14 @@
       duplicatedFavoritePending = false;
       clearForm();
       render();
+
+      if (
+        !isEditing &&
+        window.matchMedia("(max-width: 760px)").matches
+      ) {
+        document.activeElement?.blur();
+        setAddFormCollapsed(true);
+      }
     }
 
     function clearForm() {
@@ -4995,10 +5020,10 @@
                   : "";
 
               timerHTML += `
-                <div class="timer-block">
+                <div class="timer-block countdown-timer-block">
 
                   <span class="timer-label">
-                    Join
+                    Joining in
                   </span>
 
                   <span class="timer countdown-timer ${countdownUrgent}" data-timer="countdown">
