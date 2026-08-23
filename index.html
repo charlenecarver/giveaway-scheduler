@@ -242,6 +242,18 @@
       font-weight: 800;
     }
 
+    .tiktok-live-link {
+      cursor: pointer;
+      transition: box-shadow 0.15s ease, filter 0.15s ease;
+    }
+
+    .tiktok-live-link:hover,
+    .tiktok-live-link:focus-visible {
+      box-shadow: 0 0 0 3px rgba(37, 244, 238, 0.3);
+      filter: brightness(0.96);
+      outline: none;
+    }
+
     .quick-live-btn:hover {
       background: #eef2f7;
       border-color: #cfd5de;
@@ -2182,6 +2194,14 @@
       color: #333;
     }
 
+    .settings-row input[type="checkbox"] {
+      flex: 0 0 auto;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      accent-color: #222;
+    }
+
     .delay-input-wrap {
       display: flex;
       align-items: center;
@@ -2198,6 +2218,47 @@
     .delay-input-wrap span {
       font-size: 12px;
       color: #777;
+    }
+
+    .alert-time-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .alert-time-wrap input {
+      width: 52px;
+      height: 36px;
+      padding: 6px;
+      text-align: center;
+    }
+
+    .alert-time-wrap span {
+      font-size: 11px;
+      color: #777;
+    }
+
+    .sound-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .sound-select-wrap select {
+      width: 132px;
+      height: 36px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    .sound-test-button {
+      height: 36px;
+      padding: 0 10px;
+      border-radius: 8px;
+      background: #eceef2;
+      color: #343941;
+      font-size: 12px;
+      font-weight: 700;
     }
 
     .settings-help {
@@ -2748,6 +2809,188 @@
 
     <p class="settings-help">
       Set this to 0 for no delay. Any higher value subtracts that many seconds from newly added or edited timers to compensate for entry time.
+    </p>
+
+    <div class="settings-row">
+      <label for="soundAlertEnabled">Giveaway sound alert</label>
+      <input
+        id="soundAlertEnabled"
+        class="settings-input"
+        type="checkbox"
+        onchange="updateSoundAlertSetting()"
+      />
+    </div>
+
+    <div class="settings-row">
+      <label>Regular alert time</label>
+      <div class="alert-time-wrap">
+        <input
+          id="soundAlertMinutes"
+          class="settings-input"
+          type="number"
+          min="0"
+          max="99"
+          step="1"
+          value="1"
+          aria-label="Alert minutes"
+          onchange="updateSoundAlertSetting()"
+          oninput="updateSoundAlertSetting()"
+        />
+        <span>min</span>
+        <input
+          id="soundAlertSeconds"
+          class="settings-input"
+          type="number"
+          min="0"
+          max="59"
+          step="1"
+          value="0"
+          aria-label="Alert seconds"
+          onchange="updateSoundAlertSetting()"
+          oninput="updateSoundAlertSetting()"
+        />
+        <span>sec</span>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <label>Buyer alert time</label>
+      <div class="alert-time-wrap">
+        <input
+          id="buyerSoundAlertMinutes"
+          class="settings-input"
+          type="number"
+          min="0"
+          max="99"
+          step="1"
+          value="1"
+          aria-label="Buyer alert minutes"
+          onchange="updateSoundAlertSetting()"
+          oninput="updateSoundAlertSetting()"
+        />
+        <span>min</span>
+        <input
+          id="buyerSoundAlertSeconds"
+          class="settings-input"
+          type="number"
+          min="0"
+          max="59"
+          step="1"
+          value="0"
+          aria-label="Buyer alert seconds"
+          onchange="updateSoundAlertSetting()"
+          oninput="updateSoundAlertSetting()"
+        />
+        <span>sec</span>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <label>Favorite alert time</label>
+      <div class="alert-time-wrap">
+        <input
+          id="favoriteSoundAlertMinutes"
+          class="settings-input"
+          type="number"
+          min="0"
+          max="99"
+          step="1"
+          value="1"
+          aria-label="Favorite alert minutes"
+          onchange="updateSoundAlertSetting()"
+          oninput="updateSoundAlertSetting()"
+        />
+        <span>min</span>
+        <input
+          id="favoriteSoundAlertSeconds"
+          class="settings-input"
+          type="number"
+          min="0"
+          max="59"
+          step="1"
+          value="0"
+          aria-label="Favorite alert seconds"
+          onchange="updateSoundAlertSetting()"
+          oninput="updateSoundAlertSetting()"
+        />
+        <span>sec</span>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <label for="soundAlertType">Regular sound</label>
+      <div class="sound-select-wrap">
+        <select
+          id="soundAlertType"
+          class="settings-input"
+          onchange="updateSoundAlertSetting()"
+        >
+          <option value="double-chime">Double Chime</option>
+          <option value="gentle-chime">Gentle Chime</option>
+          <option value="digital-ping">Digital Ping</option>
+          <option value="three-note">Three-Note Alert</option>
+          <option value="urgent">Urgent Alert</option>
+        </select>
+        <button
+          class="sound-test-button"
+          type="button"
+          onclick="testGiveawayAlertSound('soundAlertType')"
+        >
+          Test
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <label for="buyerSoundAlertType">Buyer sound</label>
+      <div class="sound-select-wrap">
+        <select
+          id="buyerSoundAlertType"
+          class="settings-input"
+          onchange="updateSoundAlertSetting()"
+        >
+          <option value="double-chime">Double Chime</option>
+          <option value="gentle-chime">Gentle Chime</option>
+          <option value="digital-ping">Digital Ping</option>
+          <option value="three-note">Three-Note Alert</option>
+          <option value="urgent">Urgent Alert</option>
+        </select>
+        <button
+          class="sound-test-button"
+          type="button"
+          onclick="testGiveawayAlertSound('buyerSoundAlertType')"
+        >
+          Test
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <label for="favoriteSoundAlertType">Favorite sound</label>
+      <div class="sound-select-wrap">
+        <select
+          id="favoriteSoundAlertType"
+          class="settings-input"
+          onchange="updateSoundAlertSetting()"
+        >
+          <option value="double-chime">Double Chime</option>
+          <option value="gentle-chime">Gentle Chime</option>
+          <option value="digital-ping">Digital Ping</option>
+          <option value="three-note">Three-Note Alert</option>
+          <option value="urgent">Urgent Alert</option>
+        </select>
+        <button
+          class="sound-test-button"
+          type="button"
+          onclick="testGiveawayAlertSound('favoriteSoundAlertType')"
+        >
+          Test
+        </button>
+      </div>
+    </div>
+
+    <p class="settings-help">
+      This alert is stored on this device and plays once for each giveaway.
     </p>
   </div>
 
@@ -3560,7 +3803,17 @@
     let settings = JSON.parse(
       localStorage.getItem("giveawaySettings")
     ) || {
-      delaySeconds: 0
+      delaySeconds: 0,
+      soundAlertEnabled: true,
+      soundAlertMinutes: 1,
+      soundAlertSeconds: 0,
+      buyerSoundAlertMinutes: 1,
+      buyerSoundAlertSeconds: 0,
+      favoriteSoundAlertMinutes: 1,
+      favoriteSoundAlertSeconds: 0,
+      soundAlertType: "double-chime",
+      buyerSoundAlertType: "urgent",
+      favoriteSoundAlertType: "three-note"
     };
 
     // Migrate the previous checkbox-based setting once.
@@ -3574,6 +3827,46 @@
     settings.delaySeconds = Number.isFinite(Number(settings.delaySeconds))
       ? Math.max(0, Math.min(60, Number(settings.delaySeconds)))
       : 0;
+    settings.soundAlertEnabled = settings.soundAlertEnabled ?? true;
+    settings.soundAlertMinutes = Number.isFinite(Number(settings.soundAlertMinutes))
+      ? Math.max(0, Math.min(99, Number(settings.soundAlertMinutes)))
+      : 1;
+    settings.soundAlertSeconds = Number.isFinite(Number(settings.soundAlertSeconds))
+      ? Math.max(0, Math.min(59, Number(settings.soundAlertSeconds)))
+      : 0;
+    settings.buyerSoundAlertMinutes = Number.isFinite(
+      Number(settings.buyerSoundAlertMinutes)
+    ) ? Math.max(0, Math.min(99, Number(settings.buyerSoundAlertMinutes))) : 1;
+    settings.buyerSoundAlertSeconds = Number.isFinite(
+      Number(settings.buyerSoundAlertSeconds)
+    ) ? Math.max(0, Math.min(59, Number(settings.buyerSoundAlertSeconds))) : 0;
+    settings.favoriteSoundAlertMinutes = Number.isFinite(
+      Number(settings.favoriteSoundAlertMinutes)
+    ) ? Math.max(0, Math.min(99, Number(settings.favoriteSoundAlertMinutes))) : 1;
+    settings.favoriteSoundAlertSeconds = Number.isFinite(
+      Number(settings.favoriteSoundAlertSeconds)
+    ) ? Math.max(0, Math.min(59, Number(settings.favoriteSoundAlertSeconds))) : 0;
+    const availableSoundAlertTypes = [
+      "double-chime",
+      "gentle-chime",
+      "digital-ping",
+      "three-note",
+      "urgent"
+    ];
+    settings.soundAlertType = availableSoundAlertTypes.includes(settings.soundAlertType)
+      ? settings.soundAlertType
+      : "double-chime";
+    settings.buyerSoundAlertType = availableSoundAlertTypes.includes(
+      settings.buyerSoundAlertType
+    ) ? settings.buyerSoundAlertType : "urgent";
+    settings.favoriteSoundAlertType = availableSoundAlertTypes.includes(
+      settings.favoriteSoundAlertType
+    ) ? settings.favoriteSoundAlertType : "three-note";
+
+    let giveawayAlertAudioContext = null;
+    const playedGiveawayAlerts = new Set(
+      JSON.parse(localStorage.getItem("playedGiveawayAlerts") || "[]")
+    );
 
     function saveSettings() {
       localStorage.setItem(
@@ -3585,6 +3878,26 @@
     function applySettingsToUI() {
       const seconds = document.getElementById("delaySeconds");
       seconds.value = settings.delaySeconds;
+      document.getElementById("soundAlertEnabled").checked =
+        settings.soundAlertEnabled;
+      document.getElementById("soundAlertMinutes").value =
+        settings.soundAlertMinutes;
+      document.getElementById("soundAlertSeconds").value =
+        settings.soundAlertSeconds;
+      document.getElementById("buyerSoundAlertMinutes").value =
+        settings.buyerSoundAlertMinutes;
+      document.getElementById("buyerSoundAlertSeconds").value =
+        settings.buyerSoundAlertSeconds;
+      document.getElementById("favoriteSoundAlertMinutes").value =
+        settings.favoriteSoundAlertMinutes;
+      document.getElementById("favoriteSoundAlertSeconds").value =
+        settings.favoriteSoundAlertSeconds;
+      document.getElementById("soundAlertType").value =
+        settings.soundAlertType;
+      document.getElementById("buyerSoundAlertType").value =
+        settings.buyerSoundAlertType;
+      document.getElementById("favoriteSoundAlertType").value =
+        settings.favoriteSoundAlertType;
     }
 
     function updateDelaySetting() {
@@ -3600,6 +3913,171 @@
 
       saveSettings();
       applySettingsToUI();
+    }
+
+    function updateSoundAlertSetting() {
+      const enabled = document.getElementById("soundAlertEnabled").checked;
+      let minutes = parseInt(
+        document.getElementById("soundAlertMinutes").value,
+        10
+      );
+      let seconds = parseInt(
+        document.getElementById("soundAlertSeconds").value,
+        10
+      );
+      let buyerMinutes = parseInt(
+        document.getElementById("buyerSoundAlertMinutes").value,
+        10
+      );
+      let buyerSeconds = parseInt(
+        document.getElementById("buyerSoundAlertSeconds").value,
+        10
+      );
+      let favoriteMinutes = parseInt(
+        document.getElementById("favoriteSoundAlertMinutes").value,
+        10
+      );
+      let favoriteSeconds = parseInt(
+        document.getElementById("favoriteSoundAlertSeconds").value,
+        10
+      );
+
+      minutes = Number.isFinite(minutes) ? Math.max(0, Math.min(99, minutes)) : 0;
+      seconds = Number.isFinite(seconds) ? Math.max(0, Math.min(59, seconds)) : 0;
+      buyerMinutes = Number.isFinite(buyerMinutes)
+        ? Math.max(0, Math.min(99, buyerMinutes)) : 0;
+      buyerSeconds = Number.isFinite(buyerSeconds)
+        ? Math.max(0, Math.min(59, buyerSeconds)) : 0;
+      favoriteMinutes = Number.isFinite(favoriteMinutes)
+        ? Math.max(0, Math.min(99, favoriteMinutes)) : 0;
+      favoriteSeconds = Number.isFinite(favoriteSeconds)
+        ? Math.max(0, Math.min(59, favoriteSeconds)) : 0;
+      settings.soundAlertEnabled = enabled;
+      settings.soundAlertMinutes = minutes;
+      settings.soundAlertSeconds = seconds;
+      settings.buyerSoundAlertMinutes = buyerMinutes;
+      settings.buyerSoundAlertSeconds = buyerSeconds;
+      settings.favoriteSoundAlertMinutes = favoriteMinutes;
+      settings.favoriteSoundAlertSeconds = favoriteSeconds;
+      settings.soundAlertType = document.getElementById("soundAlertType").value;
+      settings.buyerSoundAlertType =
+        document.getElementById("buyerSoundAlertType").value;
+      settings.favoriteSoundAlertType =
+        document.getElementById("favoriteSoundAlertType").value;
+      saveSettings();
+      applySettingsToUI();
+
+      if (enabled) {
+        prepareGiveawayAlertAudio();
+      }
+    }
+
+    function prepareGiveawayAlertAudio() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextClass) {
+        return null;
+      }
+
+      giveawayAlertAudioContext ||= new AudioContextClass();
+
+      if (giveawayAlertAudioContext.state === "suspended") {
+        giveawayAlertAudioContext.resume().catch(() => {});
+      }
+
+      return giveawayAlertAudioContext;
+    }
+
+    function playGiveawayAlertSound(soundType = settings.soundAlertType) {
+      const context = prepareGiveawayAlertAudio();
+
+      if (!context) {
+        return;
+      }
+
+      const patterns = {
+        "double-chime": [
+          { delay: 0, frequency: 660, duration: 0.28, volume: 0.18 },
+          { delay: 0.22, frequency: 880, duration: 0.38, volume: 0.2 }
+        ],
+        "gentle-chime": [
+          { delay: 0, frequency: 784, duration: 0.55, volume: 0.14 }
+        ],
+        "digital-ping": [
+          { delay: 0, frequency: 1100, duration: 0.12, volume: 0.16 }
+        ],
+        "three-note": [
+          { delay: 0, frequency: 660, duration: 0.14, volume: 0.2 },
+          { delay: 0.18, frequency: 880, duration: 0.14, volume: 0.2 },
+          { delay: 0.36, frequency: 660, duration: 0.14, volume: 0.2 }
+        ],
+        urgent: [
+          { delay: 0, frequency: 880, duration: 0.16, volume: 0.24 },
+          { delay: 0.2, frequency: 880, duration: 0.16, volume: 0.24 },
+          { delay: 0.4, frequency: 880, duration: 0.16, volume: 0.24 },
+          { delay: 0.6, frequency: 880, duration: 0.16, volume: 0.24 }
+        ]
+      };
+
+      const emitSound = () => {
+        (patterns[soundType] || patterns["double-chime"])
+          .forEach(note => {
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            const start = context.currentTime + note.delay;
+            oscillator.type = "sine";
+            oscillator.frequency.value = note.frequency;
+            gain.gain.setValueAtTime(0.0001, start);
+            gain.gain.exponentialRampToValueAtTime(note.volume, start + 0.015);
+            gain.gain.exponentialRampToValueAtTime(
+              0.0001,
+              start + note.duration
+            );
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start(start);
+            oscillator.stop(start + note.duration + 0.02);
+          });
+      };
+
+      if (context.state === "running") {
+        emitSound();
+      } else {
+        context.resume().then(emitSound).catch(() => {});
+      }
+    }
+
+    function testGiveawayAlertSound(selectId = "soundAlertType") {
+      updateSoundAlertSetting();
+      playGiveawayAlertSound(document.getElementById(selectId).value);
+    }
+
+    function checkGiveawaySoundAlert(giveaway, now) {
+      if (!settings.soundAlertEnabled || giveaway.doneSince !== null) {
+        return;
+      }
+
+      const thresholdSeconds = giveaway.isBuyerGiveaway
+        ? settings.buyerSoundAlertMinutes * 60 + settings.buyerSoundAlertSeconds
+        : giveaway.isFavorite
+          ? settings.favoriteSoundAlertMinutes * 60 + settings.favoriteSoundAlertSeconds
+          : settings.soundAlertMinutes * 60 + settings.soundAlertSeconds;
+      const remaining = giveaway.endTime - now;
+      const alertKey = `${giveaway.id}:${giveaway.endTime}`;
+
+      if (remaining > 0 && remaining <= thresholdSeconds * 1000 && !playedGiveawayAlerts.has(alertKey)) {
+        playedGiveawayAlerts.add(alertKey);
+        localStorage.setItem(
+          "playedGiveawayAlerts",
+          JSON.stringify([...playedGiveawayAlerts].slice(-500))
+        );
+        const soundType = giveaway.isBuyerGiveaway
+          ? settings.buyerSoundAlertType
+          : giveaway.isFavorite
+            ? settings.favoriteSoundAlertType
+            : settings.soundAlertType;
+        playGiveawayAlertSound(soundType);
+      }
     }
 
     function toggleSettings() {
@@ -4040,6 +4518,40 @@
     }
 
 
+    function addTikTokLiveLink(image, fallback, username, liveName) {
+      const cleanUsername = String(username || "").trim().replace(/^@/, "");
+
+      if (!cleanUsername) {
+        return;
+      }
+
+      const openLive = event => {
+        event.preventDefault();
+        event.stopPropagation();
+        window.open(
+          `https://www.tiktok.com/@${encodeURIComponent(cleanUsername)}/live`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+      };
+      const label = `Open ${liveName || cleanUsername} on TikTok LIVE`;
+
+      [image, fallback].forEach(element => {
+        element.classList.add("tiktok-live-link");
+        element.setAttribute("role", "link");
+        element.setAttribute("tabindex", "0");
+        element.setAttribute("aria-label", label);
+        element.title = label;
+        element.addEventListener("click", openLive);
+        element.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            openLive(event);
+          }
+        });
+      });
+    }
+
+
     function renderQuickLives() {
       const list =
         document.getElementById("quickLivesList");
@@ -4099,6 +4611,7 @@
         const logo = button.querySelector(".quick-live-logo");
         logoFallback.textContent = getLiveInitials(live.name);
         loadLocalLogo(logo, logoFallback, live.logoKey);
+        addTikTokLiveLink(logo, logoFallback, live.username, live.name);
 
         button.querySelector(".quick-live-btn-name").textContent = live.name;
         button.querySelector(".quick-live-btn-username").textContent = live.username;
@@ -4338,7 +4851,21 @@
         String(username || name).trim().toLowerCase();
       const previousName = editingLiveLibraryName;
       const items = [...editingLiveLibraryItems];
-      const duplicate = getQuickLives().find(live =>
+      const existingLives = getQuickLives();
+      const duplicateUsername = username && existingLives.find(live =>
+        live.key !== editingLiveLibraryKey &&
+        live.username.trim().toLowerCase() === username.toLowerCase()
+      );
+
+      if (duplicateUsername) {
+        alert(`The username @${username} is already used by ${duplicateUsername.name}. Enter a unique username.`);
+        const usernameInput = document.getElementById("liveEditorUsername");
+        usernameInput.focus();
+        usernameInput.select();
+        return;
+      }
+
+      const duplicate = existingLives.find(live =>
         live.key === key && live.key !== editingLiveLibraryKey
       );
 
@@ -5332,6 +5859,8 @@
       let dataChanged = false;
 
       giveaways.forEach(giveaway => {
+        checkGiveawaySoundAlert(giveaway, now);
+
         const participation = getGiveawayParticipation(giveaway.id);
         const countdownDuration =
           (giveaway.countdownMinutes || 0) * 60 * 1000;
@@ -5781,11 +6310,18 @@
 
           const activeLogo = card.querySelector(".giveaway-logo");
           const activeLogoFallback = card.querySelector(".giveaway-logo-fallback");
+          const activeUsername = getLogoKeyForLiveName(giveaway.liveName);
           activeLogoFallback.textContent = getLiveInitials(giveaway.liveName);
           loadLocalLogo(
             activeLogo,
             activeLogoFallback,
-            getLogoKeyForLiveName(giveaway.liveName)
+            activeUsername
+          );
+          addTikTokLiveLink(
+            activeLogo,
+            activeLogoFallback,
+            activeUsername,
+            giveaway.liveName
           );
 
           list.appendChild(card);
@@ -5938,11 +6474,18 @@
 
         const historyLogo = card.querySelector(".giveaway-logo");
         const historyLogoFallback = card.querySelector(".giveaway-logo-fallback");
+        const historyUsername = getLogoKeyForLiveName(entry.liveName);
         historyLogoFallback.textContent = getLiveInitials(entry.liveName);
         loadLocalLogo(
           historyLogo,
           historyLogoFallback,
-          getLogoKeyForLiveName(entry.liveName)
+          historyUsername
+        );
+        addTikTokLiveLink(
+          historyLogo,
+          historyLogoFallback,
+          historyUsername,
+          entry.liveName
         );
 
         list.appendChild(card);
@@ -6043,7 +6586,7 @@
 
     document
       .querySelectorAll(
-        "input:not(#quickLivesSearch):not(.live-editor-input):not(#liveEditorItemInput), select"
+        "input:not(#quickLivesSearch):not(.live-editor-input):not(#liveEditorItemInput):not(.settings-input), select:not(.settings-input)"
       )
       .forEach(element => {
         element.addEventListener(
@@ -6163,6 +6706,8 @@
       });
 
     applySettingsToUI();
+    document.addEventListener("pointerdown", prepareGiveawayAlertAudio, { once: true });
+    document.addEventListener("keydown", prepareGiveawayAlertAudio, { once: true });
     render();
     initializeSharedData();
     initializeSharedLiveLibrary();
