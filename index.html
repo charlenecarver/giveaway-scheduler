@@ -3008,6 +3008,7 @@
         "activeQuickLives",
         JSON.stringify([...activeQuickLiveKeys])
       );
+      saveSharedData();
       renderQuickLives();
     }
 
@@ -3015,6 +3016,7 @@
     function resetQuickLiveStatuses() {
       activeQuickLiveKeys.clear();
       localStorage.setItem("activeQuickLives", "[]");
+      saveSharedData();
       renderQuickLives();
     }
 
@@ -3070,9 +3072,18 @@
             isFavorite: entry.isFavorite ?? false
           }))
         : [];
+      activeQuickLiveKeys = new Set(
+        Array.isArray(state.active_live_keys)
+          ? state.active_live_keys
+          : []
+      );
 
       localStorage.setItem("giveaways", JSON.stringify(giveaways));
       localStorage.setItem("giveawayHistory", JSON.stringify(history));
+      localStorage.setItem(
+        "activeQuickLives",
+        JSON.stringify([...activeQuickLiveKeys])
+      );
       render();
     }
 
@@ -3086,6 +3097,7 @@
         id: "shared",
         giveaways: JSON.parse(JSON.stringify(giveaways)),
         history: JSON.parse(JSON.stringify(history)),
+        active_live_keys: [...activeQuickLiveKeys],
         updated_at: new Date().toISOString()
       };
 
@@ -3119,7 +3131,7 @@
 
       const { data, error } = await sharedDatabase
         .from("giveaway_state")
-        .select("giveaways, history, updated_at")
+        .select("giveaways, history, active_live_keys, updated_at")
         .eq("id", "shared")
         .maybeSingle();
 
@@ -3136,7 +3148,8 @@
       } else {
         applySharedData({
           giveaways: [],
-          history: []
+          history: [],
+          active_live_keys: []
         });
         saveSharedData();
       }
