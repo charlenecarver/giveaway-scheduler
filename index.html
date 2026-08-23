@@ -5284,8 +5284,9 @@
               } else {
                 timerHTML += `
                   <div class="timer-block countdown-timer-block countdown-pending">
-                    <span class="timer-label">Countdown needed</span>
-                    <span class="timer countdown-timer urgent">--:--</span>
+                    <span class="timer countdown-timer urgent pending-countdown-value">
+                      ${formatTime(countdownDuration)}
+                    </span>
                     <button
                       class="start-countdown-button"
                       type="button"
