@@ -8,6 +8,12 @@
   />
 
   <title>Giveaway Scheduler</title>
+  <meta name="theme-color" content="#17181c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Giveaways" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="app-icon.svg" />
 
   <style>
     * {
@@ -2177,6 +2183,9 @@
       padding: 16px;
       z-index: 1000;
       display: none;
+      max-height: calc(100vh - 72px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     .settings-panel.open {
@@ -2279,6 +2288,38 @@
       font-size: 11px;
       line-height: 1.4;
       color: #888;
+    }
+
+    .push-notification-control {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .push-notification-button {
+      border: 0;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #17181c;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .push-notification-button:disabled {
+      cursor: wait;
+      opacity: 0.55;
+    }
+
+    .push-notification-status {
+      max-width: 180px;
+      color: #69707a;
+      font-size: 11px;
+      line-height: 1.3;
+      text-align: right;
     }
 
     @media (max-width: 760px) {
@@ -3016,6 +3057,18 @@
     <p class="settings-help">
       This alert is stored on this device and plays once for each giveaway.
     </p>
+
+    <div class="settings-row">
+      <label>Push notifications</label>
+      <div class="push-notification-control">
+        <button id="pushNotificationButton" class="push-notification-button settings-input" type="button" onclick="togglePushNotifications()">Enable</button>
+        <span id="pushNotificationStatus" class="push-notification-status">Checking this device…</span>
+      </div>
+    </div>
+
+    <p class="settings-help">
+      Push alerts use the regular, buyer, and favorite times above and can arrive when this app is closed. On iPhone, open the installed Home Screen app to enable them.
+    </p>
   </div>
 
       <h2 id="formTitle">Add Giveaway</h2>
@@ -3662,6 +3715,9 @@
   <script>
     const SUPABASE_URL = "https://arlpqgcuoprznagadnau.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_V3jf_H8m4UXNlTb50iW7jw_NUoZ0rhl";
+    const PUSH_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/push-notifications`;
+    let pushRegistration = null;
+    let pushSubscription = null;
     const localDevelopmentHosts = new Set([
       "localhost",
       "127.0.0.1",
@@ -3901,6 +3957,109 @@
       );
     }
 
+    function urlBase64ToUint8Array(value) {
+      const padding = "=".repeat((4 - value.length % 4) % 4);
+      const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = atob(base64);
+      return Uint8Array.from([...rawData].map(character => character.charCodeAt(0)));
+    }
+
+    function pushRequest(action, body = {}) {
+      return fetch(PUSH_FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+        },
+        body: JSON.stringify({ action, ...body })
+      }).then(async response => {
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Push notification request failed.");
+        return result;
+      });
+    }
+
+    function getPushPreferences() {
+      return {
+        regular_alert_seconds: settings.soundAlertMinutes * 60 + settings.soundAlertSeconds,
+        buyer_alert_seconds: settings.buyerSoundAlertMinutes * 60 + settings.buyerSoundAlertSeconds,
+        favorite_alert_seconds: settings.favoriteSoundAlertMinutes * 60 + settings.favoriteSoundAlertSeconds
+      };
+    }
+
+    function setPushStatus(message, enabled = false) {
+      const status = document.getElementById("pushNotificationStatus");
+      const button = document.getElementById("pushNotificationButton");
+      if (!status || !button) return;
+      status.textContent = message;
+      button.textContent = enabled ? "Disable" : "Enable";
+    }
+
+    async function initializePushNotifications() {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        setPushStatus("Push is not supported in this browser.");
+        return;
+      }
+      try {
+        pushRegistration = await navigator.serviceWorker.register("service-worker.js");
+        pushSubscription = await pushRegistration.pushManager.getSubscription();
+        if (pushSubscription) {
+          setPushStatus("Enabled on this device.", true);
+          await syncPushSubscription();
+        } else if (Notification.permission === "denied") {
+          setPushStatus("Blocked in this device’s notification settings.");
+        } else {
+          setPushStatus("Off on this device.");
+        }
+      } catch (error) {
+        console.error("Could not initialize push notifications:", error);
+        setPushStatus("Push setup is not available yet.");
+      }
+    }
+
+    async function syncPushSubscription() {
+      if (!pushSubscription) return;
+      await pushRequest("subscribe", {
+        subscription: pushSubscription.toJSON(),
+        preferences: getPushPreferences()
+      });
+    }
+
+    async function togglePushNotifications() {
+      const button = document.getElementById("pushNotificationButton");
+      button.disabled = true;
+      try {
+        pushRegistration ||= await navigator.serviceWorker.register("service-worker.js");
+        pushSubscription ||= await pushRegistration.pushManager.getSubscription();
+        if (pushSubscription) {
+          const endpoint = pushSubscription.endpoint;
+          await pushRequest("unsubscribe", { endpoint });
+          await pushSubscription.unsubscribe();
+          pushSubscription = null;
+          setPushStatus("Off on this device.");
+          return;
+        }
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          setPushStatus("Permission was not granted.");
+          return;
+        }
+        const { publicKey } = await pushRequest("config");
+        pushSubscription = await pushRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey)
+        });
+        await syncPushSubscription();
+        setPushStatus("Enabled on this device.", true);
+      } catch (error) {
+        console.error("Could not change push notification setting:", error);
+        setPushStatus(error.message || "Could not enable push notifications.");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
     function applySettingsToUI() {
       const seconds = document.getElementById("delaySeconds");
       seconds.value = settings.delaySeconds;
@@ -3995,6 +4154,10 @@
 
       if (enabled) {
         prepareGiveawayAlertAudio();
+      }
+
+      if (pushSubscription) {
+        syncPushSubscription().catch(error => console.error("Could not update push alert times:", error));
       }
     }
 
@@ -4584,11 +4747,14 @@
       const openLive = event => {
         event.preventDefault();
         event.stopPropagation();
-        window.open(
-          `https://www.tiktok.com/@${encodeURIComponent(cleanUsername)}/live`,
-          "_blank",
-          "noopener,noreferrer"
-        );
+        const liveUrl =
+          `https://www.tiktok.com/@${encodeURIComponent(cleanUsername)}/live`;
+
+        if (window.matchMedia("(max-width: 760px)").matches) {
+          window.location.assign(liveUrl);
+        } else {
+          window.open(liveUrl, "_blank", "noopener,noreferrer");
+        }
       };
       const label = `Open ${liveName || cleanUsername} on TikTok LIVE`;
 
@@ -6872,6 +7038,7 @@
     render();
     initializeSharedData();
     initializeSharedLiveLibrary();
+    initializePushNotifications();
 
     setInterval(
       updateTimers,

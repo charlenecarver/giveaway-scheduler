@@ -1,0 +1,16 @@
+{
+  "name": "Giveaway Scheduler",
+  "short_name": "Giveaways",
+  "description": "Track live giveaways and see exactly when it’s time to join.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f6fa",
+  "theme_color": "#17181c",
+  "icons": [{
+    "src": "app-icon.svg",
+    "sizes": "any",
+    "type": "image/svg+xml",
+    "purpose": "any maskable"
+  }]
+}
