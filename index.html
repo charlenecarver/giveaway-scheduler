@@ -4389,33 +4389,38 @@
         const databaseLivesByKey = new Map(
           data.map(live => [live.key, live])
         );
-        const changedDefaults = builtInRecords.filter(record => {
+        const defaultsToUpsert = builtInRecords.flatMap(record => {
           const existing = databaseLivesByKey.get(record.key);
 
-          return (
-            !existing ||
-            existing.name !== record.name ||
-            existing.username !== record.username ||
-            existing.is_default !== true ||
-            JSON.stringify(existing.items || []) !==
-              JSON.stringify(record.items)
-          );
+          if (!existing) {
+            return [record];
+          }
+
+          if (existing.is_default !== true) {
+            return [{
+              ...existing,
+              is_default: true,
+              updated_at: new Date().toISOString()
+            }];
+          }
+
+          return [];
         });
 
-        if (changedDefaults.length > 0) {
+        if (defaultsToUpsert.length > 0) {
           const { error: correctionError } = await sharedDatabase
             .from("lives")
-            .upsert(changedDefaults, { onConflict: "key" });
+            .upsert(defaultsToUpsert, { onConflict: "key" });
 
           if (correctionError) {
-            console.error("Could not update the default lives:", correctionError);
+            console.error("Could not seed or protect the default lives:", correctionError);
           }
         }
 
         const mergedLivesByKey = new Map(
           data.map(live => [live.key, live])
         );
-        builtInRecords.forEach(live => {
+        defaultsToUpsert.forEach(live => {
           mergedLivesByKey.set(live.key, live);
         });
 
