@@ -72,6 +72,23 @@
       margin-bottom: 4px;
     }
 
+    .quick-lives-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quick-lives-add {
+      padding: 4px 7px;
+      border: 1px solid #cbd8e7;
+      border-radius: 6px;
+      background: #eef5fc;
+      color: #35648f;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .quick-lives-title {
       margin: 0;
       font-size: 15px;
@@ -295,6 +312,55 @@
 
     .live-editor-field + .live-editor-field {
       margin-top: 14px;
+    }
+
+    .live-editor-item-entry {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .live-editor-add-item {
+      padding: 0 12px;
+      border-radius: 8px;
+      background: #e7edf5;
+      color: #355e87;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .live-editor-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .live-editor-item-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: #eef0f3;
+      color: #4d535c;
+      font-size: 12px;
+    }
+
+    .live-editor-item-remove {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border-radius: 50%;
+      background: #d9dde3;
+      color: #6b717a;
+      line-height: 1;
+    }
+
+    .live-editor-empty-items {
+      color: #9298a1;
+      font-size: 12px;
     }
 
     .live-editor-actions {
@@ -2551,8 +2617,28 @@
         />
       </div>
 
+      <div class="live-editor-field">
+        <label for="liveEditorItemInput">Giveaway Items</label>
+        <div class="live-editor-item-entry">
+          <input
+            id="liveEditorItemInput"
+            type="text"
+            placeholder="Add an item"
+          />
+          <button
+            class="live-editor-add-item"
+            type="button"
+            onclick="addLiveEditorItem()"
+          >
+            Add
+          </button>
+        </div>
+        <div id="liveEditorItems" class="live-editor-items"></div>
+      </div>
+
       <div class="live-editor-actions">
         <button
+          id="liveEditorDeleteButton"
           class="live-editor-delete"
           type="button"
           onclick="deleteEditingLive()"
@@ -2584,14 +2670,23 @@
       <aside class="quick-lives-panel">
         <div class="quick-lives-header">
           <h2 class="quick-lives-title">Quick Lives</h2>
-          <button
-            id="resetQuickLivesButton"
-            class="quick-lives-reset"
-            type="button"
-            onclick="resetQuickLiveStatuses()"
-          >
-            All off
-          </button>
+          <div class="quick-lives-header-actions">
+            <button
+              class="quick-lives-add"
+              type="button"
+              onclick="openNewLiveEditor()"
+            >
+              + Add Live
+            </button>
+            <button
+              id="resetQuickLivesButton"
+              class="quick-lives-reset"
+              type="button"
+              onclick="resetQuickLiveStatuses()"
+            >
+              All off
+            </button>
+          </div>
         </div>
         <p class="quick-lives-subtitle">
           Click a tile to prefill the form with that live’s information. Use the status tag to mark the live as on or off.
@@ -3458,6 +3553,7 @@
     let editingLiveLibraryKey = null;
     let editingLiveLibraryName = "";
     let editingLiveLibraryItems = [];
+    let editingLiveLibraryIsDefault = false;
 
 
     let settings = JSON.parse(
@@ -4007,25 +4103,23 @@
           }
         );
 
-        if (!live.isDefault) {
-          const editButton = document.createElement("button");
-          editButton.type = "button";
-          editButton.className = "quick-live-edit";
-          editButton.textContent = "✎";
-          editButton.title = `Edit ${live.name}`;
-          editButton.setAttribute(
-            "aria-label",
-            `Edit ${live.name}`
-          );
-          editButton.addEventListener(
-            "click",
-            event => {
-              event.stopPropagation();
-              openLiveEditor(live);
-            }
-          );
-          button.appendChild(editButton);
-        }
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "quick-live-edit";
+        editButton.textContent = "✎";
+        editButton.title = `Edit ${live.name}`;
+        editButton.setAttribute(
+          "aria-label",
+          `Edit ${live.name}`
+        );
+        editButton.addEventListener(
+          "click",
+          event => {
+            event.stopPropagation();
+            openLiveEditor(live);
+          }
+        );
+        button.appendChild(editButton);
 
         list.appendChild(row);
       });
@@ -4081,18 +4175,94 @@
 
 
     function openLiveEditor(live) {
-      if (!live || live.isDefault) {
+      if (!live) {
         return;
       }
 
       editingLiveLibraryKey = live.key;
       editingLiveLibraryName = live.name;
       editingLiveLibraryItems = [...live.items];
+      editingLiveLibraryIsDefault = live.isDefault;
+      document.getElementById("liveEditorTitle").textContent = "Edit Live";
       document.getElementById("liveEditorName").value = live.name;
       document.getElementById("liveEditorUsername").value = live.username;
+      document.getElementById("liveEditorItemInput").value = "";
+      document.getElementById("liveEditorDeleteButton").style.display =
+        live.isDefault ? "none" : "inline-flex";
+      renderLiveEditorItems();
       document.getElementById("liveEditorBackdrop").classList.add("open");
       document.getElementById("liveEditorName").focus();
       document.getElementById("liveEditorName").select();
+    }
+
+    function openNewLiveEditor() {
+      editingLiveLibraryKey = null;
+      editingLiveLibraryName = "";
+      editingLiveLibraryItems = [];
+      editingLiveLibraryIsDefault = false;
+      document.getElementById("liveEditorTitle").textContent = "Add Live";
+      document.getElementById("liveEditorName").value = "";
+      document.getElementById("liveEditorUsername").value = "";
+      document.getElementById("liveEditorItemInput").value = "";
+      document.getElementById("liveEditorDeleteButton").style.display = "none";
+      renderLiveEditorItems();
+      document.getElementById("liveEditorBackdrop").classList.add("open");
+      document.getElementById("liveEditorName").focus();
+    }
+
+    function renderLiveEditorItems() {
+      const container = document.getElementById("liveEditorItems");
+      container.innerHTML = "";
+
+      if (editingLiveLibraryItems.length === 0) {
+        const empty = document.createElement("span");
+        empty.className = "live-editor-empty-items";
+        empty.textContent = "No saved giveaway items.";
+        container.appendChild(empty);
+        return;
+      }
+
+      editingLiveLibraryItems.forEach((item, index) => {
+        const chip = document.createElement("span");
+        chip.className = "live-editor-item-chip";
+
+        const text = document.createElement("span");
+        text.textContent = item;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "live-editor-item-remove";
+        remove.textContent = "×";
+        remove.title = `Remove ${item}`;
+        remove.setAttribute("aria-label", `Remove ${item}`);
+        remove.addEventListener("click", () => {
+          editingLiveLibraryItems.splice(index, 1);
+          renderLiveEditorItems();
+        });
+
+        chip.append(text, remove);
+        container.appendChild(chip);
+      });
+    }
+
+    function addLiveEditorItem() {
+      const input = document.getElementById("liveEditorItemInput");
+      const item = input.value.trim();
+
+      if (!item) {
+        return;
+      }
+
+      if (!editingLiveLibraryItems.some(
+        existing => existing.toLowerCase() === item.toLowerCase()
+      )) {
+        editingLiveLibraryItems.push(item);
+        editingLiveLibraryItems.sort((a, b) => a.localeCompare(b));
+      }
+
+      input.value = "";
+      renderLiveEditorItems();
+      input.focus();
     }
 
 
@@ -4101,14 +4271,11 @@
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
+      editingLiveLibraryIsDefault = false;
     }
 
 
     async function saveLiveEditor() {
-      if (!editingLiveLibraryKey) {
-        return;
-      }
-
       const name = document.getElementById("liveEditorName").value.trim();
       const username = document
         .getElementById("liveEditorUsername")
@@ -4121,17 +4288,46 @@
         return;
       }
 
-      const key = editingLiveLibraryKey;
+      const key = editingLiveLibraryKey ||
+        String(username || name).trim().toLowerCase();
       const previousName = editingLiveLibraryName;
       const items = [...editingLiveLibraryItems];
+      const duplicate = getQuickLives().find(live =>
+        live.key === key && live.key !== editingLiveLibraryKey
+      );
+
+      if (duplicate) {
+        alert("A live with that username or name already exists.");
+        return;
+      }
 
       await saveSharedLive({
         key,
         name,
         username,
         items,
-        isDefault: false
+        isDefault: editingLiveLibraryIsDefault
       });
+
+      if (!sharedDatabase) {
+        const localRecord = {
+          key,
+          name,
+          username,
+          items,
+          isDefault: editingLiveLibraryIsDefault
+        };
+        const existingIndex = starterQuickLives.findIndex(
+          live => String(live.key || live.username || live.name)
+            .trim().toLowerCase() === key
+        );
+
+        if (existingIndex >= 0) {
+          starterQuickLives.splice(existingIndex, 1, localRecord);
+        } else {
+          starterQuickLives.push(localRecord);
+        }
+      }
 
       giveaways.forEach(giveaway => {
         if (giveaway.liveName === previousName) {
@@ -4146,7 +4342,9 @@
 
       closeLiveEditor();
       saveData();
-      await loadSharedLiveLibrary();
+      if (sharedDatabase) {
+        await loadSharedLiveLibrary();
+      }
       render();
     }
 
@@ -4155,7 +4353,7 @@
       const key = editingLiveLibraryKey;
       const name = editingLiveLibraryName;
 
-      if (!key) {
+      if (!key || editingLiveLibraryIsDefault) {
         return;
       }
 
@@ -5821,6 +6019,15 @@
             saveLiveEditor();
           }
         });
+      });
+
+    document
+      .getElementById("liveEditorItemInput")
+      .addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addLiveEditorItem();
+        }
       });
 
     document
