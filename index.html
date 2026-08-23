@@ -2567,6 +2567,33 @@
       starterQuickLives.map(live => String(live.username).trim().toLowerCase())
     );
 
+    function replaceLiveLibrary(lives) {
+      const normalizedLives = lives
+        .map(live => ({
+          name: String(live.name || "").trim(),
+          username: String(live.username || "").trim(),
+          items: Array.isArray(live.items) ? live.items : []
+        }))
+        .filter(live => live.name || live.username)
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, {
+          sensitivity: "base"
+        }));
+
+      starterQuickLives.splice(
+        0,
+        starterQuickLives.length,
+        ...normalizedLives
+      );
+      defaultQuickLiveKeys.clear();
+      starterQuickLives.forEach(live => {
+        const key = (live.username || live.name).trim().toLowerCase();
+
+        if (key) {
+          defaultQuickLiveKeys.add(key);
+        }
+      });
+    }
+
     let hiddenQuickLiveKeys = new Set(
       JSON.parse(localStorage.getItem("hiddenQuickLives") || "[]")
     );
@@ -3173,6 +3200,86 @@
         .subscribe();
     }
 
+
+    function getSharedLiveRecord(live) {
+      const name = String(live.name || "").trim();
+      const username = String(live.username || "").trim();
+
+      return {
+        key: String(live.key || username || name).trim().toLowerCase(),
+        name: name || username,
+        username,
+        items: Array.isArray(live.items) ? [...new Set(live.items)] : [],
+        updated_at: new Date().toISOString()
+      };
+    }
+
+
+    async function loadSharedLiveLibrary() {
+      const { data, error } = await sharedDatabase
+        .from("lives")
+        .select("key, name, username, items")
+        .order("name");
+
+      if (error) {
+        console.error("Could not load the shared live library:", error);
+        return;
+      }
+
+      if (data.length > 0) {
+        replaceLiveLibrary(data);
+        renderQuickLives();
+        return;
+      }
+
+      const seedLives = starterQuickLives.map(getSharedLiveRecord);
+      const { error: seedError } = await sharedDatabase
+        .from("lives")
+        .upsert(seedLives, { onConflict: "key" });
+
+      if (seedError) {
+        console.error("Could not seed the shared live library:", seedError);
+      }
+    }
+
+
+    async function saveSharedLive(live) {
+      if (!sharedDatabase) {
+        return;
+      }
+
+      const record = getSharedLiveRecord(live);
+      const { error } = await sharedDatabase
+        .from("lives")
+        .upsert(record, { onConflict: "key" });
+
+      if (error) {
+        console.error("Could not save the live to the shared library:", error);
+      }
+    }
+
+
+    async function initializeSharedLiveLibrary() {
+      if (!sharedDatabase) {
+        return;
+      }
+
+      await loadSharedLiveLibrary();
+
+      sharedDatabase
+        .channel("shared-live-library")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "lives"
+          },
+          loadSharedLiveLibrary
+        )
+        .subscribe();
+    }
+
     function addGiveaway() {
       const liveName =
         document.getElementById("liveName").value.trim();
@@ -3349,6 +3456,17 @@
         };
 
         giveaways.push(giveaway);
+
+        const sharedLive = matchedQuickLive || {
+          key: liveKey,
+          name: liveName,
+          username: "",
+          items: []
+        };
+        saveSharedLive({
+          ...sharedLive,
+          items: [...new Set([...sharedLive.items, itemName])]
+        });
 
         if (!isEditing) {
           const quickLiveKey = matchedQuickLive?.key || liveKey;
@@ -4343,6 +4461,7 @@
     applySettingsToUI();
     render();
     initializeSharedData();
+    initializeSharedLiveLibrary();
 
     setInterval(
       updateTimers,
