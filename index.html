@@ -906,8 +906,9 @@
       flex-shrink: 0;
       padding: 3px 8px;
       border-radius: 999px;
-      background: #e2e4e8;
-      color: #5f6670;
+      background: #fdeaea;
+      color: #b53737;
+      border: 1px solid #efc4c4;
       font-size: 11px;
       font-weight: 800;
     }
@@ -5073,6 +5074,30 @@
 
       const sorted =
         [...giveaways].sort((a, b) => {
+          const isDisqualified = giveaway => {
+            const participation =
+              getGiveawayParticipation(giveaway.id);
+            const countdownDuration =
+              (giveaway.countdownMinutes || 0) * 60 * 1000;
+
+            return (
+              participation?.couldntJoin === true ||
+              (
+                giveaway.useCountdown &&
+                !participation?.joined &&
+                !participation?.countdownEndTime &&
+                giveaway.endTime - now < countdownDuration
+              )
+            );
+          };
+
+          const aDisqualified = isDisqualified(a);
+          const bDisqualified = isDisqualified(b);
+
+          if (aDisqualified !== bDisqualified) {
+            return aDisqualified ? 1 : -1;
+          }
+
           if (
             a.doneSince !== null &&
             b.doneSince === null
@@ -5247,7 +5272,7 @@
                 <div class="timer-block">
 
                   <span class="timer-label">
-                    Giveaway
+                    Ending in
                   </span>
 
                   <span class="timer ${giveawayUrgent}" data-timer="giveaway">
@@ -5284,9 +5309,6 @@
               } else {
                 timerHTML += `
                   <div class="timer-block countdown-timer-block countdown-pending">
-                    <span class="timer countdown-timer urgent pending-countdown-value">
-                      ${formatTime(countdownDuration)}
-                    </span>
                     <button
                       class="start-countdown-button"
                       type="button"
@@ -5294,6 +5316,9 @@
                     >
                       Start countdown
                     </button>
+                    <span class="timer countdown-timer urgent pending-countdown-value">
+                      ${formatTime(countdownDuration)}
+                    </span>
                   </div>
                 `;
               }
