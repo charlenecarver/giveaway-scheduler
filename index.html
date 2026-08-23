@@ -707,6 +707,14 @@
       border-left: 5px solid #4b9d6c;
     }
 
+    .giveaway.couldnt-join-card {
+      border-color: #c9cdd3;
+      border-left: 5px solid #8b919a;
+      background: #f0f1f3;
+      filter: grayscale(0.35);
+      opacity: 0.78;
+    }
+
     .giveaway.done {
       border-color: #41a76f;
       background: #f2fff7;
@@ -775,6 +783,15 @@
       box-shadow:
         0 2px 10px rgba(0, 0, 0, 0.05),
         inset 0 0 0 2px rgba(141, 122, 209, 0.22);
+    }
+
+    .giveaway.couldnt-join-card,
+    .giveaway.buyer-giveaway.couldnt-join-card,
+    .giveaway.favorite-giveaway.couldnt-join-card {
+      border-color: #c9cdd3;
+      border-left: 5px solid #8b919a;
+      background: #f0f1f3;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     }
 
     .giveaway-info {
@@ -881,6 +898,18 @@
       color: #b53737;
       font-size: 11px;
       font-weight: 700;
+    }
+
+    .couldnt-join-badge {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e2e4e8;
+      color: #5f6670;
+      font-size: 11px;
+      font-weight: 800;
     }
 
     /* -----------------------------
@@ -990,6 +1019,20 @@
       background: #bd3c3c;
       box-shadow: 0 3px 9px rgba(189, 60, 60, 0.20);
       transform: translateY(-1px);
+    }
+
+    .start-countdown-button {
+      padding: 7px 9px;
+      border-radius: 7px;
+      background: #c94040;
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .start-countdown-button:hover {
+      background: #aa3030;
     }
 
     .join-ready .join-actions {
@@ -3277,6 +3320,35 @@
         localStorage.getItem("giveawayHistory")
       ) || [];
 
+    let giveawayParticipation =
+      JSON.parse(
+        localStorage.getItem("giveawayParticipation")
+      ) || {};
+
+    function getGiveawayParticipation(id) {
+      return giveawayParticipation[String(id)] || null;
+    }
+
+    function setGiveawayParticipation(id, updates) {
+      const key = String(id);
+      giveawayParticipation[key] = {
+        ...(giveawayParticipation[key] || {}),
+        ...updates
+      };
+      localStorage.setItem(
+        "giveawayParticipation",
+        JSON.stringify(giveawayParticipation)
+      );
+    }
+
+    function clearGiveawayParticipation(id) {
+      delete giveawayParticipation[String(id)];
+      localStorage.setItem(
+        "giveawayParticipation",
+        JSON.stringify(giveawayParticipation)
+      );
+    }
+
     giveaways = giveaways.map(giveaway => ({
       ...giveaway,
       useCountdown: giveaway.useCountdown ?? false,
@@ -4419,29 +4491,6 @@
             ? now + adjustedSeconds * 1000
             : (editingOriginalTiming?.endTime ?? giveaway.endTime);
 
-        let countdownEndTime = null;
-
-        if (useCountdown && !giveaway.joined) {
-          if (editingCountdownChanged) {
-            countdownEndTime =
-              Math.min(
-                now +
-                countdownMinutes *
-                60 *
-                1000,
-                endTime
-              );
-          } else {
-            countdownEndTime =
-              editingOriginalTiming?.countdownEndTime ?? giveaway.countdownEndTime;
-
-            if (countdownEndTime !== null) {
-              countdownEndTime =
-                Math.min(countdownEndTime, endTime);
-            }
-          }
-        }
-
         giveaway.liveName = liveName;
         giveaway.itemName = itemName;
         giveaway.endTime = endTime;
@@ -4449,25 +4498,28 @@
           endTime > now ? null : giveaway.doneSince;
         giveaway.useCountdown = useCountdown;
         giveaway.countdownMinutes = countdownMinutes;
-        giveaway.countdownEndTime = countdownEndTime;
+        giveaway.countdownEndTime = null;
         giveaway.isBuyerGiveaway = isBuyerGiveaway;
+
+        if (!useCountdown) {
+          clearGiveawayParticipation(giveaway.id);
+        } else if (editingCountdownChanged) {
+          const countdownDuration = countdownMinutes * 60 * 1000;
+          setGiveawayParticipation(giveaway.id, {
+            countdownEndTime:
+              endTime - now >= countdownDuration
+                ? now + countdownDuration
+                : null,
+            joined: false,
+            joinedAt: null,
+            couldntJoin: endTime - now < countdownDuration
+          });
+        }
       } else {
         const endTime =
           now +
           adjustedSeconds * 1000;
 
-        let countdownEndTime = null;
-
-        if (useCountdown) {
-          countdownEndTime =
-            Math.min(
-              now +
-              countdownMinutes *
-              60 *
-              1000,
-              endTime
-            );
-        }
         const giveaway = {
           id: Date.now() + Math.random(),
           liveName,
@@ -4476,7 +4528,7 @@
           doneSince: null,
           useCountdown,
           countdownMinutes,
-          countdownEndTime,
+          countdownEndTime: null,
           joined: false,
           joinedAt: null,
           isBuyerGiveaway,
@@ -4484,6 +4536,19 @@
         };
 
         giveaways.push(giveaway);
+
+        if (useCountdown) {
+          const countdownDuration = countdownMinutes * 60 * 1000;
+          setGiveawayParticipation(giveaway.id, {
+            countdownEndTime:
+              endTime - now >= countdownDuration
+                ? now + countdownDuration
+                : null,
+            joined: false,
+            joinedAt: null,
+            couldntJoin: endTime - now < countdownDuration
+          });
+        }
 
         const sharedLive = matchedQuickLive || {
           key: liveKey,
@@ -4569,12 +4634,14 @@
         return;
       }
 
+      const participation = getGiveawayParticipation(giveaway.id);
+
       editingGiveawayId = giveaway.id;
       editingOriginalTiming = {
         endTime: giveaway.endTime,
         useCountdown: giveaway.useCountdown,
         countdownMinutes: giveaway.countdownMinutes,
-        countdownEndTime: giveaway.countdownEndTime
+        countdownEndTime: participation?.countdownEndTime || null
       };
       editingTimeChanged = false;
       editingCountdownChanged = false;
@@ -4587,7 +4654,7 @@
       document.getElementById("minutes").value = "";
       document.getElementById("seconds").value = "";
       document.getElementById("countdownMinutes").value =
-        giveaway.useCountdown && !giveaway.joined
+        giveaway.useCountdown
           ? String(giveaway.countdownMinutes)
           : "none";
       document.getElementById("isBuyerGiveaway").checked =
@@ -4723,19 +4790,24 @@
       }
 
       const deltaMs = deltaSeconds * 1000;
+      const participation = getGiveawayParticipation(giveaway.id);
 
       giveaway.endTime += deltaMs;
 
       if (
         giveaway.useCountdown &&
-        !giveaway.joined &&
-        giveaway.countdownEndTime
+        !participation?.joined &&
+        participation?.countdownEndTime
       ) {
-        giveaway.countdownEndTime += deltaMs;
+        const adjustedCountdownEndTime =
+          Math.min(
+            participation.countdownEndTime + deltaMs,
+            giveaway.endTime
+          );
 
-        if (giveaway.countdownEndTime > giveaway.endTime) {
-          giveaway.countdownEndTime = giveaway.endTime;
-        }
+        setGiveawayParticipation(giveaway.id, {
+          countdownEndTime: adjustedCountdownEndTime
+        });
       }
 
       if (editingOriginalTiming) {
@@ -4785,10 +4857,41 @@
         return;
       }
 
-      giveaway.joined = true;
-      giveaway.joinedAt = Date.now();
+      setGiveawayParticipation(id, {
+        joined: true,
+        joinedAt: Date.now(),
+        couldntJoin: false
+      });
+      render();
+    }
 
-      saveData();
+    function startCountdown(id) {
+      const giveaway = giveaways.find(
+        item => String(item.id) === String(id)
+      );
+
+      if (!giveaway || !giveaway.useCountdown) {
+        return;
+      }
+
+      const now = Date.now();
+      const countdownDuration = giveaway.countdownMinutes * 60 * 1000;
+
+      if (giveaway.endTime - now < countdownDuration) {
+        setGiveawayParticipation(id, {
+          countdownEndTime: null,
+          joined: false,
+          couldntJoin: true
+        });
+      } else {
+        setGiveawayParticipation(id, {
+          countdownEndTime: now + countdownDuration,
+          joined: false,
+          joinedAt: null,
+          couldntJoin: false
+        });
+      }
+
       render();
     }
 
@@ -4803,35 +4906,24 @@
         return;
       }
 
-      history.unshift({
-        id: giveaway.id,
-        liveName: giveaway.liveName,
-        itemName: giveaway.itemName,
-        completedAt: new Date().toISOString(),
-        usedCountdown: giveaway.useCountdown,
+      setGiveawayParticipation(id, {
         joined: false,
-        missed: true,
-        isBuyerGiveaway: giveaway.isBuyerGiveaway,
-        isFavorite: giveaway.isFavorite ?? false
+        joinedAt: null,
+        couldntJoin: true
       });
-
-      giveaways =
-        giveaways.filter(
-          item =>
-            String(item.id) !== String(id)
-        );
-
-      saveData();
       render();
     }
 
     function getSortTime(giveaway) {
+      const participation = getGiveawayParticipation(giveaway.id);
+
       if (
         giveaway.useCountdown &&
-        !giveaway.joined &&
-        giveaway.countdownEndTime
+        !participation?.joined &&
+        !participation?.couldntJoin &&
+        participation?.countdownEndTime
       ) {
-        return giveaway.countdownEndTime;
+        return participation.countdownEndTime;
       }
 
       return giveaway.endTime;
@@ -4844,6 +4936,9 @@
         const giveaway = giveaways.find(
           item => String(item.id) === card.dataset.giveawayId
         );
+        const participation = giveaway
+          ? getGiveawayParticipation(giveaway.id)
+          : null;
 
         if (!giveaway || giveaway.doneSince !== null) {
           return;
@@ -4859,10 +4954,11 @@
 
         if (
           giveaway.useCountdown &&
-          !giveaway.joined &&
-          giveaway.countdownEndTime
+          !participation?.joined &&
+          !participation?.couldntJoin &&
+          participation?.countdownEndTime
         ) {
-          const countdownRemaining = giveaway.countdownEndTime - now;
+          const countdownRemaining = participation.countdownEndTime - now;
           const countdownTimer = card.querySelector('[data-timer="countdown"]');
 
           if (countdownTimer) {
@@ -4882,6 +4978,16 @@
       let dataChanged = false;
 
       giveaways.forEach(giveaway => {
+        const participation = getGiveawayParticipation(giveaway.id);
+        const countdownDuration =
+          (giveaway.countdownMinutes || 0) * 60 * 1000;
+        const tooLateToStart =
+          giveaway.useCountdown &&
+          !participation?.joined &&
+          !participation?.couldntJoin &&
+          !participation?.countdownEndTime &&
+          giveaway.endTime - now < countdownDuration;
+
         if (
           giveaway.endTime <= now &&
           giveaway.doneSince === null
@@ -4893,12 +4999,18 @@
 
         if (
           giveaway.useCountdown &&
-          !giveaway.joined &&
-          giveaway.countdownEndTime &&
-          giveaway.countdownEndTime <= now &&
+          !participation?.joined &&
+          !participation?.couldntJoin &&
+          participation?.countdownEndTime &&
+          participation.countdownEndTime <= now &&
           !giveaway._joinReadyRendered
         ) {
           giveaway._joinReadyRendered = true;
+          structuralChange = true;
+        }
+
+        if (tooLateToStart && !giveaway._couldntJoinRendered) {
+          giveaway._couldntJoinRendered = true;
           structuralChange = true;
         }
       });
@@ -4920,7 +5032,7 @@
             completedAt:
               new Date(giveaway.endTime).toISOString(),
             usedCountdown: giveaway.useCountdown,
-            joined: giveaway.joined,
+            joined: false,
             missed: false,
             isBuyerGiveaway: giveaway.isBuyerGiveaway,
             isFavorite: giveaway.isFavorite
@@ -4994,19 +5106,37 @@
         (giveaway, index) => {
           const remaining =
             giveaway.endTime - now;
+          const participation =
+            getGiveawayParticipation(giveaway.id);
+          const localCountdownEndTime =
+            participation?.countdownEndTime || null;
+          const localJoined =
+            participation?.joined === true;
+          const countdownDuration =
+            (giveaway.countdownMinutes || 0) * 60 * 1000;
+          const couldntJoin =
+            participation?.couldntJoin === true ||
+            (
+              giveaway.useCountdown &&
+              !localJoined &&
+              !localCountdownEndTime &&
+              remaining < countdownDuration
+            );
 
           const countdownRemaining =
-            giveaway.countdownEndTime
-              ? giveaway.countdownEndTime - now
+            localCountdownEndTime
+              ? localCountdownEndTime - now
               : null;
 
           const countdownReady =
             giveaway.useCountdown &&
-            !giveaway.joined &&
-            giveaway.countdownEndTime &&
+            !localJoined &&
+            !couldntJoin &&
+            localCountdownEndTime &&
             countdownRemaining <= 0;
 
           giveaway._joinReadyRendered = countdownReady;
+          giveaway._couldntJoinRendered = couldntJoin;
 
           const card =
             document.createElement("div");
@@ -5037,10 +5167,14 @@
           }
 
           if (
-            giveaway.joined &&
+            localJoined &&
             giveaway.doneSince === null
           ) {
             card.classList.add("joined-card");
+          }
+
+          if (couldntJoin && giveaway.doneSince === null) {
+            card.classList.add("couldnt-join-card");
           }
 
           if (
@@ -5072,12 +5206,21 @@
           let joinedBadgeHTML = "";
 
           if (
-            giveaway.joined &&
+            localJoined &&
             giveaway.doneSince === null
           ) {
             joinedBadgeHTML = `
               <span class="joined-badge">
                 ✓ Joined
+              </span>
+            `;
+          } else if (
+            couldntJoin &&
+            giveaway.doneSince === null
+          ) {
+            joinedBadgeHTML = `
+              <span class="couldnt-join-badge">
+                Couldn’t Join
               </span>
             `;
           }
@@ -5116,26 +5259,43 @@
 
             if (
               giveaway.useCountdown &&
-              !giveaway.joined
+              !localJoined &&
+              !couldntJoin
             ) {
-              const countdownUrgent =
-                countdownRemaining <= 30000
-                  ? "urgent"
-                  : "";
+              if (localCountdownEndTime) {
+                const countdownUrgent =
+                  countdownRemaining <= 30000
+                    ? "urgent"
+                    : "";
 
-              timerHTML += `
-                <div class="timer-block countdown-timer-block">
+                timerHTML += `
+                  <div class="timer-block countdown-timer-block">
 
-                  <span class="timer-label">
-                    Joining in
-                  </span>
+                    <span class="timer-label">
+                      Joining in
+                    </span>
 
-                  <span class="timer countdown-timer ${countdownUrgent}" data-timer="countdown">
-                    ${formatTime(countdownRemaining)}
-                  </span>
+                    <span class="timer countdown-timer ${countdownUrgent}" data-timer="countdown">
+                      ${formatTime(countdownRemaining)}
+                    </span>
 
-                </div>
-              `;
+                  </div>
+                `;
+              } else {
+                timerHTML += `
+                  <div class="timer-block countdown-timer-block countdown-pending">
+                    <span class="timer-label">Countdown needed</span>
+                    <span class="timer countdown-timer urgent">--:--</span>
+                    <button
+                      class="start-countdown-button"
+                      type="button"
+                      onclick="startCountdown('${giveaway.id}')"
+                    >
+                      Start countdown
+                    </button>
+                  </div>
+                `;
+              }
 
               if (countdownReady) {
                 timerHTML += `
@@ -5152,7 +5312,7 @@
                       class="missed-button"
                       onclick="markMissed('${giveaway.id}')"
                     >
-                      MISSED
+                      COULDN’T JOIN
                     </button>
 
                   </div>
@@ -5272,6 +5432,8 @@
       history.forEach(entry => {
         const completedDate =
           new Date(entry.completedAt);
+        const participation =
+          getGiveawayParticipation(entry.id);
 
         const card =
           document.createElement("div");
@@ -5308,15 +5470,15 @@
 
         let statusHTML = "";
 
-        if (entry.missed) {
+        if (participation?.couldntJoin || entry.missed) {
           statusHTML = `
             <span class="missed-badge">
-              ✕ Missed
+              Couldn’t Join
             </span>
           `;
         } else if (
           entry.usedCountdown &&
-          entry.joined
+          (participation?.joined || entry.joined)
         ) {
           statusHTML = `
             <span class="joined-badge">
@@ -5415,6 +5577,7 @@
             String(giveaway.id) !== String(id)
         );
 
+      clearGiveawayParticipation(id);
       saveData();
       render();
     }
@@ -5426,6 +5589,7 @@
             String(item.id) !== String(id)
         );
 
+      clearGiveawayParticipation(id);
       saveData();
       render();
     }
@@ -5435,6 +5599,9 @@
         history.length > 0 &&
         confirm("Clear all giveaway history?")
       ) {
+        history.forEach(entry => {
+          clearGiveawayParticipation(entry.id);
+        });
         history = [];
         saveData();
         render();
