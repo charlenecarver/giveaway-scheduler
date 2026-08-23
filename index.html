@@ -245,7 +245,7 @@
       color: #15542f;
     }
 
-    .quick-live-delete {
+    .quick-live-edit {
       position: absolute;
       right: 8px;
       bottom: 5px;
@@ -260,9 +260,74 @@
       line-height: 1;
     }
 
-    .quick-live-delete:hover {
-      background: #fff1f1;
-      color: #bd4848;
+    .quick-live-edit:hover {
+      background: #eef2f7;
+      color: #4f5966;
+    }
+
+    .live-editor-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(20, 22, 27, 0.42);
+    }
+
+    .live-editor-backdrop.open {
+      display: flex;
+    }
+
+    .live-editor {
+      width: min(420px, 100%);
+      padding: 20px;
+      border-radius: 14px;
+      background: white;
+      box-shadow: 0 18px 50px rgba(20, 22, 27, 0.24);
+    }
+
+    .live-editor h2 {
+      margin: 0 0 18px;
+      font-size: 19px;
+    }
+
+    .live-editor-field + .live-editor-field {
+      margin-top: 14px;
+    }
+
+    .live-editor-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .live-editor-save,
+    .live-editor-cancel,
+    .live-editor-delete {
+      min-height: 38px;
+      padding: 8px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .live-editor-save {
+      margin-left: auto;
+      background: #17181c;
+      color: white;
+    }
+
+    .live-editor-cancel {
+      background: #eef0f3;
+      color: #4d535c;
+    }
+
+    .live-editor-delete {
+      background: #fff0f0;
+      color: #a83e3e;
     }
 
     .quick-live-logo {
@@ -1908,6 +1973,56 @@
 
 <body>
 
+  <div id="liveEditorBackdrop" class="live-editor-backdrop">
+    <div
+      class="live-editor"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="liveEditorTitle"
+    >
+      <h2 id="liveEditorTitle">Edit Live</h2>
+
+      <div class="live-editor-field">
+        <label for="liveEditorName">Live Name</label>
+        <input id="liveEditorName" class="live-editor-input" type="text" />
+      </div>
+
+      <div class="live-editor-field">
+        <label for="liveEditorUsername">Username</label>
+        <input
+          id="liveEditorUsername"
+          class="live-editor-input"
+          type="text"
+          placeholder="@username"
+        />
+      </div>
+
+      <div class="live-editor-actions">
+        <button
+          class="live-editor-delete"
+          type="button"
+          onclick="deleteEditingLive()"
+        >
+          Delete
+        </button>
+        <button
+          class="live-editor-cancel"
+          type="button"
+          onclick="closeLiveEditor()"
+        >
+          Cancel
+        </button>
+        <button
+          class="live-editor-save"
+          type="button"
+          onclick="saveLiveEditor()"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
 
     <div class="app-layout">
@@ -2581,6 +2696,7 @@
           const key = String(live.key || username || name).trim().toLowerCase();
 
           return {
+            key,
             name,
             username,
             items: Array.isArray(live.items) ? live.items : [],
@@ -2651,6 +2767,9 @@
     let editingTimeChanged = false;
     let editingCountdownChanged = false;
     let duplicatedFavoritePending = false;
+    let editingLiveLibraryKey = null;
+    let editingLiveLibraryName = "";
+    let editingLiveLibraryItems = [];
 
 
     let settings = JSON.parse(
@@ -2752,10 +2871,18 @@
           .filter(Boolean)
       );
 
-      const addLive = (name, username, items = [], isDefault = false) => {
+      const addLive = (
+        name,
+        username,
+        items = [],
+        isDefault = false,
+        storedKey = ""
+      ) => {
         const cleanName = String(name || "").trim();
         const cleanUsername = String(username || "").trim();
-        const key = (cleanUsername || cleanName).toLowerCase();
+        const key = String(storedKey || cleanUsername || cleanName)
+          .trim()
+          .toLowerCase();
 
         if (!key) {
           return;
@@ -2804,7 +2931,8 @@
           live.name,
           live.username,
           live.items,
-          live.isDefault ?? true
+          live.isDefault ?? true,
+          live.key
         );
       });
 
@@ -2996,23 +3124,23 @@
         );
 
         if (!live.isDefault) {
-          const deleteButton = document.createElement("button");
-          deleteButton.type = "button";
-          deleteButton.className = "quick-live-delete";
-          deleteButton.textContent = "🗑";
-          deleteButton.title = `Remove ${live.name} from Quick Lives`;
-          deleteButton.setAttribute(
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "quick-live-edit";
+          editButton.textContent = "✎";
+          editButton.title = `Edit ${live.name}`;
+          editButton.setAttribute(
             "aria-label",
-            `Remove ${live.name} from Quick Lives`
+            `Edit ${live.name}`
           );
-          deleteButton.addEventListener(
+          editButton.addEventListener(
             "click",
             event => {
               event.stopPropagation();
-              deleteQuickLive(live.key, live.name);
+              openLiveEditor(live);
             }
           );
-          button.appendChild(deleteButton);
+          button.appendChild(editButton);
         }
 
         list.appendChild(row);
@@ -3041,7 +3169,7 @@
     function toggleQuickLiveStatus(username) {
       const key = String(username || "").trim().toLowerCase();
 
-      if (!key || defaultQuickLiveKeys.has(key)) {
+      if (!key) {
         return;
       }
 
@@ -3068,14 +3196,105 @@
     }
 
 
-    function deleteQuickLive(username, name) {
-      const key = String(username || "").trim().toLowerCase();
+    function openLiveEditor(live) {
+      if (!live || live.isDefault) {
+        return;
+      }
+
+      editingLiveLibraryKey = live.key;
+      editingLiveLibraryName = live.name;
+      editingLiveLibraryItems = [...live.items];
+      document.getElementById("liveEditorName").value = live.name;
+      document.getElementById("liveEditorUsername").value = live.username;
+      document.getElementById("liveEditorBackdrop").classList.add("open");
+      document.getElementById("liveEditorName").focus();
+      document.getElementById("liveEditorName").select();
+    }
+
+
+    function closeLiveEditor() {
+      document.getElementById("liveEditorBackdrop").classList.remove("open");
+      editingLiveLibraryKey = null;
+      editingLiveLibraryName = "";
+      editingLiveLibraryItems = [];
+    }
+
+
+    async function saveLiveEditor() {
+      if (!editingLiveLibraryKey) {
+        return;
+      }
+
+      const name = document.getElementById("liveEditorName").value.trim();
+      const username = document
+        .getElementById("liveEditorUsername")
+        .value
+        .trim()
+        .replace(/^@/, "");
+
+      if (!name) {
+        alert("Enter the live name.");
+        return;
+      }
+
+      const key = editingLiveLibraryKey;
+      const previousName = editingLiveLibraryName;
+      const items = [...editingLiveLibraryItems];
+
+      await saveSharedLive({
+        key,
+        name,
+        username,
+        items,
+        isDefault: false
+      });
+
+      giveaways.forEach(giveaway => {
+        if (giveaway.liveName === previousName) {
+          giveaway.liveName = name;
+        }
+      });
+      history.forEach(entry => {
+        if (entry.liveName === previousName) {
+          entry.liveName = name;
+        }
+      });
+
+      closeLiveEditor();
+      saveData();
+      await loadSharedLiveLibrary();
+      render();
+    }
+
+
+    function deleteEditingLive() {
+      const key = editingLiveLibraryKey;
+      const name = editingLiveLibraryName;
 
       if (!key) {
         return;
       }
 
       if (!confirm(`Remove ${name || "this live"} from the shared live library?`)) {
+        return;
+      }
+
+      closeLiveEditor();
+      deleteQuickLive(key, name, true);
+    }
+
+
+    function deleteQuickLive(username, name, skipConfirmation = false) {
+      const key = String(username || "").trim().toLowerCase();
+
+      if (!key || defaultQuickLiveKeys.has(key)) {
+        return;
+      }
+
+      if (
+        !skipConfirmation &&
+        !confirm(`Remove ${name || "this live"} from the shared live library?`)
+      ) {
         return;
       }
 
@@ -4489,7 +4708,9 @@
     }
 
     document
-      .querySelectorAll("input:not(#quickLivesSearch), select")
+      .querySelectorAll(
+        "input:not(#quickLivesSearch):not(.live-editor-input), select"
+      )
       .forEach(element => {
         element.addEventListener(
           "keydown",
@@ -4500,6 +4721,34 @@
           }
         );
       });
+
+    document
+      .querySelectorAll(".live-editor-input")
+      .forEach(element => {
+        element.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            saveLiveEditor();
+          }
+        });
+      });
+
+    document
+      .getElementById("liveEditorBackdrop")
+      .addEventListener("click", event => {
+        if (event.target === event.currentTarget) {
+          closeLiveEditor();
+        }
+      });
+
+    document.addEventListener("keydown", event => {
+      if (
+        event.key === "Escape" &&
+        document.getElementById("liveEditorBackdrop").classList.contains("open")
+      ) {
+        closeLiveEditor();
+      }
+    });
 
     document
       .getElementById("quickLivesSearch")
