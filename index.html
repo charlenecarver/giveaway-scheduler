@@ -695,6 +695,28 @@
       font-size: 20px;
     }
 
+    .clear-form-button {
+      position: absolute;
+      top: 15px;
+      right: 52px;
+      min-height: 28px;
+      padding: 4px 10px;
+      border: 1px solid #d8d4e3;
+      border-radius: 8px;
+      background: #f8f7fb;
+      color: #676071;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      z-index: 1001;
+    }
+
+    .clear-form-button:hover {
+      border-color: #b9b2cb;
+      background: #eeebf5;
+      color: #514960;
+    }
+
     .add-form-toggle {
       display: none;
     }
@@ -1078,6 +1100,21 @@
       width: 64px;
       height: 100%;
       min-height: 64px;
+    }
+
+    .giveaway-logo-link {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 56px;
+      height: 56px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      z-index: 2;
+    }
+
+    .giveaway-logo-link:not([href]) {
+      pointer-events: none;
     }
 
     .giveaway-logo-slot .giveaway-logo,
@@ -2515,6 +2552,11 @@
         right: 12px;
       }
 
+      .clear-form-button {
+        top: 13px;
+        right: 50px;
+      }
+
       .settings-panel {
         top: 46px;
         right: 12px;
@@ -2589,7 +2631,7 @@
       .add-form-toggle {
         position: absolute;
         top: 13px;
-        right: 52px;
+        right: 108px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -2618,6 +2660,10 @@
 
       .add-card.mobile-collapsed h2 {
         margin-bottom: 0;
+      }
+
+      .add-card.mobile-collapsed .clear-form-button {
+        display: none;
       }
 
       .add-card.mobile-collapsed .edit-notice,
@@ -3397,6 +3443,14 @@
     title="Settings"
   >
     <span class="settings-button-icon" aria-hidden="true">⚙</span>
+  </button>
+
+  <button
+    class="clear-form-button"
+    type="button"
+    onclick="clearForm()"
+  >
+    Clear
   </button>
 
   <div id="settingsPanel" class="settings-panel">
@@ -5423,6 +5477,33 @@
             openLive(event);
           }
         });
+      });
+    }
+
+
+    function configureTikTokLiveAnchor(anchor, username, liveName) {
+      const cleanUsername = String(username || "").trim().replace(/^@/, "");
+
+      if (!cleanUsername) {
+        anchor.removeAttribute("href");
+        return;
+      }
+
+      anchor.href = `https://www.tiktok.com/@${encodeURIComponent(cleanUsername)}/live`;
+      anchor.classList.add("tiktok-live-link");
+      anchor.setAttribute(
+        "aria-label",
+        `Open ${liveName || cleanUsername} on TikTok LIVE`
+      );
+      anchor.title = `Open ${liveName || cleanUsername} on TikTok LIVE`;
+      anchor.rel = "noopener noreferrer";
+
+      if (!window.matchMedia("(max-width: 760px)").matches) {
+        anchor.target = "_blank";
+      }
+
+      anchor.addEventListener("click", event => {
+        event.stopPropagation();
       });
     }
 
@@ -7481,8 +7562,10 @@
             </div>
 
             <div class="giveaway-logo-slot">
-              <span class="giveaway-logo-fallback"></span>
-              <img class="giveaway-logo" alt="" />
+              <a class="giveaway-logo-link">
+                <span class="giveaway-logo-fallback"></span>
+                <img class="giveaway-logo" alt="" />
+              </a>
             </div>
 
             ${timerHTML}
@@ -7533,6 +7616,7 @@
 
           const activeLogo = card.querySelector(".giveaway-logo");
           const activeLogoFallback = card.querySelector(".giveaway-logo-fallback");
+          const activeLogoLink = card.querySelector(".giveaway-logo-link");
           const activeUsername = getLogoKeyForLiveName(giveaway.liveName);
           const activeLogoPath = getLogoPathForLiveName(giveaway.liveName);
           activeLogoFallback.textContent = getLiveInitials(giveaway.liveName);
@@ -7542,9 +7626,8 @@
             activeUsername,
             activeLogoPath
           );
-          addTikTokLiveLink(
-            activeLogo,
-            activeLogoFallback,
+          configureTikTokLiveAnchor(
+            activeLogoLink,
             activeUsername,
             giveaway.liveName
           );
