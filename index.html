@@ -4276,6 +4276,7 @@
           SUPABASE_PUBLISHABLE_KEY
         )
       : null;
+    let sharedDataReady = !sharedDatabase;
     let pendingSharedSaves = 0;
     let sharedSaveQueue = Promise.resolve();
 
@@ -6121,8 +6122,10 @@
             "Supabase could not load. The app will continue using local storage."
           );
         }
+        sharedDataReady = true;
         applyInitialMobileFormState();
         expireInactiveQuickLives();
+        render();
         return;
       }
 
@@ -6137,11 +6140,14 @@
           "Shared database is not ready. Using local storage:",
           error
         );
+        sharedDataReady = true;
         applyInitialMobileFormState();
         expireInactiveQuickLives();
+        render();
         return;
       }
 
+      sharedDataReady = true;
       if (data) {
         applySharedData(data);
       } else {
@@ -6174,6 +6180,29 @@
           }
         )
         .subscribe();
+    }
+
+
+    async function refreshSharedData() {
+      if (!sharedDatabase) {
+        return;
+      }
+
+      const { data, error } = await sharedDatabase
+        .from("giveaway_state")
+        .select("giveaways, history, active_live_keys, hidden_live_keys, updated_at")
+        .eq("id", "shared")
+        .maybeSingle();
+
+      if (error) {
+        console.error("Could not refresh shared giveaway data:", error);
+        return;
+      }
+
+      if (data) {
+        sharedDataReady = true;
+        applySharedData(data);
+      }
     }
 
 
@@ -7059,7 +7088,7 @@
       if (sorted.length === 0) {
         list.innerHTML = `
           <div class="empty">
-            No active giveaways yet.
+            ${sharedDataReady ? "No active giveaways yet." : "Loading giveaways…"}
           </div>
         `;
         return;
@@ -7699,6 +7728,14 @@
         closeLiveEditor();
       }
     });
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", event => {
+        if (event.data?.type === "REFRESH_SHARED_DATA") {
+          refreshSharedData();
+        }
+      });
+    }
 
     document
       .getElementById("quickLivesSearch")
