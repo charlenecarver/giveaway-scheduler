@@ -18,7 +18,7 @@ const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY") || "";
 const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY") || "";
 const vapidSubject = Deno.env.get("VAPID_SUBJECT") || "mailto:admin@example.com";
 const cronSecret = Deno.env.get("CRON_SECRET") || "";
-const appUrl = Deno.env.get("APP_URL") || "https://charlenecarver.github.io/";
+const appUrl = Deno.env.get("APP_URL") || "https://charlenecarver.github.io/giveaway-scheduler/";
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
@@ -42,6 +42,11 @@ type Giveaway = {
   isFavorite?: boolean;
 };
 
+type LiveRow = {
+  name: string;
+  username: string;
+};
+
 function preferenceSeconds(subscription: SubscriptionRow, giveaway: Giveaway) {
   if (giveaway.isBuyerGiveaway) return subscription.buyer_alert_seconds;
   if (giveaway.isFavorite) return subscription.favorite_alert_seconds;
@@ -57,16 +62,29 @@ async function processNotifications(request: Request) {
   }
 
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-  const [{ data: state, error: stateError }, { data: subscriptions, error: subscriptionsError }] =
+  const [
+    { data: state, error: stateError },
+    { data: subscriptions, error: subscriptionsError },
+    { data: lives, error: livesError },
+  ] =
     await Promise.all([
       supabase.from("giveaway_state").select("giveaways").eq("id", "shared").single(),
       supabase.from("push_subscriptions").select("*"),
+      supabase.from("lives").select("name, username"),
     ]);
   if (stateError) throw stateError;
   if (subscriptionsError) throw subscriptionsError;
+  if (livesError) throw livesError;
 
   const now = Date.now();
   const giveaways = (Array.isArray(state?.giveaways) ? state.giveaways : []) as Giveaway[];
+  const usernamesByLiveName = new Map<string, string>();
+  for (const live of (lives || []) as LiveRow[]) {
+    const username = String(live.username || "").trim().replace(/^@/, "");
+    if (!username) continue;
+    usernamesByLiveName.set(String(live.name || "").trim().toLowerCase(), username);
+    usernamesByLiveName.set(username.toLowerCase(), username);
+  }
   let sent = 0;
 
   for (const subscription of (subscriptions || []) as SubscriptionRow[]) {
@@ -89,19 +107,19 @@ async function processNotifications(request: Request) {
       const secondsLeft = Math.max(0, Math.ceil(remainingMs / 1000));
       const minutes = Math.floor(secondsLeft / 60);
       const seconds = String(secondsLeft % 60).padStart(2, "0");
-      const category = giveaway.isBuyerGiveaway
-        ? "Buyer giveaway"
-        : giveaway.isFavorite ? "Favorite giveaway" : "Giveaway";
-
+      const liveUsername = usernamesByLiveName.get(liveName.trim().toLowerCase()) || "";
+      const liveUrl = liveUsername
+        ? `https://www.tiktok.com/@${encodeURIComponent(liveUsername)}/live`
+        : appUrl;
       try {
         await webpush.sendNotification({
           endpoint: subscription.endpoint,
           keys: { p256dh: subscription.p256dh, auth: subscription.auth },
         }, JSON.stringify({
-          title: `${category} ending in ${minutes}:${seconds}`,
+          title: `Givvy ending in ${minutes}:${seconds}! Head over there right MEOW!`,
           body: `${liveName} — ${itemName}`,
           tag: `giveaway-${giveaway.id}-${giveaway.endTime}`,
-          url: appUrl,
+          url: liveUrl,
         }));
         sent += 1;
       } catch (error) {

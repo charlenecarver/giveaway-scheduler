@@ -7,7 +7,7 @@
    - `VAPID_PRIVATE_KEY`
    - `VAPID_SUBJECT` (for example, `mailto:you@example.com`)
    - `CRON_SECRET` (a long random value)
-   - `APP_URL` (`https://charlenecarver.github.io/`)
+   - `APP_URL` (`https://charlenecarver.github.io/giveaway-scheduler/`)
 4. Deploy `supabase/functions/push-notifications/index.ts` as a function named
    `push-notifications` with JWT verification disabled. Browser calls still use
    the project publishable key; scheduled processing is protected by
