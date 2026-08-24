@@ -89,6 +89,10 @@
       display: none;
     }
 
+    .quick-lives-anchor {
+      display: none;
+    }
+
     .quick-lives-content {
       display: flex;
       flex: 1;
@@ -2565,7 +2569,7 @@
 
       .clear-form-button {
         top: 13px;
-        right: 50px;
+        right: 102px;
       }
 
       .settings-panel {
@@ -2614,12 +2618,19 @@
         width: 100%;
         height: auto;
         max-height: none;
+        margin-bottom: 10px;
         padding: 12px;
       }
 
       .quick-lives-header {
+        justify-content: flex-start;
         flex-wrap: wrap;
+        gap: 6px;
         margin-bottom: 8px;
+      }
+
+      .quick-lives-title {
+        margin-right: auto;
       }
 
       .quick-lives-mobile-toggle {
@@ -2685,13 +2696,14 @@
       }
 
       .add-card {
+        margin-bottom: 10px;
         scroll-margin-top: 12px;
       }
 
       .add-form-toggle {
         position: absolute;
         top: 13px;
-        right: 108px;
+        right: 50px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -3308,6 +3320,12 @@
         box-shadow: 0 8px 22px rgba(137, 73, 91, 0.08);
       }
 
+      .quick-lives-panel {
+        border-color: #ddd8e8;
+        background: #faf9fd;
+        box-shadow: 0 8px 22px rgba(112, 103, 139, 0.08);
+      }
+
       .quick-live-btn:hover {
         transform: none;
       }
@@ -3424,6 +3442,7 @@
 
     <div class="app-layout">
 
+      <div id="quickLivesDesktopAnchor" class="quick-lives-anchor"></div>
       <aside id="quickLivesPanel" class="quick-lives-panel mobile-collapsed">
         <div class="quick-lives-header">
           <h2 class="quick-lives-title">Quick Lives</h2>
@@ -3754,7 +3773,7 @@
         aria-controls="editNotice giveawayForm"
         onclick="toggleAddForm()"
       >
-        Hide form
+        Hide
       </button>
 
       <div id="editNotice" class="edit-notice">
@@ -3919,6 +3938,8 @@
       </div>
 
     </div>
+
+    <div id="quickLivesMobileAnchor" class="quick-lives-anchor"></div>
 
     <div class="tabs">
 
@@ -5065,7 +5086,7 @@
 
       card.classList.toggle("mobile-collapsed", collapsed);
       button.setAttribute("aria-expanded", String(!collapsed));
-      button.textContent = collapsed ? "Show form" : "Hide form";
+      button.textContent = collapsed ? "Show" : "Hide";
 
       if (collapsed) {
         const settingsPanel = document.getElementById("settingsPanel");
@@ -5720,6 +5741,19 @@
 
       toggle.setAttribute("aria-expanded", String(!collapsed));
       toggle.textContent = collapsed ? "Show" : "Hide";
+    }
+
+
+    function positionQuickLivesPanel() {
+      const panel = document.getElementById("quickLivesPanel");
+      const mobile = window.matchMedia("(max-width: 760px)").matches;
+      const anchor = document.getElementById(
+        mobile ? "quickLivesMobileAnchor" : "quickLivesDesktopAnchor"
+      );
+
+      if (anchor.nextElementSibling !== panel) {
+        anchor.insertAdjacentElement("afterend", panel);
+      }
     }
 
 
@@ -8133,6 +8167,16 @@
       });
 
     applySettingsToUI();
+    positionQuickLivesPanel();
+    const quickLivesMobileQuery = window.matchMedia("(max-width: 760px)");
+    const handleQuickLivesLayoutChange = () => positionQuickLivesPanel();
+
+    if (typeof quickLivesMobileQuery.addEventListener === "function") {
+      quickLivesMobileQuery.addEventListener("change", handleQuickLivesLayoutChange);
+    } else {
+      quickLivesMobileQuery.addListener(handleQuickLivesLayoutChange);
+    }
+
     document.addEventListener("pointerdown", prepareGiveawayAlertAudio, { once: true });
     document.addEventListener("keydown", prepareGiveawayAlertAudio, { once: true });
     render();
