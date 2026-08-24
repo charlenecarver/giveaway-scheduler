@@ -5587,7 +5587,7 @@
         "activeQuickLiveActivity",
         JSON.stringify(activeQuickLiveActivity)
       );
-      saveSharedData();
+      saveSharedLiveStatuses();
       renderQuickLives();
     }
 
@@ -5633,7 +5633,7 @@
           "activeQuickLives",
           JSON.stringify([...activeQuickLiveKeys])
         );
-        saveSharedData();
+        saveSharedLiveStatuses();
         renderQuickLives();
       }
     }
@@ -5644,7 +5644,7 @@
       activeQuickLiveActivity = {};
       localStorage.setItem("activeQuickLives", "[]");
       localStorage.setItem("activeQuickLiveActivity", "{}");
-      saveSharedData();
+      saveSharedLiveStatuses();
       renderQuickLives();
     }
 
@@ -5986,7 +5986,7 @@
         "activeQuickLiveActivity",
         JSON.stringify(activeQuickLiveActivity)
       );
-      saveSharedData();
+      saveSharedLiveStatuses();
       deleteSharedLive(key);
       if (sharedDatabase && logoPath) {
         sharedDatabase.storage
@@ -6111,6 +6111,38 @@
     }
 
 
+    function saveSharedLiveStatuses() {
+      if (!sharedDatabase) {
+        return;
+      }
+
+      const statusUpdate = {
+        active_live_keys: [...activeQuickLiveKeys],
+        hidden_live_keys: [...hiddenQuickLiveKeys],
+        updated_at: new Date().toISOString()
+      };
+
+      pendingSharedSaves += 1;
+      sharedSaveQueue = sharedSaveQueue
+        .then(async () => {
+          const { error } = await sharedDatabase
+            .from("giveaway_state")
+            .update(statusUpdate)
+            .eq("id", "shared");
+
+          if (error) {
+            console.error("Could not save shared live statuses:", error);
+          }
+        })
+        .catch(error => {
+          console.error("Could not save shared live statuses:", error);
+        })
+        .finally(() => {
+          pendingSharedSaves -= 1;
+        });
+    }
+
+
     async function initializeSharedData() {
       if (!sharedDatabase) {
         if (isLocalDevelopment) {
@@ -6185,7 +6217,7 @@
 
     async function refreshSharedData() {
       if (!sharedDatabase) {
-        return;
+        return true;
       }
 
       const { data, error } = await sharedDatabase
@@ -6196,13 +6228,15 @@
 
       if (error) {
         console.error("Could not refresh shared giveaway data:", error);
-        return;
+        return false;
       }
 
       if (data) {
         sharedDataReady = true;
         applySharedData(data);
       }
+
+      return true;
     }
 
 
@@ -6897,11 +6931,29 @@
 
     function updateVisibleTimers(now) {
       const cards = document.querySelectorAll(".giveaway[data-giveaway-id]");
+      const giveawaysById = new Map(
+        giveaways.map(giveaway => [String(giveaway.id), giveaway])
+      );
+
+      const updateTimerElement = (element, remaining) => {
+        if (!element) {
+          return;
+        }
+
+        const nextText = formatTime(remaining);
+        const isUrgent = remaining <= 30000;
+
+        if (element.textContent !== nextText) {
+          element.textContent = nextText;
+        }
+
+        if (element.classList.contains("urgent") !== isUrgent) {
+          element.classList.toggle("urgent", isUrgent);
+        }
+      };
 
       cards.forEach(card => {
-        const giveaway = giveaways.find(
-          item => String(item.id) === card.dataset.giveawayId
-        );
+        const giveaway = giveawaysById.get(card.dataset.giveawayId);
         const participation = giveaway
           ? getGiveawayParticipation(giveaway.id)
           : null;
@@ -6912,11 +6964,7 @@
 
         const remaining = giveaway.endTime - now;
         const giveawayTimer = card.querySelector('[data-timer="giveaway"]');
-
-        if (giveawayTimer) {
-          giveawayTimer.textContent = formatTime(remaining);
-          giveawayTimer.classList.toggle("urgent", remaining <= 30000);
-        }
+        updateTimerElement(giveawayTimer, remaining);
 
         if (
           giveaway.useCountdown &&
@@ -6926,11 +6974,7 @@
         ) {
           const countdownRemaining = participation.countdownEndTime - now;
           const countdownTimer = card.querySelector('[data-timer="countdown"]');
-
-          if (countdownTimer) {
-            countdownTimer.textContent = formatTime(countdownRemaining);
-            countdownTimer.classList.toggle("urgent", countdownRemaining <= 30000);
-          }
+          updateTimerElement(countdownTimer, countdownRemaining);
         }
       });
     }
@@ -7813,10 +7857,27 @@
 
     setInterval(expireInactiveQuickLives, 60 * 1000);
 
-    setInterval(
-      updateTimers,
-      250
-    );
+    let timerUpdatesPaused = false;
+
+    setInterval(() => {
+      if (sharedDataReady && !document.hidden && !timerUpdatesPaused) {
+        updateTimers();
+      }
+    }, 1000);
+
+    document.addEventListener("visibilitychange", async () => {
+      if (document.hidden) {
+        timerUpdatesPaused = true;
+        return;
+      }
+
+      const refreshed = await refreshSharedData();
+      timerUpdatesPaused = !refreshed;
+
+      if (refreshed) {
+        updateTimers();
+      }
+    });
   </script>
 </body>
 </html>
