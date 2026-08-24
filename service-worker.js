@@ -1,4 +1,5 @@
-const CACHE_NAME = "givvy-time-v30";
+const CACHE_NAME = "givvy-time-v34";
+const IMAGE_CACHE_NAME = "givvy-time-images-v1";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -19,7 +20,9 @@ self.addEventListener("activate", event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      keys
+        .filter(key => key !== CACHE_NAME && key !== IMAGE_CACHE_NAME)
+        .map(key => caches.delete(key))
     );
     await self.clients.claim();
 
@@ -35,6 +38,28 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
+  if (event.request.destination === "image") {
+    event.respondWith((async () => {
+      const cached = await caches.match(event.request);
+      const refresh = fetch(event.request).then(async response => {
+        if (response.ok || response.type === "opaque") {
+          const imageCache = await caches.open(IMAGE_CACHE_NAME);
+          await imageCache.put(event.request, response.clone());
+        }
+        return response;
+      });
+
+      if (cached) {
+        event.waitUntil(refresh.catch(() => undefined));
+        return cached;
+      }
+
+      return refresh;
+    })());
+    return;
+  }
+
   event.respondWith(fetch(event.request).catch(() =>
     caches.match(event.request).then(response => response || caches.match("./"))
   ));

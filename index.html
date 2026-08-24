@@ -183,6 +183,8 @@
 
     .quick-live-row {
       display: block;
+      content-visibility: auto;
+      contain-intrinsic-block-size: 58px;
     }
 
     .quick-live-btn {
@@ -4512,17 +4514,30 @@
     );
 
     let quickLivesSearchClearTimer = null;
+    let quickLiveLogoObserver = null;
     let addFormInitialStateApplied = false;
+    const MAX_HISTORY_ENTRIES = 50;
+
+    function limitHistoryEntries(entries) {
+      return [...entries]
+        .sort((a, b) => {
+          const aTime = Date.parse(a.completedAt || "") || Number(a.id) || 0;
+          const bTime = Date.parse(b.completedAt || "") || Number(b.id) || 0;
+          return bTime - aTime;
+        })
+        .slice(0, MAX_HISTORY_ENTRIES);
+    }
 
     let giveaways =
       JSON.parse(
         localStorage.getItem("giveaways")
       ) || [];
 
-    let history =
+    let history = limitHistoryEntries(
       JSON.parse(
         localStorage.getItem("giveawayHistory")
-      ) || [];
+      ) || []
+    );
 
     let giveawayParticipation =
       JSON.parse(
@@ -5167,9 +5182,22 @@
 
     function fillQuickLive(live) {
       const input = document.getElementById("liveName");
+      const mobile = window.matchMedia("(max-width: 760px)").matches;
 
       input.value = live.name;
       updateGiveawayItemSuggestions();
+
+      if (mobile) {
+        setAddFormCollapsed(false);
+        const itemInput = document.getElementById("itemName");
+
+        requestAnimationFrame(() => {
+          itemInput.focus();
+          updateGiveawayItemSuggestions();
+        });
+        return;
+      }
+
       input.focus();
       input.select();
     }
@@ -5537,6 +5565,42 @@
     }
 
 
+    function loadVisibleQuickLiveLogo(image, fallback, logoKey, logoPath = "") {
+      image.loading = "lazy";
+      image.decoding = "async";
+
+      if (!("IntersectionObserver" in window)) {
+        loadLocalLogo(image, fallback, logoKey, logoPath);
+        return;
+      }
+
+      quickLiveLogoObserver ||= new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          const target = entry.target;
+          quickLiveLogoObserver?.unobserve(target);
+          loadLocalLogo(
+            target,
+            target._logoFallback,
+            target._logoKey,
+            target._logoPath
+          );
+          delete target._logoFallback;
+          delete target._logoKey;
+          delete target._logoPath;
+        });
+      }, { rootMargin: "80px 0px" });
+
+      image._logoFallback = fallback;
+      image._logoKey = logoKey;
+      image._logoPath = logoPath;
+      quickLiveLogoObserver.observe(image);
+    }
+
+
     function addTikTokLiveLink(image, fallback, username, liveName) {
       const cleanUsername = String(username || "").trim().replace(/^@/, "");
 
@@ -5611,6 +5675,19 @@
         return;
       }
 
+      const panel = document.getElementById("quickLivesPanel");
+      const mobileCollapsed = window.matchMedia("(max-width: 760px)").matches &&
+        panel.classList.contains("mobile-collapsed");
+
+      if (mobileCollapsed) {
+        list.dataset.needsRender = "true";
+        return;
+      }
+
+      delete list.dataset.needsRender;
+      quickLiveLogoObserver?.disconnect();
+      quickLiveLogoObserver = null;
+
       if (resetButton) {
         resetButton.disabled = activeQuickLiveKeys.size === 0;
       }
@@ -5659,7 +5736,7 @@
         const logoFallback = button.querySelector(".quick-live-logo-fallback");
         const logo = button.querySelector(".quick-live-logo");
         logoFallback.textContent = getLiveInitials(live.name);
-        loadLocalLogo(logo, logoFallback, live.logoKey, live.logoPath);
+        loadVisibleQuickLiveLogo(logo, logoFallback, live.logoKey, live.logoPath);
         addTikTokLiveLink(logo, logoFallback, live.username, live.name);
 
         button.querySelector(".quick-live-btn-name").textContent = live.name;
@@ -5737,15 +5814,26 @@
     function toggleMobileQuickLives() {
       const panel = document.getElementById("quickLivesPanel");
       const toggle = document.getElementById("quickLivesMobileToggle");
+      const list = document.getElementById("quickLivesList");
       const collapsed = panel.classList.toggle("mobile-collapsed");
 
       toggle.setAttribute("aria-expanded", String(!collapsed));
       toggle.textContent = collapsed ? "Show" : "Hide";
+
+      if (collapsed) {
+        quickLiveLogoObserver?.disconnect();
+        quickLiveLogoObserver = null;
+        list.replaceChildren();
+        list.dataset.needsRender = "true";
+      } else if (list.dataset.needsRender === "true") {
+        renderQuickLives();
+      }
     }
 
 
     function positionQuickLivesPanel() {
       const panel = document.getElementById("quickLivesPanel");
+      const list = document.getElementById("quickLivesList");
       const mobile = window.matchMedia("(max-width: 760px)").matches;
       const anchor = document.getElementById(
         mobile ? "quickLivesMobileAnchor" : "quickLivesDesktopAnchor"
@@ -5753,6 +5841,15 @@
 
       if (anchor.nextElementSibling !== panel) {
         anchor.insertAdjacentElement("afterend", panel);
+      }
+
+      if (mobile && panel.classList.contains("mobile-collapsed")) {
+        quickLiveLogoObserver?.disconnect();
+        quickLiveLogoObserver = null;
+        list.replaceChildren();
+        list.dataset.needsRender = "true";
+      } else if (list.dataset.needsRender === "true") {
+        renderQuickLives();
       }
     }
 
@@ -6258,6 +6355,8 @@
 
 
     function saveData(options = {}) {
+      history = limitHistoryEntries(history);
+
       localStorage.setItem(
         "giveaways",
         JSON.stringify(giveaways)
@@ -6286,11 +6385,11 @@
           }))
         : [];
       history = Array.isArray(state.history)
-        ? state.history.map(entry => ({
+        ? limitHistoryEntries(state.history.map(entry => ({
             ...entry,
             isBuyerGiveaway: entry.isBuyerGiveaway ?? false,
             isFavorite: entry.isFavorite ?? false
-          }))
+          })))
         : [];
       activeQuickLiveKeys = new Set(
         Array.isArray(state.active_live_keys)
@@ -6329,6 +6428,14 @@
         JSON.stringify([...hiddenQuickLiveKeys])
       );
       render();
+
+      if (
+        sharedDatabase &&
+        Array.isArray(state.history) &&
+        state.history.length > MAX_HISTORY_ENTRIES
+      ) {
+        saveSharedData();
+      }
     }
 
 
@@ -6376,10 +6483,22 @@
           mergedHistoryById.forEach((_, id) => mergedGiveawaysById.delete(id));
           deletedIdSet.forEach(id => mergedGiveawaysById.delete(id));
 
+          const mergedHistory = limitHistoryEntries(
+            [...mergedHistoryById.values()]
+          );
+          const retainedHistoryIds = new Set(
+            mergedHistory.map(entry => String(entry.id))
+          );
+          mergedHistoryById.forEach((_, id) => {
+            if (!retainedHistoryIds.has(id)) {
+              mergedGiveawaysById.delete(id);
+            }
+          });
+
           const state = {
             id: "shared",
             giveaways: [...mergedGiveawaysById.values()],
-            history: [...mergedHistoryById.values()],
+            history: mergedHistory,
             active_live_keys: [...activeQuickLiveKeys],
             hidden_live_keys: [...hiddenQuickLiveKeys],
             updated_at: new Date().toISOString()
@@ -7341,6 +7460,7 @@
             isFavorite: giveaway.isFavorite
           });
         });
+        history = limitHistoryEntries(history);
 
         giveaways =
           giveaways.filter(giveaway => {
@@ -7831,10 +7951,6 @@
           <div class="history-main">
 
             <div class="history-name-row">
-
-              <span class="giveaway-logo-fallback"></span>
-              <img class="giveaway-logo" alt="" />
-
               <div class="live-name">
                 ${escapeHTML(entry.liveName)}
               </div>
@@ -7895,24 +8011,6 @@
           </div>
 
         `;
-
-        const historyLogo = card.querySelector(".giveaway-logo");
-        const historyLogoFallback = card.querySelector(".giveaway-logo-fallback");
-        const historyUsername = getLogoKeyForLiveName(entry.liveName);
-        const historyLogoPath = getLogoPathForLiveName(entry.liveName);
-        historyLogoFallback.textContent = getLiveInitials(entry.liveName);
-        loadLocalLogo(
-          historyLogo,
-          historyLogoFallback,
-          historyUsername,
-          historyLogoPath
-        );
-        addTikTokLiveLink(
-          historyLogo,
-          historyLogoFallback,
-          historyUsername,
-          entry.liveName
-        );
 
         list.appendChild(card);
       });
