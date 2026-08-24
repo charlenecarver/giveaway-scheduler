@@ -460,6 +460,9 @@
     }
 
     .live-editor-delete {
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
       background: #fff0f0;
       color: #a83e3e;
     }
@@ -2343,6 +2346,12 @@
       transform: rotate(18deg);
     }
 
+    .settings-button-icon {
+      display: block;
+      line-height: 1;
+      transform: translateY(-1px);
+    }
+
     .settings-panel {
       position: absolute;
       top: 48px;
@@ -2930,10 +2939,15 @@
     }
 
     .quick-lives-panel,
-    .add-card,
-    .settings-panel {
+    .add-card {
       border-color: var(--givvy-border);
       background: rgba(255, 253, 251, 0.94);
+      box-shadow: var(--givvy-shadow);
+    }
+
+    .settings-panel {
+      border-color: var(--givvy-border);
+      background: #fffdfb;
       box-shadow: var(--givvy-shadow);
     }
 
@@ -3370,7 +3384,7 @@
     onclick="toggleSettings()"
     title="Settings"
   >
-    ⚙
+    <span class="settings-button-icon" aria-hidden="true">⚙</span>
   </button>
 
   <div id="settingsPanel" class="settings-panel">
@@ -4330,6 +4344,11 @@
 
     let activeQuickLiveKeys = new Set(
       JSON.parse(localStorage.getItem("activeQuickLives") || "[]")
+    );
+
+    const ACTIVE_LIVE_TIMEOUT_MS = 60 * 60 * 1000;
+    let activeQuickLiveActivity = JSON.parse(
+      localStorage.getItem("activeQuickLiveActivity") || "{}"
     );
 
     let quickLivesSearchClearTimer = null;
@@ -5553,22 +5572,77 @@
 
       if (activeQuickLiveKeys.has(key)) {
         activeQuickLiveKeys.delete(key);
+        delete activeQuickLiveActivity[key];
       } else {
         activeQuickLiveKeys.add(key);
+        activeQuickLiveActivity[key] = Date.now();
       }
 
       localStorage.setItem(
         "activeQuickLives",
         JSON.stringify([...activeQuickLiveKeys])
       );
+      localStorage.setItem(
+        "activeQuickLiveActivity",
+        JSON.stringify(activeQuickLiveActivity)
+      );
       saveSharedData();
       renderQuickLives();
     }
 
 
+    function expireInactiveQuickLives() {
+      const now = Date.now();
+      let statusesChanged = false;
+      let activityChanged = false;
+
+      activeQuickLiveKeys.forEach(key => {
+        const lastActivity = Number(activeQuickLiveActivity[key]);
+
+        if (!Number.isFinite(lastActivity)) {
+          activeQuickLiveActivity[key] = now;
+          activityChanged = true;
+          return;
+        }
+
+        if (now - lastActivity >= ACTIVE_LIVE_TIMEOUT_MS) {
+          activeQuickLiveKeys.delete(key);
+          delete activeQuickLiveActivity[key];
+          statusesChanged = true;
+          activityChanged = true;
+        }
+      });
+
+      Object.keys(activeQuickLiveActivity).forEach(key => {
+        if (!activeQuickLiveKeys.has(key)) {
+          delete activeQuickLiveActivity[key];
+          activityChanged = true;
+        }
+      });
+
+      if (activityChanged) {
+        localStorage.setItem(
+          "activeQuickLiveActivity",
+          JSON.stringify(activeQuickLiveActivity)
+        );
+      }
+
+      if (statusesChanged) {
+        localStorage.setItem(
+          "activeQuickLives",
+          JSON.stringify([...activeQuickLiveKeys])
+        );
+        saveSharedData();
+        renderQuickLives();
+      }
+    }
+
+
     function resetQuickLiveStatuses() {
       activeQuickLiveKeys.clear();
+      activeQuickLiveActivity = {};
       localStorage.setItem("activeQuickLives", "[]");
+      localStorage.setItem("activeQuickLiveActivity", "{}");
       saveSharedData();
       renderQuickLives();
     }
@@ -5898,6 +5972,7 @@
 
       hiddenQuickLiveKeys.add(key);
       activeQuickLiveKeys.delete(key);
+      delete activeQuickLiveActivity[key];
       localStorage.setItem(
         "hiddenQuickLives",
         JSON.stringify([...hiddenQuickLiveKeys])
@@ -5905,6 +5980,10 @@
       localStorage.setItem(
         "activeQuickLives",
         JSON.stringify([...activeQuickLiveKeys])
+      );
+      localStorage.setItem(
+        "activeQuickLiveActivity",
+        JSON.stringify(activeQuickLiveActivity)
       );
       saveSharedData();
       deleteSharedLive(key);
@@ -5962,6 +6041,17 @@
           ? state.active_live_keys
           : []
       );
+      const now = Date.now();
+      activeQuickLiveKeys.forEach(key => {
+        if (!Number.isFinite(Number(activeQuickLiveActivity[key]))) {
+          activeQuickLiveActivity[key] = now;
+        }
+      });
+      Object.keys(activeQuickLiveActivity).forEach(key => {
+        if (!activeQuickLiveKeys.has(key)) {
+          delete activeQuickLiveActivity[key];
+        }
+      });
       hiddenQuickLiveKeys = new Set(
         Array.isArray(state.hidden_live_keys)
           ? state.hidden_live_keys
@@ -5973,6 +6063,10 @@
       localStorage.setItem(
         "activeQuickLives",
         JSON.stringify([...activeQuickLiveKeys])
+      );
+      localStorage.setItem(
+        "activeQuickLiveActivity",
+        JSON.stringify(activeQuickLiveActivity)
       );
       localStorage.setItem(
         "hiddenQuickLives",
@@ -6028,6 +6122,7 @@
           );
         }
         applyInitialMobileFormState();
+        expireInactiveQuickLives();
         return;
       }
 
@@ -6043,6 +6138,7 @@
           error
         );
         applyInitialMobileFormState();
+        expireInactiveQuickLives();
         return;
       }
 
@@ -6059,6 +6155,7 @@
       }
 
       applyInitialMobileFormState();
+      expireInactiveQuickLives();
 
       sharedDatabase
         .channel("shared-giveaway-state")
@@ -6405,6 +6502,7 @@
           const quickLiveKey = matchedQuickLive?.key || liveKey;
 
           activeQuickLiveKeys.add(quickLiveKey);
+          activeQuickLiveActivity[quickLiveKey] = now;
 
           if (isNewQuickLive) {
             hiddenQuickLiveKeys.delete(liveKey);
@@ -6417,6 +6515,10 @@
           localStorage.setItem(
             "activeQuickLives",
             JSON.stringify([...activeQuickLiveKeys])
+          );
+          localStorage.setItem(
+            "activeQuickLiveActivity",
+            JSON.stringify(activeQuickLiveActivity)
           );
         }
       }
@@ -7671,6 +7773,8 @@
     initializeSharedLiveLibrary();
     initializeInstallBanner();
     initializePushNotifications();
+
+    setInterval(expireInactiveQuickLives, 60 * 1000);
 
     setInterval(
       updateTimers,

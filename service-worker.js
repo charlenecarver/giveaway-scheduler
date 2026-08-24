@@ -1,4 +1,4 @@
-const CACHE_NAME = "givvy-time-v15";
+const CACHE_NAME = "givvy-time-v18";
 const APP_SHELL = [
   "./",
   "./index.html",
