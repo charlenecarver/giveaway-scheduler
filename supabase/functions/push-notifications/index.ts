@@ -90,8 +90,8 @@ async function processNotifications(request: Request) {
       const minutes = Math.floor(secondsLeft / 60);
       const seconds = String(secondsLeft % 60).padStart(2, "0");
       const notificationTitle = giveaway.isBuyerGiveaway
-        ? `BUYERS givvy ends in ${minutes}:${seconds}! Join MEOW!🙀`
-        : `Givvy ending in ${minutes}:${seconds}! Join meow! 🐾`;
+        ? `JOIN MEOW! 🙀 Buyer's ends in ${minutes}:${seconds}`
+        : `Join meow! 🐾 Givvy ends in ${minutes}:${seconds}`;
       try {
         await webpush.sendNotification({
           endpoint: subscription.endpoint,
