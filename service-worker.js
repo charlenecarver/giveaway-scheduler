@@ -1,4 +1,4 @@
-const CACHE_NAME = "givvy-time-v11";
+const CACHE_NAME = "givvy-time-v12";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -43,13 +43,6 @@ self.addEventListener("push", event => {
 self.addEventListener("notificationclick", event => {
   event.notification.close();
   const targetUrl = new URL(event.notification.data?.url || "./", self.location.origin).href;
-  const isExternalTarget = new URL(targetUrl).origin !== self.location.origin;
-
-  if (isExternalTarget) {
-    event.waitUntil(self.clients.openWindow(targetUrl));
-    return;
-  }
-
   event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(clients => {
     const existing = clients.find(client => client.url.startsWith(self.location.origin));
     if (existing) {

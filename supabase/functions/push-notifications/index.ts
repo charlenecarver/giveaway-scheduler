@@ -111,6 +111,8 @@ async function processNotifications(request: Request) {
       const liveUrl = liveUsername
         ? `https://www.tiktok.com/@${encodeURIComponent(liveUsername)}/live`
         : appUrl;
+      const notificationUrl = new URL(appUrl);
+      if (liveUrl !== appUrl) notificationUrl.searchParams.set("openLive", liveUrl);
       try {
         await webpush.sendNotification({
           endpoint: subscription.endpoint,
@@ -119,7 +121,7 @@ async function processNotifications(request: Request) {
           title: `Givvy ending in ${minutes}:${seconds}! Head over there right MEOW!`,
           body: `${liveName} — ${itemName}`,
           tag: `giveaway-${giveaway.id}-${giveaway.endTime}`,
-          url: liveUrl,
+          url: notificationUrl.href,
         }));
         sent += 1;
       } catch (error) {

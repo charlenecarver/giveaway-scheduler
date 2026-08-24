@@ -5338,6 +5338,32 @@
     }
 
 
+    function openLiveFromNotification() {
+      const pageUrl = new URL(window.location.href);
+      const requestedLiveUrl = pageUrl.searchParams.get("openLive");
+
+      if (!requestedLiveUrl) {
+        return;
+      }
+
+      pageUrl.searchParams.delete("openLive");
+      window.history.replaceState({}, "", pageUrl.href);
+
+      try {
+        const liveUrl = new URL(requestedLiveUrl);
+        if (
+          liveUrl.protocol !== "https:" ||
+          !["tiktok.com", "www.tiktok.com"].includes(liveUrl.hostname)
+        ) {
+          return;
+        }
+        window.location.assign(liveUrl.href);
+      } catch (error) {
+        console.error("Could not open notification live link:", error);
+      }
+    }
+
+
     function renderQuickLives() {
       const list =
         document.getElementById("quickLivesList");
@@ -7604,6 +7630,7 @@
     initializeSharedLiveLibrary();
     initializeInstallBanner();
     initializePushNotifications();
+    openLiveFromNotification();
 
     setInterval(
       updateTimers,
