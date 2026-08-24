@@ -351,6 +351,11 @@
       gap: 8px;
     }
 
+    .live-editor-item-input-wrap {
+      position: relative;
+      min-width: 0;
+    }
+
     .live-editor-add-item {
       padding: 0 12px;
       border-radius: 8px;
@@ -3259,11 +3264,18 @@
       <div class="live-editor-field">
         <label for="liveEditorItemInput">Giveaway Items</label>
         <div class="live-editor-item-entry">
-          <input
-            id="liveEditorItemInput"
-            type="text"
-            placeholder="Add an item"
-          />
+          <div class="live-editor-item-input-wrap">
+            <input
+              id="liveEditorItemInput"
+              type="text"
+              placeholder="Add an item"
+              autocomplete="off"
+            />
+            <div
+              id="liveEditorItemAutocomplete"
+              class="autocomplete-menu"
+            ></div>
+          </div>
           <button
             class="live-editor-add-item"
             type="button"
@@ -5153,6 +5165,8 @@
         ? "liveNameAutocomplete"
         : event.currentTarget.id === "itemName"
           ? "itemNameAutocomplete"
+          : event.currentTarget.id === "liveEditorItemInput"
+            ? "liveEditorItemAutocomplete"
           : null;
 
       if (!menuId) {
@@ -5730,6 +5744,49 @@
       });
     }
 
+
+    function updateLiveEditorItemSuggestions() {
+      const input = document.getElementById("liveEditorItemInput");
+      const menu = document.getElementById("liveEditorItemAutocomplete");
+      const query = input.value.trim().toLowerCase();
+      const existingItems = new Set(
+        editingLiveLibraryItems.map(item => item.toLowerCase())
+      );
+      const allItems = [
+        ...getQuickLives().flatMap(live => live.items),
+        ...giveaways.map(giveaway => giveaway.itemName),
+        ...history.map(entry => entry.itemName)
+      ];
+      const matches = [...new Set(allItems.map(item => String(item || "").trim()))]
+        .filter(Boolean)
+        .filter(item => !existingItems.has(item.toLowerCase()))
+        .filter(item => !query || item.toLowerCase().includes(query))
+        .sort((a, b) => a.localeCompare(b))
+        .slice(0, 8);
+
+      menu.innerHTML = "";
+      matches.forEach(item => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "autocomplete-option";
+        option.textContent = item;
+        option.addEventListener("mousedown", event => {
+          event.preventDefault();
+        });
+        option.addEventListener("click", () => {
+          input.value = item;
+          menu.classList.remove("open");
+          input.focus();
+        });
+        menu.appendChild(option);
+      });
+
+      menu.classList.toggle(
+        "open",
+        document.activeElement === input && matches.length > 0
+      );
+    }
+
     function addLiveEditorItem() {
       const input = document.getElementById("liveEditorItemInput");
       const item = input.value.trim();
@@ -5746,6 +5803,7 @@
       }
 
       input.value = "";
+      document.getElementById("liveEditorItemAutocomplete").classList.remove("open");
       renderLiveEditorItems();
       input.focus();
     }
@@ -7786,11 +7844,23 @@
     document
       .getElementById("liveEditorItemInput")
       .addEventListener("keydown", event => {
+        if (handleAutocompleteKeydown(event)) {
+          return;
+        }
+
         if (event.key === "Enter") {
           event.preventDefault();
           addLiveEditorItem();
         }
       });
+
+    document
+      .getElementById("liveEditorItemInput")
+      .addEventListener("input", updateLiveEditorItemSuggestions);
+
+    document
+      .getElementById("liveEditorItemInput")
+      .addEventListener("focus", updateLiveEditorItemSuggestions);
 
     document
       .getElementById("liveEditorBackdrop")
@@ -7861,6 +7931,10 @@
 
       if (!event.target.closest(".item-field")) {
         document.getElementById("itemNameAutocomplete").classList.remove("open");
+      }
+
+      if (!event.target.closest(".live-editor-item-input-wrap")) {
+        document.getElementById("liveEditorItemAutocomplete").classList.remove("open");
       }
     });
 

@@ -19,6 +19,7 @@ const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY") || "";
 const vapidSubject = Deno.env.get("VAPID_SUBJECT") || "mailto:admin@example.com";
 const cronSecret = Deno.env.get("CRON_SECRET") || "";
 const appUrl = Deno.env.get("APP_URL") || "https://charlenecarver.github.io/giveaway-scheduler/";
+const deliveryLeadSeconds = 10;
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
@@ -71,7 +72,9 @@ async function processNotifications(request: Request) {
 
   for (const subscription of (subscriptions || []) as SubscriptionRow[]) {
     for (const giveaway of giveaways) {
-      const thresholdMs = preferenceSeconds(subscription, giveaway) * 1000;
+      const thresholdMs = (
+        preferenceSeconds(subscription, giveaway) + deliveryLeadSeconds
+      ) * 1000;
       const remainingMs = Number(giveaway.endTime) - now;
       if (!Number.isFinite(remainingMs) || remainingMs <= 0 || remainingMs > thresholdMs) continue;
 
