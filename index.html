@@ -532,6 +532,89 @@
       border-radius: 18px;
     }
 
+    .install-banner[hidden] {
+      display: none;
+    }
+
+    .install-banner {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 14px;
+      padding: 12px 42px 12px 12px;
+      border: 1px solid #efccd6;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 8% 20%, rgba(255, 221, 230, 0.82), transparent 8rem),
+        linear-gradient(135deg, #fff8fa, #fff9ef);
+      box-shadow: 0 8px 22px rgba(137, 73, 91, 0.11);
+      color: #4f3540;
+    }
+
+    .install-banner-icon {
+      width: 54px;
+      height: 54px;
+      flex: 0 0 54px;
+      border: 2px solid rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(232, 93, 126, 0.18);
+    }
+
+    .install-banner-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .install-banner-title {
+      display: block;
+      margin-bottom: 2px;
+      color: #6f3f50;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .install-banner-message {
+      display: block;
+      color: #896f79;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .install-banner-action {
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding: 8px 14px;
+      border: 1px solid #dc8da4;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #f287a5, #e86f92);
+      box-shadow: 0 4px 10px rgba(232, 93, 126, 0.2);
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .install-banner-action:active {
+      transform: translateY(1px);
+    }
+
+    .install-banner-dismiss {
+      position: absolute;
+      top: 7px;
+      right: 8px;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #a47f8a;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
     .sr-only {
       position: absolute;
       width: 1px;
@@ -3024,6 +3107,10 @@
         justify-content: center;
       }
 
+      .install-banner {
+        display: flex;
+      }
+
       .brand-heading-logo {
         width: 46px;
         height: 46px;
@@ -3034,6 +3121,10 @@
         width: min(330px, 100%);
         height: auto;
         max-width: 100%;
+      }
+
+      .install-banner-action {
+        padding-inline: 12px;
       }
 
       .quick-lives-panel,
@@ -3188,6 +3279,30 @@
       <img class="brand-heading-wordmark" src="givvy-time-logo-web.png" alt="Givvy Time" />
       <h1 class="sr-only">Givvy Time</h1>
     </div>
+
+    <aside id="installBanner" class="install-banner" aria-label="Install Givvy Time" hidden>
+      <img class="install-banner-icon" src="app-icon-192.png" alt="" />
+      <div class="install-banner-copy">
+        <strong class="install-banner-title">Keep Givvy Time handy</strong>
+        <span id="installBannerMessage" class="install-banner-message"></span>
+      </div>
+      <button
+        id="installBannerAction"
+        class="install-banner-action"
+        type="button"
+        onclick="handleInstallBannerAction()"
+      >
+        Install
+      </button>
+      <button
+        class="install-banner-dismiss"
+        type="button"
+        aria-label="Dismiss install suggestion"
+        onclick="dismissInstallBanner()"
+      >
+        ×
+      </button>
+    </aside>
 
     <div class="add-card">
 
@@ -4345,6 +4460,104 @@
       if (!status || !button) return;
       status.textContent = message;
       button.textContent = enabled ? "Disable" : "Enable";
+    }
+
+    const INSTALL_BANNER_DISMISSED_UNTIL = "givvyInstallBannerDismissedUntil";
+    const INSTALL_BANNER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
+    let deferredInstallPrompt = null;
+    let installBannerMode = "";
+
+    function isGivvyInstalled() {
+      return window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true;
+    }
+
+    function isIosDevice() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }
+
+    function installBannerWasDismissed() {
+      return Number(localStorage.getItem(INSTALL_BANNER_DISMISSED_UNTIL) || 0) > Date.now();
+    }
+
+    function hideInstallBanner() {
+      document.getElementById("installBanner")?.setAttribute("hidden", "");
+    }
+
+    function showInstallBanner(mode) {
+      if (
+        isGivvyInstalled() ||
+        installBannerWasDismissed() ||
+        !window.matchMedia("(max-width: 720px)").matches
+      ) {
+        return;
+      }
+
+      const banner = document.getElementById("installBanner");
+      const message = document.getElementById("installBannerMessage");
+      const action = document.getElementById("installBannerAction");
+      if (!banner || !message || !action) return;
+
+      installBannerMode = mode;
+      if (mode === "ios") {
+        message.textContent = "In Safari, tap Share, then Add to Home Screen.";
+        action.textContent = "Got it";
+      } else {
+        message.textContent = "Install the app for faster access and notifications.";
+        action.textContent = "Install";
+      }
+      banner.removeAttribute("hidden");
+    }
+
+    function dismissInstallBanner() {
+      localStorage.setItem(
+        INSTALL_BANNER_DISMISSED_UNTIL,
+        String(Date.now() + INSTALL_BANNER_DISMISS_MS)
+      );
+      hideInstallBanner();
+    }
+
+    async function handleInstallBannerAction() {
+      if (installBannerMode === "ios") {
+        dismissInstallBanner();
+        return;
+      }
+      if (!deferredInstallPrompt) return;
+
+      const promptEvent = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      await promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+      if (outcome === "dismissed") {
+        localStorage.setItem(
+          INSTALL_BANNER_DISMISSED_UNTIL,
+          String(Date.now() + INSTALL_BANNER_DISMISS_MS)
+        );
+      }
+      hideInstallBanner();
+    }
+
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      showInstallBanner("browser");
+    });
+
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      localStorage.removeItem(INSTALL_BANNER_DISMISSED_UNTIL);
+      hideInstallBanner();
+    });
+
+    function initializeInstallBanner() {
+      if (isGivvyInstalled()) {
+        hideInstallBanner();
+        return;
+      }
+      if (isIosDevice()) {
+        showInstallBanner("ios");
+      }
     }
 
     async function initializePushNotifications() {
@@ -7389,6 +7602,7 @@
     render();
     initializeSharedData();
     initializeSharedLiveLibrary();
+    initializeInstallBanner();
     initializePushNotifications();
 
     setInterval(
