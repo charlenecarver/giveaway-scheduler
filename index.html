@@ -6002,7 +6002,7 @@
     }
 
 
-    function saveData() {
+    function saveData(options = {}) {
       localStorage.setItem(
         "giveaways",
         JSON.stringify(giveaways)
@@ -6013,7 +6013,7 @@
         JSON.stringify(history)
       );
 
-      saveSharedData();
+      saveSharedData(options);
     }
 
 
@@ -6077,23 +6077,59 @@
     }
 
 
-    function saveSharedData() {
+    function saveSharedData({ deletedIds = [], clearHistory = false } = {}) {
       if (!sharedDatabase) {
         return;
       }
 
-      const state = {
-        id: "shared",
-        giveaways: JSON.parse(JSON.stringify(giveaways)),
-        history: JSON.parse(JSON.stringify(history)),
-        active_live_keys: [...activeQuickLiveKeys],
-        hidden_live_keys: [...hiddenQuickLiveKeys],
-        updated_at: new Date().toISOString()
-      };
+      const deletedIdSet = new Set(deletedIds.map(String));
 
       pendingSharedSaves += 1;
       sharedSaveQueue = sharedSaveQueue
         .then(async () => {
+          const { data: currentState, error: loadError } = await sharedDatabase
+            .from("giveaway_state")
+            .select("giveaways, history")
+            .eq("id", "shared")
+            .maybeSingle();
+
+          if (loadError) {
+            throw loadError;
+          }
+
+          const localGiveaways = JSON.parse(JSON.stringify(giveaways));
+          const localHistory = JSON.parse(JSON.stringify(history));
+          const mergedHistoryById = new Map();
+
+          if (!clearHistory) {
+            (Array.isArray(currentState?.history) ? currentState.history : [])
+              .forEach(entry => mergedHistoryById.set(String(entry.id), entry));
+          }
+          localHistory.forEach(entry => {
+            mergedHistoryById.set(String(entry.id), entry);
+          });
+          deletedIdSet.forEach(id => mergedHistoryById.delete(id));
+
+          const mergedGiveawaysById = new Map();
+          (Array.isArray(currentState?.giveaways) ? currentState.giveaways : [])
+            .forEach(giveaway => {
+              mergedGiveawaysById.set(String(giveaway.id), giveaway);
+            });
+          localGiveaways.forEach(giveaway => {
+            mergedGiveawaysById.set(String(giveaway.id), giveaway);
+          });
+          mergedHistoryById.forEach((_, id) => mergedGiveawaysById.delete(id));
+          deletedIdSet.forEach(id => mergedGiveawaysById.delete(id));
+
+          const state = {
+            id: "shared",
+            giveaways: [...mergedGiveawaysById.values()],
+            history: [...mergedHistoryById.values()],
+            active_live_keys: [...activeQuickLiveKeys],
+            hidden_live_keys: [...hiddenQuickLiveKeys],
+            updated_at: new Date().toISOString()
+          };
+
           const { error } = await sharedDatabase
             .from("giveaway_state")
             .upsert(state, { onConflict: "id" });
@@ -7633,7 +7669,7 @@
         );
 
       clearGiveawayParticipation(id);
-      saveData();
+      saveData({ deletedIds: [id] });
       render();
     }
 
@@ -7645,7 +7681,7 @@
         );
 
       clearGiveawayParticipation(id);
-      saveData();
+      saveData({ deletedIds: [id] });
       render();
     }
 
@@ -7658,7 +7694,7 @@
           clearGiveawayParticipation(entry.id);
         });
         history = [];
-        saveData();
+        saveData({ clearHistory: true });
         render();
       }
     }
@@ -7774,6 +7810,17 @@
     });
 
     if ("serviceWorker" in navigator) {
+      let reloadingForServiceWorkerUpdate = false;
+
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloadingForServiceWorkerUpdate) {
+          return;
+        }
+
+        reloadingForServiceWorkerUpdate = true;
+        window.location.reload();
+      });
+
       navigator.serviceWorker.addEventListener("message", event => {
         if (event.data?.type === "REFRESH_SHARED_DATA") {
           refreshSharedData();

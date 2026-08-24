@@ -1,4 +1,4 @@
-const CACHE_NAME = "givvy-time-v21";
+const CACHE_NAME = "givvy-time-v22";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,9 +16,21 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(
-    keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-  )).then(() => self.clients.claim()));
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+    );
+    await self.clients.claim();
+
+    const windows = await self.clients.matchAll({
+      type: "window",
+      includeUncontrolled: true
+    });
+    await Promise.allSettled(
+      windows.map(client => client.navigate(client.url))
+    );
+  })());
 });
 
 self.addEventListener("fetch", event => {
