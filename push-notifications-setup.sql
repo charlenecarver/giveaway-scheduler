@@ -8,9 +8,13 @@ create table if not exists public.push_subscriptions (
   regular_alert_seconds integer not null default 60 check (regular_alert_seconds between 0 and 5999),
   buyer_alert_seconds integer not null default 60 check (buyer_alert_seconds between 0 and 5999),
   favorite_alert_seconds integer not null default 60 check (favorite_alert_seconds between 0 and 5999),
+  countdowns jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.push_subscriptions
+add column if not exists countdowns jsonb not null default '[]'::jsonb;
 
 create table if not exists public.push_notifications_sent (
   endpoint text not null references public.push_subscriptions(endpoint) on delete cascade,

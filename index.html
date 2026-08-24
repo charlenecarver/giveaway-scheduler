@@ -3341,6 +3341,297 @@
       }
     }
 
+    /* Ultra-compact timer-only view for very narrow app windows. */
+    @media (max-width: 200px) {
+      body {
+        min-width: 0;
+        background: #fff8f6;
+      }
+
+      .container {
+        width: 100%;
+        margin: 0;
+        padding: 6px;
+      }
+
+      .app-layout {
+        display: block;
+      }
+
+      #quickLivesPanel,
+      #quickLivesDesktopAnchor,
+      #quickLivesMobileAnchor,
+      .install-banner,
+      .add-card,
+      .tabs,
+      #historyView {
+        display: none !important;
+      }
+
+      #activeView {
+        display: block !important;
+      }
+
+      .brand-heading {
+        justify-content: center;
+        margin: 0 0 6px;
+      }
+
+      .brand-heading-wordmark {
+        content: url("app-icon-192.png");
+        width: 66px;
+        height: 66px;
+        border-radius: 16px;
+        object-fit: cover;
+      }
+
+      #activeList {
+        gap: 5px;
+      }
+
+      .giveaway {
+        min-height: 54px;
+        padding: 5px 6px;
+        grid-template-columns: 42px minmax(0, 1fr);
+        grid-template-rows: 1fr;
+        gap: 4px;
+        border-radius: 11px;
+        border-left-width: 3px !important;
+      }
+
+      .giveaway-info,
+      .giveaway .entry-actions,
+      .giveaway .timer-label,
+      .giveaway .join-actions,
+      .giveaway .start-countdown-button {
+        display: none !important;
+      }
+
+      .giveaway-logo-slot {
+        grid-column: 1;
+        grid-row: 1;
+        width: 42px;
+        min-height: 42px;
+        height: 42px;
+        align-self: center;
+      }
+
+      .giveaway-logo-link,
+      .giveaway-logo-slot .giveaway-logo,
+      .giveaway-logo-slot .giveaway-logo-fallback {
+        width: 38px;
+        height: 38px;
+      }
+
+      .giveaway-logo-link {
+        pointer-events: none;
+      }
+
+      .giveaway .timer-area {
+        display: flex;
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 0;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .giveaway .timer-block {
+        justify-content: center;
+        gap: 0;
+      }
+
+      .giveaway .timer {
+        min-width: 0;
+        font-size: 20px;
+        line-height: 1;
+        text-align: center;
+      }
+
+      .giveaway .done-text {
+        min-width: 0;
+        font-size: 15px;
+        text-align: center;
+      }
+
+      .empty {
+        padding: 12px 4px;
+        font-size: 11px;
+      }
+    }
+
+    /* Transitional widths: reflow gradually instead of waiting for the next
+       major desktop/mobile/compact breakpoint. */
+    @media (min-width: 761px) and (max-width: 900px) {
+      .quick-lives-panel {
+        position: relative;
+        top: auto;
+        height: auto;
+        max-height: 280px;
+        margin-bottom: 14px;
+      }
+
+      .quick-lives-list {
+        max-height: 190px;
+      }
+
+      .brand-heading-wordmark {
+        width: min(390px, 70vw);
+      }
+    }
+
+    @media (min-width: 201px) and (max-width: 760px) {
+      .container {
+        width: calc(100% - clamp(12px, 4vw, 24px));
+      }
+
+      .brand-heading-wordmark {
+        width: clamp(120px, 76vw, 330px);
+      }
+
+      .giveaway,
+      .history-item {
+        max-width: 100%;
+      }
+    }
+
+    @media (min-width: 201px) and (max-width: 340px) {
+      .container {
+        width: calc(100% - 12px);
+        padding-top: 10px;
+      }
+
+      .brand-heading {
+        margin-bottom: 4px;
+      }
+
+      .brand-heading-wordmark {
+        width: clamp(112px, 68vw, 220px);
+      }
+
+      .install-banner {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 7px;
+        padding: 8px 28px 8px 8px;
+      }
+
+      .install-banner-action {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
+      .add-card,
+      .quick-lives-panel {
+        padding: 12px;
+      }
+
+      .add-card h2 {
+        padding-top: 32px;
+      }
+
+      .quick-lives-header-actions {
+        order: 3;
+        width: 100%;
+      }
+
+      .one-line-form {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .live-field,
+      .item-field,
+      .time-field,
+      .countdown-field,
+      .buyer-field,
+      .add-button {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
+      .giveaway {
+        grid-template-columns: 42px minmax(0, 1fr) 29px;
+        grid-template-rows: auto auto;
+        padding: 9px;
+        gap: 7px;
+      }
+
+      .giveaway-logo-slot {
+        grid-column: 1;
+        grid-row: 1;
+        width: 42px;
+        height: 42px;
+      }
+
+      .giveaway-logo-link,
+      .giveaway-logo-slot .giveaway-logo,
+      .giveaway-logo-slot .giveaway-logo-fallback {
+        width: 40px;
+        height: 40px;
+      }
+
+      .giveaway .giveaway-info {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .giveaway .entry-actions {
+        grid-column: 3;
+        grid-row: 1;
+      }
+
+      .giveaway .timer-area {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        gap: 6px;
+        padding-top: 7px;
+        border-top: 1px solid #eceef1;
+      }
+
+      .giveaway .timer {
+        min-width: 0;
+        font-size: clamp(17px, 7vw, 20px);
+      }
+
+      .giveaway .countdown-timer-block .timer-label {
+        display: none;
+      }
+
+      .history-item {
+        grid-template-columns: minmax(0, 1fr) 29px;
+        grid-template-rows: auto auto;
+        padding: 10px;
+      }
+
+      .history-item .completed-time {
+        grid-column: 1;
+        grid-row: 2;
+        justify-self: start;
+      }
+
+      .history-item .history-actions {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .tabs {
+        gap: 5px;
+      }
+
+      .tab {
+        min-width: 0;
+        padding-inline: 7px;
+        font-size: 12px;
+      }
+    }
+
   </style>
 </head>
 
@@ -4413,6 +4704,7 @@
     const PUSH_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/push-notifications`;
     let pushRegistration = null;
     let pushSubscription = null;
+    let countdownPushSyncTimer = null;
     const localDevelopmentHosts = new Set([
       "localhost",
       "127.0.0.1",
@@ -4562,6 +4854,7 @@
         "giveawayParticipation",
         JSON.stringify(giveawayParticipation)
       );
+      scheduleCountdownPushSync();
     }
 
     function clearGiveawayParticipation(id) {
@@ -4570,6 +4863,7 @@
         "giveawayParticipation",
         JSON.stringify(giveawayParticipation)
       );
+      scheduleCountdownPushSync();
     }
 
     giveaways = giveaways.map(giveaway => ({
@@ -4707,6 +5001,39 @@
       };
     }
 
+    function getPushCountdowns() {
+      const now = Date.now();
+      return giveaways.flatMap(giveaway => {
+        const participation = getGiveawayParticipation(giveaway.id);
+        const endTime = Number(participation?.countdownEndTime);
+        if (
+          !Number.isFinite(endTime) ||
+          endTime <= now ||
+          participation?.joined ||
+          participation?.couldntJoin
+        ) {
+          return [];
+        }
+        return [{
+          giveawayId: String(giveaway.id),
+          endTime,
+          liveName: giveaway.liveName,
+          itemName: giveaway.itemName
+        }];
+      });
+    }
+
+    function scheduleCountdownPushSync() {
+      if (!pushSubscription) return;
+      clearTimeout(countdownPushSyncTimer);
+      countdownPushSyncTimer = setTimeout(() => {
+        countdownPushSyncTimer = null;
+        syncPushSubscription().catch(error =>
+          console.error("Could not update countdown notifications:", error)
+        );
+      }, 250);
+    }
+
     function setPushStatus(message, enabled = false) {
       const status = document.getElementById("pushNotificationStatus");
       const button = document.getElementById("pushNotificationButton");
@@ -4839,7 +5166,8 @@
       if (!pushSubscription) return;
       await pushRequest("subscribe", {
         subscription: pushSubscription.toJSON(),
-        preferences: getPushPreferences()
+        preferences: getPushPreferences(),
+        countdowns: getPushCountdowns()
       });
     }
 

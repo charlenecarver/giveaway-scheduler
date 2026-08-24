@@ -31,6 +31,14 @@ type SubscriptionRow = {
   regular_alert_seconds: number;
   buyer_alert_seconds: number;
   favorite_alert_seconds: number;
+  countdowns: Countdown[];
+};
+
+type Countdown = {
+  giveawayId: string | number;
+  endTime: number;
+  liveName?: string;
+  itemName?: string;
 };
 
 type Giveaway = {
@@ -116,6 +124,48 @@ async function processNotifications(request: Request) {
         }
       }
     }
+
+    for (const countdown of Array.isArray(subscription.countdowns) ? subscription.countdowns : []) {
+      const countdownEndTime = Number(countdown.endTime);
+      const remainingMs = countdownEndTime - now;
+      const thresholdMs = (subscription.regular_alert_seconds + deliveryLeadSeconds) * 1000;
+      if (!Number.isFinite(remainingMs) || remainingMs <= 0 || remainingMs > thresholdMs) continue;
+
+      const marker = {
+        endpoint: subscription.endpoint,
+        giveaway_id: `countdown:${countdown.giveawayId}`,
+        giveaway_end_time: countdownEndTime,
+      };
+      const { error: markerError } = await supabase.from("push_notifications_sent").insert(marker);
+      if (markerError?.code === "23505") continue;
+      if (markerError) throw markerError;
+
+      const secondsLeft = Math.max(0, Math.ceil(remainingMs / 1000));
+      const minutes = Math.floor(secondsLeft / 60);
+      const seconds = String(secondsLeft % 60).padStart(2, "0");
+      const liveName = String(countdown.liveName || "Live giveaway");
+      const itemName = String(countdown.itemName || "Giveaway item");
+      try {
+        await webpush.sendNotification({
+          endpoint: subscription.endpoint,
+          keys: { p256dh: subscription.p256dh, auth: subscription.auth },
+        }, JSON.stringify({
+          title: `JOIN MEOW! ⏱️ Countdown ending in ${minutes}:${seconds}`,
+          body: `${liveName} — ${itemName}`,
+          tag: `countdown-${countdown.giveawayId}-${countdownEndTime}`,
+          url: appUrl,
+        }));
+        sent += 1;
+      } catch (error) {
+        await supabase.from("push_notifications_sent").delete().match(marker);
+        const statusCode = Number((error as { statusCode?: number }).statusCode || 0);
+        if (statusCode === 404 || statusCode === 410) {
+          await supabase.from("push_subscriptions").delete().eq("endpoint", subscription.endpoint);
+        } else {
+          console.error("Countdown push delivery failed", error);
+        }
+      }
+    }
   }
   return json({ ok: true, sent });
 }
@@ -143,6 +193,7 @@ export default {
           regular_alert_seconds: Number(preferences.regular_alert_seconds ?? 60),
           buyer_alert_seconds: Number(preferences.buyer_alert_seconds ?? 60),
           favorite_alert_seconds: Number(preferences.favorite_alert_seconds ?? 60),
+          countdowns: Array.isArray(body.countdowns) ? body.countdowns : [],
           updated_at: new Date().toISOString(),
         };
         const { error } = await supabase.from("push_subscriptions").upsert(record, { onConflict: "endpoint" });
