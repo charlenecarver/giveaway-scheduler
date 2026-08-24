@@ -1,5 +1,5 @@
-const CACHE_NAME = "givvy-time-v34";
-const IMAGE_CACHE_NAME = "givvy-time-images-v1";
+const CACHE_NAME = "givvy-time-v35";
+const IMAGE_CACHE_NAME = "givvy-time-images-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -42,20 +42,17 @@ self.addEventListener("fetch", event => {
   if (event.request.destination === "image") {
     event.respondWith((async () => {
       const cached = await caches.match(event.request);
-      const refresh = fetch(event.request).then(async response => {
+      if (cached) {
+        return cached;
+      }
+
+      return fetch(event.request).then(async response => {
         if (response.ok || response.type === "opaque") {
           const imageCache = await caches.open(IMAGE_CACHE_NAME);
           await imageCache.put(event.request, response.clone());
         }
         return response;
       });
-
-      if (cached) {
-        event.waitUntil(refresh.catch(() => undefined));
-        return cached;
-      }
-
-      return refresh;
     })());
     return;
   }

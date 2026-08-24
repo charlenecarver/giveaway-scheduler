@@ -2599,13 +2599,12 @@
         touch-action: manipulation;
       }
 
-      #itemName::placeholder {
-        color: transparent;
-        opacity: 0;
-      }
-
       button {
         touch-action: manipulation;
+      }
+
+      .join-ready .join-actions {
+        animation: none;
       }
 
       .app-layout {
@@ -4515,6 +4514,11 @@
 
     let quickLivesSearchClearTimer = null;
     let quickLiveLogoObserver = null;
+    let giveawayVisibilityObserver = null;
+    const visibleGiveawayIds = new Set();
+    let sharedStateRenderTimer = null;
+    let pendingSharedState = null;
+    let sharedLiveReloadTimer = null;
     let addFormInitialStateApplied = false;
     const MAX_HISTORY_ENTRIES = 50;
 
@@ -6439,6 +6443,29 @@
     }
 
 
+    function scheduleSharedStateApply(state) {
+      pendingSharedState = state;
+      clearTimeout(sharedStateRenderTimer);
+      sharedStateRenderTimer = setTimeout(() => {
+        const nextState = pendingSharedState;
+        pendingSharedState = null;
+        sharedStateRenderTimer = null;
+        if (nextState) {
+          applySharedData(nextState);
+        }
+      }, 150);
+    }
+
+
+    function scheduleSharedLiveReload() {
+      clearTimeout(sharedLiveReloadTimer);
+      sharedLiveReloadTimer = setTimeout(() => {
+        sharedLiveReloadTimer = null;
+        loadSharedLiveLibrary();
+      }, 250);
+    }
+
+
     function saveSharedData({ deletedIds = [], clearHistory = false } = {}) {
       if (!sharedDatabase) {
         return;
@@ -6617,7 +6644,7 @@
           },
           payload => {
             if (pendingSharedSaves === 0 && payload.new) {
-              applySharedData(payload.new);
+              scheduleSharedStateApply(payload.new);
             }
           }
         )
@@ -6785,7 +6812,7 @@
             schema: "public",
             table: "lives"
           },
-          loadSharedLiveLibrary
+          scheduleSharedLiveReload
         )
         .subscribe();
     }
@@ -7363,6 +7390,13 @@
       };
 
       cards.forEach(card => {
+        if (
+          giveawayVisibilityObserver &&
+          !visibleGiveawayIds.has(card.dataset.giveawayId)
+        ) {
+          return;
+        }
+
         const giveaway = giveawaysById.get(card.dataset.giveawayId);
         const participation = giveaway
           ? getGiveawayParticipation(giveaway.id)
@@ -7491,6 +7525,23 @@
         document.getElementById("activeList");
 
       list.innerHTML = "";
+      giveawayVisibilityObserver?.disconnect();
+      visibleGiveawayIds.clear();
+
+      if ("IntersectionObserver" in window) {
+        giveawayVisibilityObserver ||= new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            const id = entry.target.dataset.giveawayId;
+            if (!id) return;
+            if (entry.isIntersecting) {
+              visibleGiveawayIds.add(id);
+              updateVisibleTimers(Date.now());
+            } else {
+              visibleGiveawayIds.delete(id);
+            }
+          });
+        }, { rootMargin: "80px 0px" });
+      }
 
       const now = Date.now();
 
@@ -7869,6 +7920,7 @@
           );
 
           list.appendChild(card);
+          giveawayVisibilityObserver?.observe(card);
         }
       );
     }
@@ -8288,7 +8340,12 @@
     let timerUpdatesPaused = false;
 
     setInterval(() => {
-      if (sharedDataReady && !document.hidden && !timerUpdatesPaused) {
+      if (
+        sharedDataReady &&
+        !document.hidden &&
+        !timerUpdatesPaused &&
+        (giveaways.length > 0 || editingGiveawayId !== null)
+      ) {
         updateTimers();
       }
     }, 1000);
