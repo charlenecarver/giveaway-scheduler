@@ -85,6 +85,17 @@
       gap: 6px;
     }
 
+    .quick-lives-mobile-toggle {
+      display: none;
+    }
+
+    .quick-lives-content {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      flex-direction: column;
+    }
+
     .quick-lives-add {
       padding: 4px 7px;
       border: 1px solid #cbd8e7;
@@ -2597,7 +2608,56 @@
       }
 
       .quick-lives-panel {
+        position: relative;
+        top: auto;
+        display: flex;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        padding: 12px;
+      }
+
+      .quick-lives-header {
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+
+      .quick-lives-mobile-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 4px 9px;
+        border: 1px solid #d8d4e3;
+        border-radius: 8px;
+        background: #f8f7fb;
+        color: #625a70;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .quick-lives-mobile-toggle:hover {
+        border-color: #b9b2cb;
+        background: #eeebf5;
+        color: #514960;
+      }
+
+      .quick-lives-panel.mobile-collapsed {
+        padding-block: 10px;
+      }
+
+      .quick-lives-panel.mobile-collapsed .quick-lives-header {
+        margin-bottom: 0;
+      }
+
+      .quick-lives-panel.mobile-collapsed .quick-lives-header-actions,
+      .quick-lives-panel.mobile-collapsed .quick-lives-content {
         display: none;
+      }
+
+      .quick-lives-content {
+        flex: none;
       }
 
       .quick-lives-list {
@@ -3364,7 +3424,7 @@
 
     <div class="app-layout">
 
-      <aside class="quick-lives-panel">
+      <aside id="quickLivesPanel" class="quick-lives-panel mobile-collapsed">
         <div class="quick-lives-header">
           <h2 class="quick-lives-title">Quick Lives</h2>
           <div class="quick-lives-header-actions">
@@ -3384,20 +3444,32 @@
               All off
             </button>
           </div>
+          <button
+            id="quickLivesMobileToggle"
+            class="quick-lives-mobile-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="quickLivesContent"
+            onclick="toggleMobileQuickLives()"
+          >
+            Show
+          </button>
         </div>
-        <p class="quick-lives-subtitle">
-          Click a tile to prefill the form with that live’s information. Use the status tag to mark the live as on or off.
-        </p>
+        <div id="quickLivesContent" class="quick-lives-content">
+          <p class="quick-lives-subtitle">
+            Click a tile to prefill the form with that live’s information. Use the status tag to mark the live as on or off.
+          </p>
 
-        <input
-          id="quickLivesSearch"
-          class="quick-lives-search"
-          type="search"
-          placeholder="Search lives"
-          aria-label="Search lives"
-        />
+          <input
+            id="quickLivesSearch"
+            class="quick-lives-search"
+            type="search"
+            placeholder="Search lives"
+            aria-label="Search lives"
+          />
 
-        <div id="quickLivesList" class="quick-lives-list"></div>
+          <div id="quickLivesList" class="quick-lives-list"></div>
+        </div>
       </aside>
 
       <div class="scheduler-column">
@@ -5641,6 +5713,16 @@
     }
 
 
+    function toggleMobileQuickLives() {
+      const panel = document.getElementById("quickLivesPanel");
+      const toggle = document.getElementById("quickLivesMobileToggle");
+      const collapsed = panel.classList.toggle("mobile-collapsed");
+
+      toggle.setAttribute("aria-expanded", String(!collapsed));
+      toggle.textContent = collapsed ? "Show" : "Hide";
+    }
+
+
     function scheduleQuickLivesSearchClear() {
       const search = document.getElementById("quickLivesSearch");
 
@@ -6485,7 +6567,7 @@
         });
 
         replaceLiveLibrary([...mergedLivesByKey.values()]);
-        renderQuickLives();
+        render();
         return;
       }
 
