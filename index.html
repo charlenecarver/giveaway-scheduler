@@ -1063,6 +1063,7 @@
     .giveaway-logo-slot {
       grid-column: 1;
       grid-row: 1;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1073,9 +1074,13 @@
 
     .giveaway-logo-slot .giveaway-logo,
     .giveaway-logo-slot .giveaway-logo-fallback {
+      position: absolute;
+      top: 50%;
+      left: 50%;
       width: 56px;
       height: 56px;
       flex-basis: 56px;
+      transform: translate(-50%, -50%);
     }
 
     .name-row {
@@ -5760,6 +5765,18 @@
         String(username || name).trim().toLowerCase();
       const previousName = editingLiveLibraryName;
       const items = [...editingLiveLibraryItems];
+      const pendingItem = document
+        .getElementById("liveEditorItemInput")
+        .value
+        .trim();
+
+      if (pendingItem && !items.some(
+        item => item.toLowerCase() === pendingItem.toLowerCase()
+      )) {
+        items.push(pendingItem);
+        items.sort((a, b) => a.localeCompare(b));
+      }
+
       const logoFile = document.getElementById("liveEditorLogo").files[0];
       const existingLives = getQuickLives();
       const duplicateUsername = username && existingLives.find(live =>
