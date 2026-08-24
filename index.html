@@ -250,8 +250,20 @@
     }
 
     .tiktok-live-link {
+      pointer-events: auto;
       cursor: pointer;
       transition: box-shadow 0.15s ease, filter 0.15s ease;
+    }
+
+    .quick-live-logo.tiktok-live-link,
+    .quick-live-logo-fallback.tiktok-live-link {
+      z-index: 2;
+    }
+
+    .giveaway-logo.tiktok-live-link,
+    .giveaway-logo-fallback.tiktok-live-link {
+      position: relative;
+      z-index: 2;
     }
 
     .tiktok-live-link:hover,
@@ -359,6 +371,30 @@
       height: auto;
       padding: 8px;
       font-size: 12px;
+    }
+
+    .live-editor input[type="text"],
+    .live-editor input[type="file"] {
+      border-color: #d8d4e3;
+      background: #fcfbff;
+      color: #4f465b;
+    }
+
+    .live-editor input[type="text"]::placeholder {
+      color: #9b95a5;
+    }
+
+    .live-editor input[type="text"]:hover,
+    .live-editor input[type="file"]:hover {
+      border-color: #bbb3ce;
+      background: #ffffff;
+    }
+
+    .live-editor input[type="text"]:focus,
+    .live-editor input[type="file"]:focus {
+      border-color: #9287b1;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(146, 135, 177, 0.14);
     }
 
     .live-editor-logo-status {
@@ -2970,7 +3006,7 @@
       overflow: visible;
       border-radius: 20px;
       background:
-        linear-gradient(90deg, rgba(237, 112, 146, 0.10), rgba(242, 187, 86, 0.08)) top / 100% 5px no-repeat,
+        linear-gradient(90deg, rgba(159, 150, 187, 0.16), rgba(185, 178, 203, 0.12)) top / 100% 5px no-repeat,
         rgba(255, 253, 251, 0.96);
     }
 
@@ -2991,7 +3027,7 @@
     select:hover,
     .buyer-checkbox-holder:hover,
     .quick-lives-search:hover {
-      border-color: #e5aebe;
+      border-color: #b9b2cb;
     }
 
     input:focus,
@@ -3010,16 +3046,25 @@
     .autocomplete-option:hover,
     .autocomplete-option:focus,
     .autocomplete-option.keyboard-active {
-      background: var(--givvy-blush);
+      background: #f1eff7;
+      color: #514960;
     }
 
-    .add-button,
+    .add-button {
+      background: linear-gradient(135deg, var(--givvy-pink), var(--givvy-coral));
+      box-shadow: 0 7px 16px rgba(220, 91, 122, 0.24);
+    }
+
+    .add-button:hover {
+      background: linear-gradient(135deg, #e75f85, #ef7b69);
+      box-shadow: 0 9px 20px rgba(220, 91, 122, 0.29);
+    }
+
     .push-notification-button {
       background: linear-gradient(135deg, var(--givvy-pink), var(--givvy-coral));
       box-shadow: 0 7px 16px rgba(220, 91, 122, 0.24);
     }
 
-    .add-button:hover,
     .push-notification-button:hover:not(:disabled) {
       background: linear-gradient(135deg, #e75f85, #ef7b69);
       box-shadow: 0 9px 20px rgba(220, 91, 122, 0.29);
@@ -3028,20 +3073,20 @@
     .tabs {
       width: fit-content;
       padding: 5px;
-      border: 1px solid var(--givvy-border);
+      border: 1px solid #d8d4e3;
       border-radius: 999px;
-      background: rgba(255, 246, 248, 0.84);
+      background: rgba(248, 247, 251, 0.9);
     }
 
     .tab {
       border-color: transparent;
       background: transparent;
-      color: #966174;
+      color: #716a80;
     }
 
     .tab:hover {
-      background: #ffe9ef;
-      color: #80485d;
+      background: #eeebf5;
+      color: #514960;
     }
 
     .tab.active {
@@ -3163,7 +3208,12 @@
 
       <div class="live-editor-field">
         <label for="liveEditorName">Live Name</label>
-        <input id="liveEditorName" class="live-editor-input" type="text" />
+        <input
+          id="liveEditorName"
+          class="live-editor-input"
+          type="text"
+          placeholder="Live Name"
+        />
       </div>
 
       <div class="live-editor-field">
@@ -3605,7 +3655,7 @@
           <input
             id="liveName"
             type="text"
-            placeholder="@username"
+            placeholder="Live Name"
             autocomplete="off"
           />
 
