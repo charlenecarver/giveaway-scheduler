@@ -7,13 +7,14 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>Giveaway Scheduler</title>
-  <meta name="theme-color" content="#17181c" />
+  <title>Givvy Time</title>
+  <meta name="theme-color" content="#fff1f4" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Giveaways" />
+  <meta name="apple-mobile-web-app-title" content="Givvy Time" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="app-icon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="app-icon-180.png" />
 
   <style>
     * {
@@ -502,8 +503,45 @@
     }
 
     h1 {
-      margin: 0 0 6px;
+      margin: 0;
       font-size: 30px;
+    }
+
+    .brand-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .brand-heading-logo {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+      border-radius: 13px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(232, 93, 126, 0.22);
+    }
+
+    .brand-heading-wordmark {
+      display: block;
+      width: min(430px, 100%);
+      height: auto;
+      max-height: none;
+      object-fit: contain;
+      border-radius: 18px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .subtitle {
@@ -1549,6 +1587,17 @@
     }
 
     @media (max-width: 560px) {
+      .brand-heading {
+        gap: 10px;
+      }
+
+      .brand-heading-logo {
+        width: 44px;
+        height: 44px;
+        flex-basis: 44px;
+        border-radius: 11px;
+      }
+
       h1 {
         font-size: 26px;
       }
@@ -2704,6 +2753,309 @@
       }
     }
 
+    /* -----------------------------
+       GIVVY TIME CUTE THEME
+    ------------------------------ */
+
+    :root {
+      --givvy-ink: #4f3540;
+      --givvy-muted: #896f79;
+      --givvy-pink: #ed7092;
+      --givvy-coral: #f28a78;
+      --givvy-blush: #fff1f4;
+      --givvy-cream: #fffaf3;
+      --givvy-gold: #f2bb56;
+      --givvy-sage: #8fb69b;
+      --givvy-sage-dark: #52725d;
+      --givvy-sage-pale: #edf6ef;
+      --givvy-border: #f2d7de;
+      --givvy-shadow: 0 12px 32px rgba(137, 73, 91, 0.10);
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 8% 0%, rgba(255, 214, 224, 0.72), transparent 28rem),
+        radial-gradient(circle at 96% 14%, rgba(255, 232, 191, 0.62), transparent 26rem),
+        linear-gradient(180deg, #fffaf8 0%, #fff6f2 48%, #fdf8f5 100%);
+      color: var(--givvy-ink);
+    }
+
+    h1,
+    .add-card h2,
+    .quick-lives-title,
+    .settings-title {
+      color: var(--givvy-ink);
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-weight: 850;
+    }
+
+    .brand-heading-logo {
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      box-shadow:
+        0 7px 18px rgba(232, 93, 126, 0.22),
+        0 0 0 4px rgba(242, 187, 86, 0.14);
+    }
+
+    .subtitle,
+    .quick-lives-subtitle,
+    .settings-help {
+      color: var(--givvy-muted);
+    }
+
+    .quick-lives-panel,
+    .add-card,
+    .settings-panel {
+      border-color: var(--givvy-border);
+      background: rgba(255, 253, 251, 0.94);
+      box-shadow: var(--givvy-shadow);
+    }
+
+    .quick-lives-panel {
+      background:
+        linear-gradient(180deg, rgba(255, 239, 244, 0.92), rgba(255, 253, 250, 0.96) 150px);
+      border-radius: 20px;
+    }
+
+    .quick-lives-add,
+    .quick-lives-reset,
+    .sound-test-button {
+      border: 1px solid var(--givvy-border);
+      border-radius: 999px;
+      background: #fff8fa;
+      color: #a34f68;
+    }
+
+    .quick-lives-add:hover,
+    .quick-lives-reset:hover:not(:disabled),
+    .sound-test-button:hover {
+      border-color: #e9b7c4;
+      background: #ffedf2;
+      color: #873e55;
+    }
+
+    .quick-live-btn {
+      border: 1px solid #d7d2e0;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 3px 9px rgba(100, 91, 126, 0.06);
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .quick-live-btn:hover {
+      border-color: #aaa2c1;
+      background: #f8f6fc;
+      box-shadow: 0 5px 12px rgba(100, 91, 126, 0.10);
+      transform: translateX(2px);
+    }
+
+    .quick-live-btn-username {
+      color: var(--givvy-muted);
+    }
+
+    .quick-live-btn.active {
+      border-color: #8dbb99;
+      background: #e9f7ed;
+      color: #3f6e4c;
+      box-shadow: 0 4px 12px rgba(82, 145, 99, 0.15);
+    }
+
+    .quick-live-btn.active:hover {
+      border-color: #72aa81;
+      background: #dff2e4;
+      color: #345e40;
+    }
+
+    .quick-live-btn.active .quick-live-status-tag {
+      background: #68aa7a;
+      color: white;
+      box-shadow: 0 2px 6px rgba(64, 126, 81, 0.18);
+    }
+
+    .quick-live-btn.active .quick-live-status-tag:hover {
+      background: #559765;
+    }
+
+    .autocomplete-live-badge {
+      background: var(--givvy-sage-pale);
+      color: var(--givvy-sage-dark);
+    }
+
+    .add-card {
+      overflow: visible;
+      border-radius: 20px;
+      background:
+        linear-gradient(90deg, rgba(237, 112, 146, 0.10), rgba(242, 187, 86, 0.08)) top / 100% 5px no-repeat,
+        rgba(255, 253, 251, 0.96);
+    }
+
+    label {
+      color: #725661;
+    }
+
+    input,
+    select,
+    .buyer-checkbox-holder,
+    .quick-lives-search {
+      border-color: #ecd4da;
+      background: #fffcfb;
+      color: var(--givvy-ink);
+    }
+
+    input:hover,
+    select:hover,
+    .buyer-checkbox-holder:hover,
+    .quick-lives-search:hover {
+      border-color: #e5aebe;
+    }
+
+    input:focus,
+    select:focus,
+    .quick-lives-search:focus {
+      border-color: #9f96bb;
+      box-shadow: 0 0 0 4px rgba(159, 150, 187, 0.16);
+    }
+
+    .autocomplete-menu {
+      border-color: var(--givvy-border);
+      border-radius: 13px;
+      box-shadow: var(--givvy-shadow);
+    }
+
+    .autocomplete-option:hover,
+    .autocomplete-option:focus,
+    .autocomplete-option.keyboard-active {
+      background: var(--givvy-blush);
+    }
+
+    .add-button,
+    .push-notification-button {
+      background: linear-gradient(135deg, var(--givvy-pink), var(--givvy-coral));
+      box-shadow: 0 7px 16px rgba(220, 91, 122, 0.24);
+    }
+
+    .add-button:hover,
+    .push-notification-button:hover:not(:disabled) {
+      background: linear-gradient(135deg, #e75f85, #ef7b69);
+      box-shadow: 0 9px 20px rgba(220, 91, 122, 0.29);
+    }
+
+    .tabs {
+      width: fit-content;
+      padding: 5px;
+      border: 1px solid var(--givvy-border);
+      border-radius: 999px;
+      background: rgba(255, 246, 248, 0.84);
+    }
+
+    .tab {
+      border-color: transparent;
+      background: transparent;
+      color: #966174;
+    }
+
+    .tab:hover {
+      background: #ffe9ef;
+      color: #80485d;
+    }
+
+    .tab.active {
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--givvy-pink), var(--givvy-coral));
+      color: white;
+      box-shadow: 0 5px 13px rgba(220, 91, 122, 0.23);
+    }
+
+    .giveaway,
+    .history-item,
+    .empty {
+      border-color: #f0dee3;
+      background: rgba(255, 254, 252, 0.96);
+      box-shadow: 0 7px 22px rgba(115, 70, 83, 0.07);
+    }
+
+    .giveaway.next {
+      border-color: #bbb5cb;
+      box-shadow: 0 9px 24px rgba(112, 103, 139, 0.09);
+    }
+
+    .giveaway.joined-card {
+      border-left-color: var(--givvy-sage);
+    }
+
+    .giveaway.done,
+    .giveaway.buyer-giveaway.done,
+    .giveaway.favorite-giveaway.done {
+      border-color: #9fc2a8;
+      background: var(--givvy-sage-pale);
+    }
+
+    .giveaway.buyer-giveaway.done,
+    .giveaway.favorite-giveaway.done {
+      border-left-color: var(--givvy-sage);
+    }
+
+    .settings-button {
+      border: 1px solid #f1d4dc;
+      border-radius: 50%;
+      background: #fff1f5;
+      color: #ad5b72;
+      box-shadow: 0 4px 11px rgba(166, 80, 104, 0.12);
+    }
+
+    .settings-button:hover {
+      background: #ffe7ee;
+      color: #884258;
+      box-shadow: 0 5px 13px rgba(166, 80, 104, 0.16);
+    }
+
+    .settings-row input[type="checkbox"] {
+      accent-color: var(--givvy-pink);
+    }
+
+    @media (max-width: 720px) {
+      body {
+        background: linear-gradient(180deg, #fff5f7 0%, #fffaf6 24rem, #fdf8f5 100%);
+      }
+
+      .brand-heading {
+        justify-content: center;
+      }
+
+      .brand-heading-logo {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+      }
+
+      .brand-heading-wordmark {
+        width: min(330px, 100%);
+        height: auto;
+        max-width: 100%;
+      }
+
+      .quick-lives-panel,
+      .add-card {
+        border-radius: 17px;
+        box-shadow: 0 8px 22px rgba(137, 73, 91, 0.08);
+      }
+
+      .quick-live-btn:hover {
+        transform: none;
+      }
+
+      .tabs {
+        width: 100%;
+      }
+
+      .tab {
+        flex: 1;
+        text-align: center;
+      }
+    }
+
   </style>
 </head>
 
@@ -2832,10 +3184,9 @@
 
       <div class="scheduler-column">
 
-    <h1>Giveaway Scheduler</h1>
-
-    <div class="subtitle">
-      Track live giveaways and see exactly when it’s time to join.
+    <div class="brand-heading">
+      <img class="brand-heading-wordmark" src="givvy-time-logo-web.png" alt="Givvy Time" />
+      <h1 class="sr-only">Givvy Time</h1>
     </div>
 
     <div class="add-card">

@@ -1,16 +1,24 @@
 {
-  "name": "Giveaway Scheduler",
-  "short_name": "Giveaways",
-  "description": "Track live giveaways and see exactly when it’s time to join.",
+  "name": "Givvy Time",
+  "short_name": "Givvy Time",
+  "description": "Your cute little helper for tracking live giveaways.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f6fa",
-  "theme_color": "#17181c",
-  "icons": [{
-    "src": "app-icon.svg",
-    "sizes": "any",
-    "type": "image/svg+xml",
-    "purpose": "any maskable"
-  }]
+  "background_color": "#fffaf8",
+  "theme_color": "#fff1f4",
+  "icons": [
+    {
+      "src": "app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }

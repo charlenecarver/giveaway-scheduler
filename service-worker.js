@@ -1,5 +1,14 @@
-const CACHE_NAME = "giveaway-scheduler-v1";
-const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./app-icon.svg"];
+const CACHE_NAME = "givvy-time-v8";
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./favicon-32.png",
+  "./app-icon-180.png",
+  "./app-icon-192.png",
+  "./app-icon-512.png",
+  "./givvy-time-logo-web.png"
+];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
@@ -21,10 +30,10 @@ self.addEventListener("fetch", event => {
 
 self.addEventListener("push", event => {
   const data = event.data?.json() || {};
-  event.waitUntil(self.registration.showNotification(data.title || "Giveaway reminder", {
+  event.waitUntil(self.registration.showNotification(data.title || "Givvy Time reminder", {
     body: data.body || "A giveaway is ending soon.",
-    icon: "app-icon.svg",
-    badge: "app-icon.svg",
+    icon: "app-icon-192.png",
+    badge: "app-icon-192.png",
     tag: data.tag || "giveaway-reminder",
     renotify: true,
     data: { url: data.url || "./" }
