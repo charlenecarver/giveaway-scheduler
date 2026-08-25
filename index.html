@@ -2151,6 +2151,50 @@
        EDIT ENTRY
     ------------------------------ */
 
+    .import-parameter-check {
+      display: none;
+      margin: -6px 0 14px;
+      padding: 12px;
+      border: 1px solid #cfc0eb;
+      border-radius: 10px;
+      background: #faf7ff;
+      color: #4f4562;
+      font-size: 12px;
+    }
+
+    .import-parameter-check.visible {
+      display: block;
+    }
+
+    .import-parameter-check strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #3f3453;
+      font-size: 13px;
+    }
+
+    .import-parameter-values {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      gap: 5px 9px;
+      margin: 0;
+    }
+
+    .import-parameter-values dt {
+      font-weight: 800;
+    }
+
+    .import-parameter-values dd {
+      min-width: 0;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .import-parameter-missing {
+      color: #9992a5;
+      font-style: italic;
+    }
+
     .edit-notice {
       display: none;
       align-items: center;
@@ -4068,6 +4112,11 @@
         Hide
       </button>
 
+      <aside id="importParameterCheck" class="import-parameter-check" aria-live="polite">
+        <strong>Shortcut parameters received</strong>
+        <dl id="importParameterValues" class="import-parameter-values"></dl>
+      </aside>
+
       <div id="editNotice" class="edit-notice">
         <div>
           <div class="edit-notice-copy">
@@ -4813,6 +4862,37 @@
     let sharedLiveReloadTimer = null;
     let addFormInitialStateApplied = false;
     const MAX_HISTORY_ENTRIES = 50;
+
+    function showReceivedImportParameters() {
+      const parameterNames = ["live", "item", "time", "buyer", "captured"];
+      const searchParameters = new URLSearchParams(window.location.search);
+
+      if (!parameterNames.some(name => searchParameters.has(name))) {
+        return;
+      }
+
+      const values = document.getElementById("importParameterValues");
+
+      parameterNames.forEach(name => {
+        const label = document.createElement("dt");
+        const value = document.createElement("dd");
+        const wasProvided = searchParameters.has(name);
+        const decodedValue = wasProvided ? searchParameters.get(name) : "";
+
+        label.textContent = name;
+        value.textContent = wasProvided && decodedValue !== ""
+          ? decodedValue
+          : wasProvided ? "(empty)" : "(not provided)";
+
+        if (!wasProvided || decodedValue === "") {
+          value.className = "import-parameter-missing";
+        }
+
+        values.append(label, value);
+      });
+
+      document.getElementById("importParameterCheck").classList.add("visible");
+    }
 
     function limitHistoryEntries(entries) {
       return [...entries]
@@ -8645,6 +8725,7 @@
       });
 
     applySettingsToUI();
+    showReceivedImportParameters();
     positionQuickLivesPanel();
     const quickLivesMobileQuery = window.matchMedia("(max-width: 760px)");
     const handleQuickLivesLayoutChange = () => positionQuickLivesPanel();
