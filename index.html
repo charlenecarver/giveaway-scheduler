@@ -5535,6 +5535,81 @@
     }
 
 
+    function normalizeShortcutText(value) {
+      return String(value || "")
+        .replace(/\.{2,}|…/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+    }
+
+
+    function findShortcutLive(importedName) {
+      const query = normalizeShortcutText(importedName);
+      if (!query) return null;
+
+      const ranked = getQuickLives()
+        .map(live => {
+          const candidates = [live.name, live.username]
+            .map(normalizeShortcutText)
+            .filter(Boolean);
+          const score = Math.max(...candidates.map(candidate => {
+            if (candidate === query) return 4;
+            if (candidate.startsWith(query) || query.startsWith(candidate)) return 3;
+            if (candidate.includes(query) || query.includes(candidate)) return 2;
+            return 0;
+          }), 0);
+          return { live, score };
+        })
+        .sort((a, b) => b.score - a.score);
+      return ranked[0]?.score > 0 ? ranked[0].live : null;
+    }
+
+
+    function findShortcutItem(live, importedItem) {
+      const query = normalizeShortcutText(importedItem);
+      if (!live || !query) return importedItem;
+
+      const match = live.items.find(item => {
+        const candidate = normalizeShortcutText(item);
+        return candidate === query || candidate.startsWith(query) || query.startsWith(candidate);
+      });
+      return match || importedItem;
+    }
+
+
+    function applyShortcutImport() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("import") !== "giveaway") return;
+
+      const importedLiveName = String(params.get("live") || "").trim();
+      const importedItem = String(params.get("item") || "").trim();
+      const timeMatch = String(params.get("time") || "").match(/^(\d{1,3}):([0-5]\d)$/);
+      const matchedLive = findShortcutLive(importedLiveName);
+      const liveName = matchedLive?.name || importedLiveName;
+
+      clearForm();
+      document.getElementById("liveName").value = liveName;
+      document.getElementById("itemName").value = findShortcutItem(matchedLive, importedItem);
+      document.getElementById("minutes").value = timeMatch ? timeMatch[1] : "";
+      document.getElementById("seconds").value = timeMatch ? timeMatch[2] : "";
+      document.getElementById("isBuyerGiveaway").checked = params.get("buyer") === "1";
+      updateGiveawayItemSuggestions();
+      showTab("active");
+      setAddFormCollapsed(false);
+
+      const cleanUrl = new URL(window.location.href);
+      ["import", "live", "item", "time", "buyer"].forEach(key =>
+        cleanUrl.searchParams.delete(key)
+      );
+      window.history.replaceState({}, "", cleanUrl);
+
+      requestAnimationFrame(() => {
+        document.querySelector(".add-card")?.scrollIntoView({ block: "start" });
+        document.getElementById("addButton")?.focus({ preventScroll: true });
+      });
+    }
+
+
     function renderLiveNameSuggestions() {
       const input = document.getElementById("liveName");
       const menu = document.getElementById("liveNameAutocomplete");
@@ -8658,8 +8733,12 @@
     document.addEventListener("pointerdown", prepareGiveawayAlertAudio, { once: true });
     document.addEventListener("keydown", prepareGiveawayAlertAudio, { once: true });
     render();
-    initializeSharedData();
-    initializeSharedLiveLibrary();
+    const sharedDataInitialization = initializeSharedData();
+    const sharedLiveInitialization = initializeSharedLiveLibrary();
+    Promise.allSettled([
+      sharedDataInitialization,
+      sharedLiveInitialization
+    ]).then(applyShortcutImport);
     initializeInstallBanner();
     initializePushNotifications();
 
