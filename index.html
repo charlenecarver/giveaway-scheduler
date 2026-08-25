@@ -2189,6 +2189,38 @@
        EDIT ENTRY
     ------------------------------ */
 
+    .import-error-notice {
+      display: none;
+      margin: -6px 0 14px;
+      padding: 11px 13px;
+      border: 1px solid #e4b85f;
+      border-radius: 10px;
+      background: #fff9e9;
+      color: #624d25;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .import-error-notice.visible {
+      display: block;
+    }
+
+    .import-error-notice strong {
+      display: block;
+      margin-bottom: 5px;
+      color: #503b18;
+      font-size: 13px;
+    }
+
+    .import-error-notice ul {
+      margin: 0;
+      padding-left: 19px;
+    }
+
+    .import-error-notice li + li {
+      margin-top: 3px;
+    }
+
     .edit-notice {
       display: none;
       align-items: center;
@@ -4106,6 +4138,11 @@
         Hide
       </button>
 
+      <div id="importErrorNotice" class="import-error-notice" role="alert">
+        <strong>Shortcut import needs attention</strong>
+        <ul id="importErrorMessages"></ul>
+      </div>
+
       <div id="editNotice" class="edit-notice">
         <div>
           <div class="edit-notice-copy">
@@ -4952,20 +4989,88 @@
       document.getElementById("minutes").select();
     }
 
+    function showImportedFormErrors(messages) {
+      if (messages.length === 0) {
+        return;
+      }
+
+      const list = document.getElementById("importErrorMessages");
+      list.replaceChildren();
+
+      messages.forEach(message => {
+        const item = document.createElement("li");
+        item.textContent = message;
+        list.append(item);
+      });
+
+      document.getElementById("importErrorNotice").classList.add("visible");
+      setAddFormCollapsed(false);
+    }
+
     function initializeImportedFormPreview() {
       const searchParameters = new URLSearchParams(window.location.search);
 
-      if (
-        searchParameters.get("import") !== "giveaway" ||
-        !searchParameters.has("time")
-      ) {
+      if (searchParameters.get("import") !== "giveaway") {
+        return;
+      }
+
+      const errors = [];
+      const receivedLiveName = searchParameters.get("live") || "";
+      const liveMatch = matchImportedLiveName(receivedLiveName);
+      const importedLiveName = liveMatch.status === "matched"
+        ? (liveMatch.matches[0].name || liveMatch.matches[0].username)
+        : receivedLiveName;
+      const itemName = searchParameters.get("item") || "";
+
+      document.getElementById("liveName").value = importedLiveName;
+      importedLiveAutofilledValue = importedLiveName;
+      document.getElementById("itemName").value = itemName;
+
+      if (!receivedLiveName) {
+        errors.push("No live name was received. Check the Header Text extraction.");
+      } else if (liveMatch.status === "ambiguous") {
+        errors.push("The live name matched more than one Quick Live. Choose the correct live manually.");
+      } else if (liveMatch.status === "none") {
+        errors.push(`No saved Quick Live confidently matched “${receivedLiveName}”. Review the Live Name field.`);
+      }
+
+      if (!itemName) {
+        errors.push("No giveaway item was received. Check the item Match Text action.");
+      }
+
+      if (!searchParameters.has("buyer")) {
+        errors.push("No buyer flag was received; the giveaway was set to regular.");
+      }
+
+      if (!searchParameters.has("countdown")) {
+        errors.push("No countdown value was received; Countdown was set to None.");
+      }
+
+      document.getElementById("isBuyerGiveaway").checked =
+        /^(1|true|yes)$/i.test(searchParameters.get("buyer") || "");
+
+      const countdownValue = searchParameters.get("countdown") || "none";
+      const countdownSelect = document.getElementById("countdownMinutes");
+      const validCountdown = [...countdownSelect.options]
+        .some(option => option.value === countdownValue);
+      countdownSelect.value = validCountdown ? countdownValue : "none";
+
+      if (!validCountdown) {
+        errors.push(`Countdown value “${countdownValue}” is not supported; it was set to None.`);
+      }
+
+      if (!searchParameters.has("time")) {
+        errors.push("No time was received. Check that Encoded Time is present in the Shortcut URL.");
+        showImportedFormErrors(errors);
         return;
       }
 
       const timeMatch = String(searchParameters.get("time") || "")
         .match(/^(\d{1,3}):(\d{1,2})$/);
 
-      if (!timeMatch) {
+      if (!timeMatch || Number(timeMatch[2]) > 59) {
+        errors.push(`Time “${searchParameters.get("time") || "(empty)"}” is not valid. Expected minutes:seconds, such as 05:01.`);
+        showImportedFormErrors(errors);
         return;
       }
 
@@ -4974,21 +5079,18 @@
       const capturedAt = Date.parse(searchParameters.get("captured") || "");
       const timingBase = Number.isFinite(capturedAt) ? capturedAt : Date.now();
 
+      if (!Number.isFinite(capturedAt)) {
+        errors.push("The capture time was missing or invalid. The timer started from the received time without elapsed-time correction.");
+      }
+
       importedTimeEndTime = timingBase + screenshotSeconds * 1000;
       importedTimeWasUsed = true;
 
-      refreshImportedLiveMatch();
-      document.getElementById("itemName").value =
-        searchParameters.get("item") || "";
-      document.getElementById("isBuyerGiveaway").checked =
-        /^(1|true|yes)$/i.test(searchParameters.get("buyer") || "");
+      if (importedTimeEndTime <= Date.now()) {
+        errors.push("The imported timer had already expired before the page opened. Take a new screenshot.");
+      }
 
-      const countdownValue = searchParameters.get("countdown") || "none";
-      const countdownSelect = document.getElementById("countdownMinutes");
-      countdownSelect.value = [...countdownSelect.options]
-        .some(option => option.value === countdownValue)
-          ? countdownValue
-          : "none";
+      refreshImportedLiveMatch();
 
       ["minutes", "seconds"].forEach(id => {
         const input = document.getElementById(id);
@@ -4998,6 +5100,7 @@
 
       document.getElementById("importTimeEditButton").classList.add("visible");
       updateImportedTimePreview();
+      showImportedFormErrors(errors);
     }
 
     function limitHistoryEntries(entries) {
@@ -5639,8 +5742,7 @@
       if (window.matchMedia("(max-width: 760px)").matches) {
         const searchParameters = new URLSearchParams(window.location.search);
         const isGiveawayImport =
-          searchParameters.get("import") === "giveaway" &&
-          searchParameters.has("time");
+          searchParameters.get("import") === "giveaway";
 
         setAddFormCollapsed(
           isGiveawayImport ? false : giveaways.length > 0
@@ -7583,6 +7685,8 @@
         input.classList.remove("import-time-readonly");
       });
       document.getElementById("importTimeEditButton").classList.remove("visible");
+      document.getElementById("importErrorNotice").classList.remove("visible");
+      document.getElementById("importErrorMessages").replaceChildren();
       document.getElementById("countdownMinutes").value = "none";
       document.getElementById("isBuyerGiveaway").checked = false;
 
