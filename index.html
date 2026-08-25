@@ -5628,6 +5628,7 @@
       document.getElementById("isBuyerGiveaway").checked = params.get("buyer") === "1";
       updateGiveawayItemSuggestions();
       showTab("active");
+      addFormInitialStateApplied = true;
       setAddFormCollapsed(false);
 
       requestAnimationFrame(() => {
@@ -8791,15 +8792,9 @@
     document.addEventListener("pointerdown", prepareGiveawayAlertAudio, { once: true });
     document.addEventListener("keydown", prepareGiveawayAlertAudio, { once: true });
     render();
-    const sharedDataInitialization = initializeSharedData();
-    const sharedLiveInitialization = initializeSharedLiveLibrary();
-    Promise.allSettled([sharedDataInitialization]).then(async () => {
-      await Promise.race([
-        Promise.resolve(sharedLiveInitialization).catch(() => undefined),
-        new Promise(resolve => setTimeout(resolve, 1000))
-      ]);
-      applyShortcutImport();
-    });
+    applyShortcutImport();
+    initializeSharedData();
+    initializeSharedLiveLibrary();
     initializeInstallBanner();
     initializePushNotifications();
 
