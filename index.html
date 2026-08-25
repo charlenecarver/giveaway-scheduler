@@ -4705,6 +4705,7 @@
     let pushRegistration = null;
     let pushSubscription = null;
     let countdownPushSyncTimer = null;
+    let pendingShortcutTiming = null;
     const localDevelopmentHosts = new Set([
       "localhost",
       "127.0.0.1",
@@ -5577,16 +5578,6 @@
     }
 
 
-    function getShortcutImportId(...parts) {
-      const value = parts.join("|");
-      let hash = 2166136261;
-      for (let index = 0; index < value.length; index += 1) {
-        hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
-      }
-      return `shortcut-${(hash >>> 0).toString(36)}`;
-    }
-
-
     function applyShortcutImport() {
       const params = new URLSearchParams(window.location.search);
       if (params.get("import") !== "giveaway") return;
@@ -5612,17 +5603,6 @@
       const remainingSeconds = extractedSeconds > 0
         ? Math.max(0, extractedSeconds - elapsedSeconds)
         : 0;
-      const importId = getShortcutImportId(
-        capturedValue,
-        importedLiveName,
-        importedItem,
-        timeMatch?.[0] || ""
-      );
-      // addGiveaway applies the user's configured delay. Add it here so the
-      // imported screenshot time is compensated exactly once.
-      const formSeconds = remainingSeconds > 0
-        ? remainingSeconds + settings.delaySeconds
-        : 0;
 
       const cleanUrl = new URL(window.location.href);
       ["import", "live", "item", "time", "buyer", "captured"].forEach(key =>
@@ -5630,49 +5610,25 @@
       );
       window.history.replaceState({}, "", cleanUrl);
 
-      const existingGiveaway = giveaways.find(
-        giveaway => String(giveaway.id) === importId
-      );
-      if (existingGiveaway) {
-        showTab("active");
-        editGiveaway(existingGiveaway.id);
-        return;
-      }
-
-      if (history.some(entry => String(entry.id) === importId)) {
-        showTab("history");
-        return;
-      }
-
       clearForm();
+      if (extractedSeconds > 0) {
+        pendingShortcutTiming = {
+          capturedAt: Number.isFinite(capturedAt) ? capturedAt : Date.now(),
+          extractedSeconds
+        };
+      }
       document.getElementById("liveName").value = liveName;
       document.getElementById("itemName").value = findShortcutItem(matchedLive, importedItem);
-      document.getElementById("minutes").value = formSeconds
-        ? String(Math.floor(formSeconds / 60))
+      document.getElementById("minutes").value = remainingSeconds
+        ? String(Math.floor(remainingSeconds / 60))
         : "";
-      document.getElementById("seconds").value = formSeconds
-        ? String(formSeconds % 60)
+      document.getElementById("seconds").value = remainingSeconds
+        ? String(remainingSeconds % 60)
         : "";
       document.getElementById("isBuyerGiveaway").checked = params.get("buyer") === "1";
       updateGiveawayItemSuggestions();
       showTab("active");
       setAddFormCollapsed(false);
-
-      const canAutoAdd = Boolean(liveName && remainingSeconds > 0);
-      if (canAutoAdd) {
-        const existingIds = new Set(giveaways.map(giveaway => String(giveaway.id)));
-        addGiveaway();
-        const importedGiveaway = giveaways.find(
-          giveaway => !existingIds.has(String(giveaway.id))
-        );
-        if (importedGiveaway) {
-          importedGiveaway.id = importId;
-          saveData();
-          render();
-          editGiveaway(importedGiveaway.id);
-          return;
-        }
-      }
 
       requestAnimationFrame(() => {
         document.querySelector(".add-card")?.scrollIntoView({ block: "start" });
@@ -7292,6 +7248,34 @@
     }
 
     function addGiveaway() {
+      if (pendingShortcutTiming && editingGiveawayId === null) {
+        const elapsedSeconds = Math.max(
+          0,
+          Math.ceil((Date.now() - pendingShortcutTiming.capturedAt) / 1000)
+        );
+        const remainingSeconds = Math.max(
+          0,
+          pendingShortcutTiming.extractedSeconds - elapsedSeconds
+        );
+        if (remainingSeconds <= 0) {
+          pendingShortcutTiming = null;
+          document.getElementById("minutes").value = "";
+          document.getElementById("seconds").value = "";
+          alert("This giveaway ended before it could be added.");
+          return;
+        }
+
+        // addGiveaway subtracts the configured delay below, so include it in
+        // the form value to avoid applying that delay twice to imported time.
+        const adjustedFormSeconds = remainingSeconds + settings.delaySeconds;
+        document.getElementById("minutes").value = String(
+          Math.floor(adjustedFormSeconds / 60)
+        );
+        document.getElementById("seconds").value = String(
+          adjustedFormSeconds % 60
+        );
+      }
+
       const liveName =
         document.getElementById("liveName").value.trim();
 
@@ -7512,6 +7496,7 @@
     }
 
     function clearForm() {
+      pendingShortcutTiming = null;
       editingGiveawayId = null;
       editingOriginalTiming = null;
       editingTimeChanged = false;
@@ -8778,6 +8763,8 @@
       document.getElementById(id).addEventListener("input", () => {
         if (editingGiveawayId !== null) {
           editingTimeChanged = true;
+        } else {
+          pendingShortcutTiming = null;
         }
       });
     });
