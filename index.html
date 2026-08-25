@@ -5577,6 +5577,16 @@
     }
 
 
+    function getShortcutImportId(...parts) {
+      const value = parts.join("|");
+      let hash = 2166136261;
+      for (let index = 0; index < value.length; index += 1) {
+        hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
+      }
+      return `shortcut-${(hash >>> 0).toString(36)}`;
+    }
+
+
     function applyShortcutImport() {
       const params = new URLSearchParams(window.location.search);
       if (params.get("import") !== "giveaway") return;
@@ -5600,8 +5610,14 @@
         ? Math.max(0, Math.ceil((Date.now() - capturedAt) / 1000))
         : 0;
       const remainingSeconds = extractedSeconds > 0
-        ? Math.max(1, extractedSeconds - elapsedSeconds)
+        ? Math.max(0, extractedSeconds - elapsedSeconds)
         : 0;
+      const importId = getShortcutImportId(
+        capturedValue,
+        importedLiveName,
+        importedItem,
+        timeMatch?.[0] || ""
+      );
       // addGiveaway applies the user's configured delay. Add it here so the
       // imported screenshot time is compensated exactly once.
       const formSeconds = remainingSeconds > 0
@@ -5613,6 +5629,20 @@
         cleanUrl.searchParams.delete(key)
       );
       window.history.replaceState({}, "", cleanUrl);
+
+      const existingGiveaway = giveaways.find(
+        giveaway => String(giveaway.id) === importId
+      );
+      if (existingGiveaway) {
+        showTab("active");
+        editGiveaway(existingGiveaway.id);
+        return;
+      }
+
+      if (history.some(entry => String(entry.id) === importId)) {
+        showTab("history");
+        return;
+      }
 
       clearForm();
       document.getElementById("liveName").value = liveName;
@@ -5636,6 +5666,9 @@
           giveaway => !existingIds.has(String(giveaway.id))
         );
         if (importedGiveaway) {
+          importedGiveaway.id = importId;
+          saveData();
+          render();
           editGiveaway(importedGiveaway.id);
           return;
         }
