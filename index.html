@@ -8792,9 +8792,18 @@
     document.addEventListener("pointerdown", prepareGiveawayAlertAudio, { once: true });
     document.addEventListener("keydown", prepareGiveawayAlertAudio, { once: true });
     render();
-    applyShortcutImport();
     initializeSharedData();
     initializeSharedLiveLibrary();
+    try {
+      applyShortcutImport();
+    } catch (error) {
+      console.error("Could not prefill the Shortcut giveaway:", error);
+      setAddFormCollapsed(false);
+      const formTitle = document.getElementById("formTitle");
+      if (formTitle) {
+        formTitle.textContent = "Add Giveaway — import needs review";
+      }
+    }
     initializeInstallBanner();
     initializePushNotifications();
 
