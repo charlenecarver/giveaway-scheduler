@@ -5637,7 +5637,14 @@
       addFormInitialStateApplied = true;
 
       if (window.matchMedia("(max-width: 760px)").matches) {
-        setAddFormCollapsed(giveaways.length > 0);
+        const searchParameters = new URLSearchParams(window.location.search);
+        const isGiveawayImport =
+          searchParameters.get("import") === "giveaway" &&
+          searchParameters.has("time");
+
+        setAddFormCollapsed(
+          isGiveawayImport ? false : giveaways.length > 0
+        );
       }
     }
 
