@@ -358,6 +358,22 @@
       font-size: 19px;
     }
 
+    .live-import-notice {
+      display: none;
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      border: 1px solid #e4b85f;
+      border-radius: 9px;
+      background: #fff9e9;
+      color: #624d25;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .live-import-notice.visible {
+      display: block;
+    }
+
     .live-editor-field + .live-editor-field {
       margin-top: 14px;
     }
@@ -3716,6 +3732,8 @@
     >
       <h2 id="liveEditorTitle">Edit Live</h2>
 
+      <div id="liveImportNotice" class="live-import-notice" role="alert"></div>
+
       <div class="live-editor-field">
         <label for="liveEditorName">Live Name</label>
         <input
@@ -5182,6 +5200,8 @@
     let editingLiveLibraryItems = [];
     let editingLiveLibraryIsDefault = false;
     let editingLiveLibraryLogoPath = "";
+    let importedLiveEditorOpened = false;
+    let liveEditorIsImport = false;
 
 
     let settings = JSON.parse(
@@ -6584,11 +6604,20 @@
     }
 
 
+    function setLiveImportNotice(messages = []) {
+      const notice = document.getElementById("liveImportNotice");
+      notice.textContent = messages.join(" ");
+      notice.classList.toggle("visible", messages.length > 0);
+    }
+
+
     function openLiveEditor(live) {
       if (!live) {
         return;
       }
 
+      liveEditorIsImport = false;
+      setLiveImportNotice();
       editingLiveLibraryKey = live.key;
       editingLiveLibraryName = live.name;
       editingLiveLibraryItems = [...live.items];
@@ -6612,6 +6641,8 @@
     }
 
     function openNewLiveEditor() {
+      liveEditorIsImport = false;
+      setLiveImportNotice();
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
@@ -6628,6 +6659,64 @@
       renderLiveEditorItems();
       document.getElementById("liveEditorBackdrop").classList.add("open");
       document.getElementById("liveEditorName").focus();
+    }
+
+
+    function initializeImportedLiveEditor() {
+      const searchParameters = new URLSearchParams(window.location.search);
+
+      if (
+        importedLiveEditorOpened ||
+        searchParameters.get("import") !== "live"
+      ) {
+        return;
+      }
+
+      importedLiveEditorOpened = true;
+
+      const name = String(searchParameters.get("name") || "").trim();
+      const username = String(searchParameters.get("username") || "")
+        .trim()
+        .replace(/^@/, "");
+      const existingLive = username
+        ? getQuickLives().find(live =>
+            live.username.trim().toLowerCase() === username.toLowerCase()
+          )
+        : null;
+
+      if (existingLive) {
+        openLiveEditor(existingLive);
+      } else {
+        openNewLiveEditor();
+      }
+
+      liveEditorIsImport = true;
+      document.getElementById("liveEditorTitle").textContent =
+        existingLive ? "Update Imported Live" : "Import Live";
+      document.getElementById("liveEditorName").value = name;
+      document.getElementById("liveEditorUsername").value = username;
+
+      const messages = [];
+
+      if (!name) {
+        messages.push("The Shortcut did not send the full live name.");
+      }
+
+      if (!username) {
+        messages.push("The Shortcut did not send the username.");
+      }
+
+      if (existingLive) {
+        messages.push(`@${username} already exists. Saving will update that live.`);
+      }
+
+      setLiveImportNotice(messages);
+
+      const focusTarget = !name
+        ? document.getElementById("liveEditorName")
+        : document.getElementById("liveEditorUsername");
+      focusTarget.focus();
+      focusTarget.select();
     }
 
     function renderLiveEditorItems() {
@@ -6732,6 +6821,8 @@
 
     function closeLiveEditor() {
       document.getElementById("liveEditorBackdrop").classList.remove("open");
+      liveEditorIsImport = false;
+      setLiveImportNotice();
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
@@ -6812,6 +6903,13 @@
 
       if (!name) {
         alert("Enter the live name.");
+        return;
+      }
+
+      if (liveEditorIsImport && !username) {
+        setLiveImportNotice(["Enter the username before saving this imported live."]);
+        const usernameInput = document.getElementById("liveEditorUsername");
+        usernameInput.focus();
         return;
       }
 
@@ -7421,10 +7519,12 @@
 
     async function initializeSharedLiveLibrary() {
       if (!sharedDatabase) {
+        initializeImportedLiveEditor();
         return;
       }
 
       await loadSharedLiveLibrary();
+      initializeImportedLiveEditor();
 
       sharedDatabase
         .channel("shared-live-library")
