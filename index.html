@@ -8773,10 +8773,13 @@
     render();
     const sharedDataInitialization = initializeSharedData();
     const sharedLiveInitialization = initializeSharedLiveLibrary();
-    Promise.allSettled([
-      sharedDataInitialization,
-      sharedLiveInitialization
-    ]).then(applyShortcutImport);
+    Promise.allSettled([sharedDataInitialization]).then(async () => {
+      await Promise.race([
+        Promise.resolve(sharedLiveInitialization).catch(() => undefined),
+        new Promise(resolve => setTimeout(resolve, 1000))
+      ]);
+      applyShortcutImport();
+    });
     initializeInstallBanner();
     initializePushNotifications();
 
