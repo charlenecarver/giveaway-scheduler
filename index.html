@@ -757,6 +757,44 @@
       min-width: 0;
     }
 
+    .import-time-edit-button {
+      position: absolute;
+      right: 7px;
+      bottom: 7px;
+      display: none;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid #cfc7dc;
+      border-radius: 8px;
+      background: #f8f5fc;
+      color: #655a75;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .import-time-edit-button.visible {
+      display: flex;
+    }
+
+    .import-time-edit-button:hover {
+      border-color: #b4a8ca;
+      background: #f0eaf8;
+    }
+
+    .time-field input.import-time-readonly {
+      background: #faf8fd;
+      color: #544b61;
+      font-variant-numeric: tabular-nums;
+      cursor: default;
+    }
+
+    .time-field:has(.import-time-edit-button.visible) input {
+      padding-right: 40px;
+    }
+
     .autocomplete-menu {
       position: absolute;
       top: calc(100% + 5px);
@@ -4225,6 +4263,15 @@
             max="59"
             placeholder="0"
           />
+
+          <button
+            id="importTimeEditButton"
+            class="import-time-edit-button"
+            type="button"
+            title="Edit imported time"
+            aria-label="Edit imported time"
+            onclick="unlockImportedTime()"
+          >✎</button>
         </div>
 
         <div class="field countdown-field">
@@ -4840,6 +4887,7 @@
       });
 
       showReceivedImportParameters();
+      refreshImportedLiveMatch();
     }
 
     let hiddenQuickLiveKeys = new Set(
@@ -4863,6 +4911,9 @@
     let pendingSharedState = null;
     let sharedLiveReloadTimer = null;
     let addFormInitialStateApplied = false;
+    let importedTimeEndTime = null;
+    let importedTimeWasUsed = false;
+    let importedLiveAutofilledValue = "";
     const MAX_HISTORY_ENTRIES = 50;
 
     function normalizeImportedLiveName(value) {
@@ -4899,6 +4950,104 @@
         status: matches.length > 1 ? "ambiguous" : "none",
         matches
       };
+    }
+
+    function refreshImportedLiveMatch() {
+      if (!importedTimeWasUsed) {
+        return;
+      }
+
+      const searchParameters = new URLSearchParams(window.location.search);
+      const receivedLiveName = searchParameters.get("live") || "";
+      const liveMatch = matchImportedLiveName(receivedLiveName);
+      const liveInput = document.getElementById("liveName");
+      const nextValue = liveMatch.status === "matched"
+        ? (liveMatch.matches[0].name || liveMatch.matches[0].username)
+        : receivedLiveName;
+
+      if (!liveInput.value || liveInput.value === importedLiveAutofilledValue) {
+        liveInput.value = nextValue;
+        importedLiveAutofilledValue = nextValue;
+        updateGiveawayItemSuggestions();
+      }
+    }
+
+    function updateImportedTimePreview() {
+      if (importedTimeEndTime === null) {
+        return;
+      }
+
+      const remainingSeconds = Math.max(
+        0,
+        Math.ceil((importedTimeEndTime - Date.now()) / 1000)
+      );
+
+      document.getElementById("minutes").value =
+        Math.floor(remainingSeconds / 60);
+      document.getElementById("seconds").value =
+        String(remainingSeconds % 60).padStart(2, "0");
+    }
+
+    function unlockImportedTime() {
+      importedTimeEndTime = null;
+
+      ["minutes", "seconds"].forEach(id => {
+        const input = document.getElementById(id);
+        input.readOnly = false;
+        input.classList.remove("import-time-readonly");
+      });
+
+      document.getElementById("importTimeEditButton").classList.remove("visible");
+      document.getElementById("minutes").focus();
+      document.getElementById("minutes").select();
+    }
+
+    function initializeImportedFormPreview() {
+      const searchParameters = new URLSearchParams(window.location.search);
+
+      if (
+        searchParameters.get("import") !== "giveaway" ||
+        !searchParameters.has("time")
+      ) {
+        return;
+      }
+
+      const timeMatch = String(searchParameters.get("time") || "")
+        .match(/^(\d{1,3}):(\d{1,2})$/);
+
+      if (!timeMatch) {
+        return;
+      }
+
+      const screenshotSeconds =
+        (Number(timeMatch[1]) * 60) + Number(timeMatch[2]);
+      const capturedAt = Date.parse(searchParameters.get("captured") || "");
+      const timingBase = Number.isFinite(capturedAt) ? capturedAt : Date.now();
+
+      importedTimeEndTime = timingBase + screenshotSeconds * 1000;
+      importedTimeWasUsed = true;
+
+      refreshImportedLiveMatch();
+      document.getElementById("itemName").value =
+        searchParameters.get("item") || "";
+      document.getElementById("isBuyerGiveaway").checked =
+        /^(1|true|yes)$/i.test(searchParameters.get("buyer") || "");
+
+      const countdownValue = searchParameters.get("countdown") || "none";
+      const countdownSelect = document.getElementById("countdownMinutes");
+      countdownSelect.value = [...countdownSelect.options]
+        .some(option => option.value === countdownValue)
+          ? countdownValue
+          : "none";
+
+      ["minutes", "seconds"].forEach(id => {
+        const input = document.getElementById(id);
+        input.readOnly = true;
+        input.classList.add("import-time-readonly");
+      });
+
+      document.getElementById("importTimeEditButton").classList.add("visible");
+      updateImportedTimePreview();
     }
 
     function showReceivedImportParameters() {
@@ -7379,7 +7528,10 @@
       const delaySeconds = settings.delaySeconds;
 
       const adjustedSeconds =
-        Math.max(1, totalSeconds - delaySeconds);
+        Math.max(
+          1,
+          totalSeconds - (importedTimeWasUsed ? 0 : delaySeconds)
+        );
 
       const useCountdown =
         countdownValue !== "none";
@@ -7520,6 +7672,9 @@
       editingOriginalTiming = null;
       editingTimeChanged = false;
       editingCountdownChanged = false;
+      importedTimeEndTime = null;
+      importedTimeWasUsed = false;
+      importedLiveAutofilledValue = "";
 
       document.getElementById("liveName").value = "";
       document.getElementById("itemName").value = "";
@@ -7528,6 +7683,12 @@
       document.getElementById("itemNameAutocomplete").classList.remove("open");
       document.getElementById("minutes").value = "";
       document.getElementById("seconds").value = "";
+      ["minutes", "seconds"].forEach(id => {
+        const input = document.getElementById(id);
+        input.readOnly = false;
+        input.classList.remove("import-time-readonly");
+      });
+      document.getElementById("importTimeEditButton").classList.remove("visible");
       document.getElementById("countdownMinutes").value = "none";
       document.getElementById("isBuyerGiveaway").checked = false;
 
@@ -8796,6 +8957,7 @@
 
     applySettingsToUI();
     showReceivedImportParameters();
+    initializeImportedFormPreview();
     positionQuickLivesPanel();
     const quickLivesMobileQuery = window.matchMedia("(max-width: 760px)");
     const handleQuickLivesLayoutChange = () => positionQuickLivesPanel();
@@ -8819,6 +8981,8 @@
     let timerUpdatesPaused = false;
 
     setInterval(() => {
+      updateImportedTimePreview();
+
       if (
         sharedDataReady &&
         !document.hidden &&
