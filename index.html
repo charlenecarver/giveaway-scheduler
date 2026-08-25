@@ -4838,6 +4838,8 @@
           defaultQuickLiveKeys.add(key);
         }
       });
+
+      showReceivedImportParameters();
     }
 
     let hiddenQuickLiveKeys = new Set(
@@ -4863,8 +4865,51 @@
     let addFormInitialStateApplied = false;
     const MAX_HISTORY_ENTRIES = 50;
 
+    function normalizeImportedLiveName(value) {
+      return String(value || "")
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/\.{2,}$/, "")
+        .replace(/^@/, "")
+        .replace(/[^a-z0-9]/g, "");
+    }
+
+    function matchImportedLiveName(receivedName) {
+      const query = normalizeImportedLiveName(receivedName);
+
+      if (query.length < 3) {
+        return { status: "none", matches: [] };
+      }
+
+      const matches = starterQuickLives.filter(live =>
+        [live.name, live.username].some(value => {
+          const candidate = normalizeImportedLiveName(value);
+
+          return candidate === query ||
+            (query.length >= 4 && candidate.startsWith(query));
+        })
+      );
+
+      if (matches.length === 1) {
+        return { status: "matched", matches };
+      }
+
+      return {
+        status: matches.length > 1 ? "ambiguous" : "none",
+        matches
+      };
+    }
+
     function showReceivedImportParameters() {
-      const parameterNames = ["live", "item", "time", "buyer", "captured"];
+      const parameterNames = [
+        "live",
+        "item",
+        "time",
+        "buyer",
+        "countdown",
+        "captured"
+      ];
       const searchParameters = new URLSearchParams(window.location.search);
 
       if (!parameterNames.some(name => searchParameters.has(name))) {
@@ -4872,6 +4917,7 @@
       }
 
       const values = document.getElementById("importParameterValues");
+      values.replaceChildren();
 
       parameterNames.forEach(name => {
         const label = document.createElement("dt");
@@ -4890,6 +4936,30 @@
 
         values.append(label, value);
       });
+
+      const receivedLiveName = searchParameters.get("live") || "";
+      const liveMatch = matchImportedLiveName(receivedLiveName);
+      const matchLabel = document.createElement("dt");
+      const matchValue = document.createElement("dd");
+
+      matchLabel.textContent = "matched live";
+
+      if (liveMatch.status === "matched") {
+        const matchedLive = liveMatch.matches[0];
+        matchValue.textContent = matchedLive.name || matchedLive.username;
+      } else if (liveMatch.status === "ambiguous") {
+        matchValue.textContent = `Uncertain: ${liveMatch.matches
+          .map(live => live.name || live.username)
+          .join(", ")}`;
+        matchValue.className = "import-parameter-missing";
+      } else {
+        matchValue.textContent = receivedLiveName
+          ? "No confident Quick Live match"
+          : "(no live name received)";
+        matchValue.className = "import-parameter-missing";
+      }
+
+      values.append(matchLabel, matchValue);
 
       document.getElementById("importParameterCheck").classList.add("visible");
     }
