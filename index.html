@@ -406,9 +406,32 @@
     }
 
     .live-editor-logo-input {
+      min-width: 0;
+      flex: 1;
       height: auto;
       padding: 8px;
       font-size: 12px;
+    }
+
+    .live-editor-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .live-editor-logo-preview {
+      flex: 0 0 52px;
+      width: 52px;
+      height: 52px;
+      padding: 3px;
+      border: 1px solid #ddd7e7;
+      border-radius: 12px;
+      background: white;
+      object-fit: contain;
+    }
+
+    .live-editor-logo-preview[hidden] {
+      display: none;
     }
 
     .live-editor input[type="text"],
@@ -3763,12 +3786,20 @@
 
       <div class="live-editor-field">
         <label for="liveEditorLogo">Logo</label>
-        <input
-          id="liveEditorLogo"
-          class="live-editor-logo-input"
-          type="file"
-          accept="image/png,image/jpeg,image/webp,image/gif"
-        />
+        <div class="live-editor-logo-row">
+          <input
+            id="liveEditorLogo"
+            class="live-editor-logo-input"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+          />
+          <img
+            id="liveEditorLogoPreview"
+            class="live-editor-logo-preview"
+            alt="Current live logo preview"
+            hidden
+          />
+        </div>
         <span id="liveEditorLogoStatus" class="live-editor-logo-status"></span>
       </div>
 
@@ -4938,6 +4969,47 @@
         .replace(/[^a-z0-9]/g, "");
     }
 
+    function getImportedLiveSimilarity(left, right) {
+      if (!left || !right) {
+        return 0;
+      }
+
+      if (left === right) {
+        return 1;
+      }
+
+      if (
+        Math.min(left.length, right.length) >= 4 &&
+        (left.startsWith(right) || right.startsWith(left))
+      ) {
+        return 0.96;
+      }
+
+      const previous = Array.from(
+        { length: right.length + 1 },
+        (_, index) => index
+      );
+
+      for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+        let diagonal = previous[0];
+        previous[0] = leftIndex;
+
+        for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+          const above = previous[rightIndex];
+          const substitutionCost =
+            left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1;
+          previous[rightIndex] = Math.min(
+            previous[rightIndex] + 1,
+            previous[rightIndex - 1] + 1,
+            diagonal + substitutionCost
+          );
+          diagonal = above;
+        }
+      }
+
+      return 1 - (previous[right.length] / Math.max(left.length, right.length));
+    }
+
     function matchImportedLiveName(receivedName) {
       const query = normalizeImportedLiveName(receivedName);
 
@@ -4945,23 +5017,52 @@
         return { status: "none", matches: [] };
       }
 
-      const matches = starterQuickLives.filter(live =>
-        [live.name, live.username].some(value => {
-          const candidate = normalizeImportedLiveName(value);
+      const rankedMatches = starterQuickLives
+        .map(live => ({
+          live,
+          score: Math.max(
+            ...[live.name, live.username]
+              .map(normalizeImportedLiveName)
+              .map(candidate => getImportedLiveSimilarity(query, candidate))
+          )
+        }))
+        .sort((left, right) => right.score - left.score);
+      const best = rankedMatches[0];
+      const secondBest = rankedMatches[1];
+      const minimumScore = query.length >= 8
+        ? 0.68
+        : query.length >= 5 ? 0.74 : 0.86;
+      const isUniqueEnough =
+        !secondBest || best.score - secondBest.score >= 0.08;
 
-          return candidate === query ||
-            (query.length >= 4 && candidate.startsWith(query));
-        })
-      );
-
-      if (matches.length === 1) {
-        return { status: "matched", matches };
+      if (best && best.score >= minimumScore && isUniqueEnough) {
+        return { status: "matched", matches: [best.live] };
       }
 
       return {
-        status: matches.length > 1 ? "ambiguous" : "none",
-        matches
+        status:
+          best && best.score >= minimumScore ? "ambiguous" : "none",
+        matches: rankedMatches
+          .filter(match => match.score >= minimumScore)
+          .map(match => match.live)
       };
+    }
+
+    function clearResolvedImportedLiveWarning() {
+      const list = document.getElementById("importErrorMessages");
+
+      [...list.children].forEach(item => {
+        if (
+          item.textContent.startsWith("No saved Quick Live confidently matched") ||
+          item.textContent.startsWith("The live name matched more than one Quick Live")
+        ) {
+          item.remove();
+        }
+      });
+
+      if (list.children.length === 0) {
+        document.getElementById("importErrorNotice").classList.remove("visible");
+      }
     }
 
     function refreshImportedLiveMatch() {
@@ -4976,6 +5077,10 @@
       const nextValue = liveMatch.status === "matched"
         ? (liveMatch.matches[0].name || liveMatch.matches[0].username)
         : receivedLiveName;
+
+      if (liveMatch.status === "matched") {
+        clearResolvedImportedLiveWarning();
+      }
 
       if (!liveInput.value || liveInput.value === importedLiveAutofilledValue) {
         liveInput.value = nextValue;
@@ -5209,6 +5314,7 @@
     let editingLiveLibraryLogoPath = "";
     let importedLiveEditorOpened = false;
     let liveEditorIsImport = false;
+    let liveEditorPreviewObjectUrl = "";
 
 
     let settings = JSON.parse(
@@ -6618,6 +6724,71 @@
     }
 
 
+    function clearLiveEditorLogoPreview() {
+      const preview = document.getElementById("liveEditorLogoPreview");
+
+      if (liveEditorPreviewObjectUrl) {
+        URL.revokeObjectURL(liveEditorPreviewObjectUrl);
+        liveEditorPreviewObjectUrl = "";
+      }
+
+      preview.onload = null;
+      preview.onerror = null;
+      preview.removeAttribute("src");
+      preview.hidden = true;
+    }
+
+
+    function showLiveEditorLogoPreview(logoKey, logoPath = "") {
+      clearLiveEditorLogoPreview();
+
+      const preview = document.getElementById("liveEditorLogoPreview");
+      const logoStem = String(logoKey || "").replace(/\./g, "").toLowerCase();
+      const extension = pngLogoStems.has(logoStem) ? "png" : "jpeg";
+      const encodedLogoPath = String(logoPath || "")
+        .split("/")
+        .map(encodeURIComponent)
+        .join("/");
+      const candidates = [
+        encodedLogoPath
+          ? `${SUPABASE_URL}/storage/v1/object/public/live-logos/${encodedLogoPath}`
+          : "",
+        logoStem ? `logos/${logoStem}.${extension}` : ""
+      ].filter(Boolean);
+      let candidateIndex = 0;
+
+      const tryNextCandidate = () => {
+        if (candidateIndex >= candidates.length) {
+          clearLiveEditorLogoPreview();
+          return;
+        }
+
+        preview.src = candidates[candidateIndex];
+        candidateIndex += 1;
+      };
+
+      preview.onload = () => {
+        preview.hidden = false;
+      };
+      preview.onerror = tryNextCandidate;
+      tryNextCandidate();
+    }
+
+
+    function showSelectedLiveEditorLogo(file) {
+      clearLiveEditorLogoPreview();
+
+      if (!file || !file.type.startsWith("image/")) {
+        return;
+      }
+
+      const preview = document.getElementById("liveEditorLogoPreview");
+      liveEditorPreviewObjectUrl = URL.createObjectURL(file);
+      preview.src = liveEditorPreviewObjectUrl;
+      preview.hidden = false;
+    }
+
+
     function openLiveEditor(live) {
       if (!live) {
         return;
@@ -6635,6 +6806,7 @@
       document.getElementById("liveEditorUsername").value = live.username;
       document.getElementById("liveEditorItemInput").value = "";
       document.getElementById("liveEditorLogo").value = "";
+      showLiveEditorLogoPreview(live.username || live.name, live.logoPath || "");
       document.getElementById("liveEditorLogoStatus").textContent =
         editingLiveLibraryLogoPath
           ? `Current logo: ${editingLiveLibraryLogoPath}`
@@ -6661,6 +6833,7 @@
       document.getElementById("liveEditorUsername").value = "";
       document.getElementById("liveEditorItemInput").value = "";
       document.getElementById("liveEditorLogo").value = "";
+      clearLiveEditorLogoPreview();
       document.getElementById("liveEditorLogoStatus").textContent =
         "Choose an image to upload a logo.";
       document.getElementById("liveEditorDeleteButton").style.display = "none";
@@ -6831,6 +7004,7 @@
     function closeLiveEditor() {
       document.getElementById("liveEditorBackdrop").classList.remove("open");
       document.body.classList.remove("live-editor-open");
+      clearLiveEditorLogoPreview();
       liveEditorIsImport = false;
       setLiveImportNotice();
       editingLiveLibraryKey = null;
@@ -7550,6 +7724,17 @@
         .subscribe();
     }
 
+    function getLiveIdentity(liveName) {
+      const normalizedName = normalizeImportedLiveName(liveName);
+      const matchedLive = getQuickLives().find(live =>
+        [live.name, live.username].some(value =>
+          normalizeImportedLiveName(value) === normalizedName
+        )
+      );
+
+      return String(matchedLive?.key || normalizedName).trim().toLowerCase();
+    }
+
     function addGiveaway() {
       const liveName =
         document.getElementById("liveName").value.trim();
@@ -7608,6 +7793,23 @@
       const isEditing =
         editingGiveawayId !== null;
 
+      const now = Date.now();
+      const requestedLiveIdentity = getLiveIdentity(liveName);
+      const duplicateGiveaway = giveaways.find(giveaway =>
+        String(giveaway.id) !== String(editingGiveawayId) &&
+        giveaway.doneSince == null &&
+        Number(giveaway.endTime) > now &&
+        getLiveIdentity(giveaway.liveName) === requestedLiveIdentity
+      );
+
+      if (duplicateGiveaway) {
+        alert(
+          `${duplicateGiveaway.liveName} already has a giveaway going. ` +
+          "A live can only have one giveaway at a time."
+        );
+        return;
+      }
+
       const liveKey = liveName.toLowerCase();
       const matchedQuickLive = !isEditing
         ? getQuickLives().find(live =>
@@ -7628,8 +7830,6 @@
         );
         return;
       }
-
-      const now = Date.now();
 
       const delaySeconds = settings.delaySeconds;
 
@@ -8957,6 +9157,26 @@
     document
       .getElementById("liveEditorItemInput")
       .addEventListener("focus", updateLiveEditorItemSuggestions);
+
+    document
+      .getElementById("liveEditorLogo")
+      .addEventListener("change", event => {
+        const file = event.currentTarget.files[0];
+        showSelectedLiveEditorLogo(file);
+
+        if (file) {
+          document.getElementById("liveEditorLogoStatus").textContent =
+            `Selected: ${file.name}`;
+        } else {
+          const logoKey = document.getElementById("liveEditorUsername").value ||
+            document.getElementById("liveEditorName").value;
+          showLiveEditorLogoPreview(logoKey, editingLiveLibraryLogoPath);
+          document.getElementById("liveEditorLogoStatus").textContent =
+            editingLiveLibraryLogoPath
+              ? `Current logo: ${editingLiveLibraryLogoPath}`
+              : "Choose an image to upload a logo.";
+        }
+      });
 
     document
       .getElementById("liveEditorBackdrop")

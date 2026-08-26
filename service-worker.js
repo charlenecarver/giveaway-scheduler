@@ -1,4 +1,4 @@
-const CACHE_NAME = "givvy-time-v36";
+const CACHE_NAME = "givvy-time-v37";
 const IMAGE_CACHE_NAME = "givvy-time-images-v2";
 const APP_SHELL = [
   "./",
