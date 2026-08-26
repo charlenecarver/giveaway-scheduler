@@ -5066,12 +5066,18 @@
     }
 
     function refreshImportedLiveMatch() {
-      if (!importedTimeWasUsed) {
+      const searchParameters = new URLSearchParams(window.location.search);
+
+      if (searchParameters.get("import") !== "giveaway") {
         return;
       }
 
-      const searchParameters = new URLSearchParams(window.location.search);
       const receivedLiveName = searchParameters.get("live") || "";
+
+      if (!receivedLiveName) {
+        return;
+      }
+
       const liveMatch = matchImportedLiveName(receivedLiveName);
       const liveInput = document.getElementById("liveName");
       const nextValue = liveMatch.status === "matched"
