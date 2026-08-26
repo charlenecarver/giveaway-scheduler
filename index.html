@@ -2519,6 +2519,13 @@
       display: block;
     }
 
+    body.live-editor-open .clear-form-button,
+    body.live-editor-open .settings-button,
+    body.live-editor-open .settings-panel {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
     .settings-title {
       margin: 0 0 12px;
       font-size: 16px;
@@ -6635,6 +6642,7 @@
       document.getElementById("liveEditorDeleteButton").style.display =
         live.isDefault ? "none" : "inline-flex";
       renderLiveEditorItems();
+      document.body.classList.add("live-editor-open");
       document.getElementById("liveEditorBackdrop").classList.add("open");
       document.getElementById("liveEditorName").focus();
       document.getElementById("liveEditorName").select();
@@ -6657,6 +6665,7 @@
         "Choose an image to upload a logo.";
       document.getElementById("liveEditorDeleteButton").style.display = "none";
       renderLiveEditorItems();
+      document.body.classList.add("live-editor-open");
       document.getElementById("liveEditorBackdrop").classList.add("open");
       document.getElementById("liveEditorName").focus();
     }
@@ -6821,6 +6830,7 @@
 
     function closeLiveEditor() {
       document.getElementById("liveEditorBackdrop").classList.remove("open");
+      document.body.classList.remove("live-editor-open");
       liveEditorIsImport = false;
       setLiveImportNotice();
       editingLiveLibraryKey = null;
