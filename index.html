@@ -6976,7 +6976,9 @@
       liveEditorIsImport = true;
       document.getElementById("liveEditorTitle").textContent =
         existingLive ? "Update Imported Live" : "Import Live";
-      document.getElementById("liveEditorName").value = name;
+      document.getElementById("liveEditorName").value = existingLive
+        ? existingLive.name
+        : name;
       document.getElementById("liveEditorUsername").value = username;
 
       const messages = [];
@@ -6990,7 +6992,7 @@
       }
 
       if (existingLive) {
-        messages.push(`@${username} already exists. Saving will update that live.`);
+        messages.push(`@${username} already exists. The saved full name was kept.`);
       }
 
       setLiveImportNotice(messages);
@@ -7982,15 +7984,11 @@
         if (!useCountdown) {
           clearGiveawayParticipation(giveaway.id);
         } else if (editingCountdownChanged) {
-          const countdownDuration = countdownMinutes * 60 * 1000;
           setGiveawayParticipation(giveaway.id, {
-            countdownEndTime:
-              endTime - now >= countdownDuration
-                ? now + countdownDuration
-                : null,
+            countdownEndTime: null,
             joined: false,
             joinedAt: null,
-            couldntJoin: endTime - now < countdownDuration
+            couldntJoin: false
           });
         }
       } else {
@@ -8014,19 +8012,6 @@
         };
 
         giveaways.push(giveaway);
-
-        if (useCountdown) {
-          const countdownDuration = countdownMinutes * 60 * 1000;
-          setGiveawayParticipation(giveaway.id, {
-            countdownEndTime:
-              endTime - now >= countdownDuration
-                ? now + countdownDuration
-                : null,
-            joined: false,
-            joinedAt: null,
-            couldntJoin: endTime - now < countdownDuration
-          });
-        }
 
         const sharedLive = matchedQuickLive || {
           key: liveKey,
