@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#fff8f8" />
+  <title>Manage Lives — Givvy Time</title>
+  <link rel="icon" href="favicon-32.png" />
+  <style>
+    :root {
+      --ink: #553d49;
+      --muted: #806f78;
+      --pink: #ef718c;
+      --pink-dark: #c95470;
+      --purple: #8b6fa8;
+      --border: #ecd9df;
+      --panel: rgba(255, 253, 251, 0.96);
+      --shadow: 0 12px 34px rgba(112, 71, 89, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-rounded, "SF Pro Rounded", system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(255, 215, 224, 0.6), transparent 34%),
+        radial-gradient(circle at 90% 12%, rgba(224, 207, 243, 0.52), transparent 32%),
+        #fff9f7;
+    }
+
+    button, input, textarea { font: inherit; }
+
+    .page {
+      width: min(1800px, calc(100% - 32px));
+      height: 100dvh;
+      margin: 0 auto;
+      padding: 24px 0 48px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .heading { display: flex; align-items: center; gap: 14px; }
+    .heading img { width: 58px; height: 58px; object-fit: contain; }
+    h1 { margin: 0; font-size: clamp(25px, 4vw, 36px); letter-spacing: -0.035em; }
+    .subtitle { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(112, 71, 89, 0.07);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 190px auto auto auto;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .search, .sort-select, .cell-input {
+      width: 100%;
+      border: 1px solid #dfd3d8;
+      border-radius: 9px;
+      outline: none;
+      background: white;
+      color: #44343c;
+    }
+
+    .search { height: 42px; padding: 9px 12px; }
+    .sort-select { height: 42px; padding: 8px 10px; }
+    .cell-input { height: 38px; padding: 7px 9px; font-size: 13px; }
+    .search:focus, .cell-input:focus { border-color: #a98abe; box-shadow: 0 0 0 3px rgba(169, 138, 190, 0.14); }
+
+    .button {
+      min-height: 42px;
+      padding: 9px 15px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 850;
+    }
+
+    .button:disabled { cursor: wait; opacity: 0.55; }
+    .button-primary { background: linear-gradient(135deg, #ef718c, #ed7b73); color: white; }
+    .button-secondary { border: 1px solid #d9cce1; background: #f7f1fc; color: #654f75; }
+    .button-danger { border: 1px solid #f0c8d0; background: #fff1f3; color: #a63e55; }
+
+    .logo-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 42px;
+      padding: 8px 12px;
+      border: 1px solid #d9cce1;
+      border-radius: 10px;
+      background: #faf7fc;
+      color: #654f75;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .logo-filter input { width: 18px; height: 18px; accent-color: var(--purple); }
+
+    .status {
+      min-height: 22px;
+      margin: 0 2px 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .status.error { color: #ad3f54; }
+    .status.success { color: #357151; }
+
+    .grid-shell {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overscroll-behavior: contain;
+    }
+
+    table { width: 100%; min-width: 1325px; border-collapse: separate; border-spacing: 0; }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      padding: 11px 9px;
+      border-bottom: 1px solid var(--border);
+      background: #f8f1f7;
+      color: #66525d;
+      font-size: 11px;
+      letter-spacing: 0.055em;
+      text-align: left;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    td { padding: 9px; border-bottom: 1px solid #f1e6e9; vertical-align: top; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr.dirty { background: #fffbeb; }
+    tbody tr.dirty td:first-child { box-shadow: inset 4px 0 #d59a28; }
+    tbody tr.saved-change { background: #f2fbf5; }
+    tbody tr.saved-change td:first-child { box-shadow: inset 4px 0 #4b9d6c; }
+    tbody tr.saving { opacity: 0.62; }
+    tbody tr.hidden-row { display: none; }
+
+    .logo-cell { width: 105px; text-align: center; }
+    .logo-preview, .logo-fallback {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto;
+      border-radius: 50%;
+    }
+    .logo-preview { display: block; object-fit: contain; background: white; }
+    .logo-fallback { display: flex; align-items: center; justify-content: center; background: #eee3f5; color: #6b5779; font-size: 11px; font-weight: 900; }
+    .logo-picker { display: block; margin-top: 6px; color: #765d88; font-size: 10px; font-weight: 850; cursor: pointer; }
+    .logo-picker input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .row-change-badge {
+      display: none;
+      width: fit-content;
+      margin: 6px auto 0;
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    tr.dirty .row-change-badge { display: block; background: #fff0bd; color: #815c13; }
+    tr.saved-change .row-change-badge { display: block; background: #dff3e5; color: #276143; }
+    .name-cell { width: 210px; }
+    .username-cell { width: 190px; }
+    .items-cell { width: 300px; }
+    .items-editor { display: grid; gap: 6px; }
+    .item-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .item-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 100%;
+      padding: 4px 6px 4px 9px;
+      border-radius: 999px;
+      background: #f0e9f5;
+      color: #5f4d6c;
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .item-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item-chip-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: #dfd3e8;
+      color: #705e7c;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .item-chip-remove { background: #ead5dc; color: #965064; font-size: 14px; }
+    .item-rename-input { width: 150px; height: 26px; padding: 3px 7px; border: 1px solid #a98abe; border-radius: 7px; outline: none; font-size: 11px; }
+    .item-add-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
+    .item-add-row[hidden] { display: none; }
+    .item-add-row .cell-input { height: 34px; font-size: 12px; }
+    .item-add {
+      min-height: 34px;
+      padding: 5px 10px;
+      border: 1px solid #d9cce1;
+      border-radius: 8px;
+      background: #f7f1fc;
+      color: #654f75;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .item-add-trigger {
+      justify-self: start;
+      padding: 4px 9px;
+      border: 1px dashed #cbb9d6;
+      border-radius: 999px;
+      background: #faf7fc;
+      color: #715e7d;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 850;
+    }
+    .item-add-trigger[hidden] { display: none; }
+    .items-empty { color: #9a8992; font-size: 11px; font-style: italic; }
+    .updated-cell { width: 165px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .issue-cell { width: 135px; }
+    .issue-badge { padding: 6px 9px; border: 1px solid #e5b9c4; border-radius: 999px; background: #fff0f3; color: #9a3f56; cursor: pointer; font-size: 11px; font-weight: 850; }
+    .issue-clear { display: block; margin-top: 5px; padding: 0; border: 0; background: transparent; color: #826f78; cursor: pointer; font-size: 10px; text-decoration: underline; }
+    .issue-none { color: #a1949a; font-size: 11px; }
+    .actions-cell { width: 205px; white-space: nowrap; }
+    .actions-cell .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      min-height: 36px;
+      padding: 0 10px;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+    .actions-cell .row-undo {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      min-height: 36px;
+      padding: 0;
+      line-height: 1;
+    }
+    .row-undo svg {
+      width: 21px;
+      height: 21px;
+      fill: none;
+      stroke: #604a59;
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    tr.dirty .row-undo { display: inline-flex; }
+    .profile-link { display: inline-flex; align-items: center; justify-content: center; height: 36px; min-height: 36px; padding: 0 10px; border: 1px solid #d9cce1; border-radius: 10px; background: #f7f1fc; color: #654f75; font-size: 12px; font-weight: 850; text-decoration: none; vertical-align: middle; }
+    .profile-link.disabled { opacity: 0.45; pointer-events: none; }
+    .row-message { display: block; min-height: 16px; margin-top: 4px; font-size: 10px; white-space: normal; }
+    .row-message.error { color: #ad3f54; }
+    .row-message.success { color: #357151; }
+    .empty { padding: 46px 20px; text-align: center; color: var(--muted); }
+
+    @media (max-width: 700px) {
+      .page { width: min(100% - 20px, 1800px); padding-top: 12px; }
+      header { align-items: flex-start; }
+      .heading img { width: 48px; height: 48px; }
+      .subtitle { display: none; }
+      .back-link { padding: 9px 11px; font-size: 12px; }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+      .search { grid-column: 1 / -1; }
+      .sort-select { width: 100%; }
+      .page { padding-bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="heading">
+        <img src="app-icon-192.png" alt="" />
+        <div>
+          <h1>Manage Lives</h1>
+          <p class="subtitle">Edit every saved live directly in the grid.</p>
+        </div>
+      </div>
+      <a class="back-link" href="index.html">‹ Givvy Time</a>
+    </header>
+
+    <section class="toolbar" aria-label="Live management controls">
+      <input id="searchInput" class="search" type="search" placeholder="Search name, username, or item…" />
+      <select id="sortSelect" class="sort-select" aria-label="Sort lives">
+        <option value="newest" selected>Newest added</option>
+        <option value="oldest">Oldest added</option>
+        <option value="giveaway-newest">Latest giveaway activity</option>
+        <option value="giveaway-oldest">Oldest giveaway activity</option>
+        <option value="name">Name A–Z</option>
+        <option value="username">Username A–Z</option>
+      </select>
+      <label class="logo-filter">
+        <input id="missingLogoFilter" type="checkbox" />
+        Missing logo only
+      </label>
+      <button id="addButton" class="button button-secondary" type="button">+ Add Live</button>
+      <button id="saveAllButton" class="button button-primary" type="button">Save All Changes</button>
+    </section>
+
+    <div id="status" class="status" role="status">Loading lives…</div>
+
+    <div class="grid-shell">
+      <table>
+        <thead>
+          <tr>
+            <th>Logo</th>
+            <th>Live Name</th>
+            <th>Username</th>
+            <th>Giveaway Items</th>
+            <th>Import Flags</th>
+            <th>Added</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="livesBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty" hidden>No lives match this search.</div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://arlpqgcuoprznagadnau.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_V3jf_H8m4UXNlTb50iW7jw_NUoZ0rhl";
+    const database = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const body = document.getElementById("livesBody");
+    const status = document.getElementById("status");
+    const emptyState = document.getElementById("emptyState");
+    let rows = [];
+    let createdAtSupported = false;
+    let importIssuesSupported = false;
+
+    function setStatus(message, type = "") {
+      status.textContent = message;
+      status.className = `status ${type}`.trim();
+    }
+
+    function normalizeKey(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/^@/, "")
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9._-]/g, "");
+    }
+
+    function getInitials(name) {
+      return String(name || "?")
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0])
+        .join("")
+        .toUpperCase() || "?";
+    }
+
+    function normalizeItems(items) {
+      return [...new Set((Array.isArray(items) ? items : [])
+        .map(item => String(item || "").trim())
+        .filter(Boolean))];
+    }
+
+    function createInput(field, value, className = "cell-input") {
+      const input = document.createElement("input");
+      input.className = className;
+      input.dataset.field = field;
+      input.value = value ?? "";
+      return input;
+    }
+
+    function renderItemsEditor(row) {
+      const list = row.querySelector(".item-list");
+      list.replaceChildren();
+
+      if (row._items.length === 0) {
+        const empty = document.createElement("span");
+        empty.className = "items-empty";
+        empty.textContent = "No saved items";
+        list.append(empty);
+        return;
+      }
+
+      row._items.forEach((item, index) => {
+        const chip = document.createElement("span");
+        chip.className = "item-chip";
+        const text = document.createElement("span");
+        text.className = "item-chip-text";
+        text.textContent = item;
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "item-chip-action";
+        edit.textContent = "✎";
+        edit.setAttribute("aria-label", `Rename ${item}`);
+        edit.addEventListener("click", () => {
+          const input = document.createElement("input");
+          input.className = "item-rename-input";
+          input.value = item;
+          let finished = false;
+          const finish = save => {
+            if (finished) return;
+            finished = true;
+            const value = input.value.trim();
+            const duplicate = row._items.some(
+              (existing, existingIndex) =>
+                existingIndex !== index &&
+                existing.trim().toLowerCase() === value.toLowerCase()
+            );
+            if (save && value && !duplicate && value !== item) {
+              row._items[index] = value;
+              markDirty(row);
+            }
+            renderItemsEditor(row);
+          };
+          input.addEventListener("keydown", event => {
+            if (event.key === "Enter") finish(true);
+            if (event.key === "Escape") finish(false);
+          });
+          input.addEventListener("blur", () => finish(true));
+          chip.replaceChildren(input);
+          input.focus();
+          input.select();
+        });
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "item-chip-action item-chip-remove";
+        remove.textContent = "×";
+        remove.setAttribute("aria-label", `Delete ${item}`);
+        remove.addEventListener("click", () => {
+          row._items.splice(index, 1);
+          markDirty(row);
+          renderItemsEditor(row);
+        });
+        chip.append(text, edit, remove);
+        list.append(chip);
+      });
+    }
+
+    function createItemsEditor(row, items) {
+      row._items = normalizeItems(items);
+      const editor = document.createElement("div");
+      editor.className = "items-editor";
+      const list = document.createElement("div");
+      list.className = "item-list";
+      const trigger = document.createElement("button");
+      trigger.type = "button";
+      trigger.className = "item-add-trigger";
+      trigger.textContent = "+ Add item";
+      const addRow = document.createElement("div");
+      addRow.className = "item-add-row";
+      addRow.hidden = true;
+      const input = document.createElement("input");
+      input.className = "cell-input item-add-input";
+      input.placeholder = "Add an item";
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "item-add";
+      add.textContent = "Add";
+      const addItem = () => {
+        const value = input.value.trim();
+        if (!value) return;
+        if (!row._items.some(item => item.trim().toLowerCase() === value.toLowerCase())) {
+          row._items.push(value);
+          markDirty(row);
+        }
+        input.value = "";
+        renderItemsEditor(row);
+        addRow.hidden = true;
+        trigger.hidden = false;
+      };
+      trigger.addEventListener("click", () => {
+        trigger.hidden = true;
+        addRow.hidden = false;
+        input.focus();
+      });
+      add.addEventListener("click", addItem);
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addItem();
+        } else if (event.key === "Escape") {
+          input.value = "";
+          addRow.hidden = true;
+          trigger.hidden = false;
+          trigger.focus();
+        }
+      });
+      addRow.append(input, add);
+      editor.append(list, trigger, addRow);
+      return editor;
+    }
+
+    function updateLogoPreview(row) {
+      const holder = row.querySelector(".logo-holder");
+      const path = row.dataset.logoPath || "";
+      const username = row.querySelector('[data-field="username"]').value.trim();
+      const name = row.querySelector('[data-field="name"]').value.trim();
+      holder.replaceChildren();
+
+      if (row._logoPreviewUrl) {
+        URL.revokeObjectURL(row._logoPreviewUrl);
+        row._logoPreviewUrl = "";
+      }
+
+      const fallback = document.createElement("span");
+      fallback.className = "logo-fallback";
+      fallback.textContent = getInitials(name);
+      holder.append(fallback);
+
+      const candidates = [];
+      if (row._logoFile) {
+        row._logoPreviewUrl = URL.createObjectURL(row._logoFile);
+        candidates.push(row._logoPreviewUrl);
+      } else if (path) {
+        const encoded = path.split("/").map(encodeURIComponent).join("/");
+        candidates.push(`${SUPABASE_URL}/storage/v1/object/public/live-logos/${encoded}`);
+      }
+      if (username) {
+        candidates.push(`logos/${username.replace(/\./g, "").toLowerCase()}.jpeg`);
+        candidates.push(`logos/${username.replace(/\./g, "").toLowerCase()}.png`);
+      }
+
+      let index = 0;
+      const image = document.createElement("img");
+      image.className = "logo-preview";
+      image.alt = "";
+      image.onload = () => fallback.remove();
+      image.onerror = () => {
+        if (index < candidates.length) image.src = candidates[index++];
+        else image.remove();
+      };
+      holder.append(image);
+      if (candidates.length) image.src = candidates[index++];
+      else image.remove();
+    }
+
+    function updateProfileLink(row) {
+      const username = row.querySelector('[data-field="username"]').value.trim().replace(/^@/, "");
+      const link = row.querySelector(".profile-link");
+      link.classList.toggle("disabled", !username);
+      link.toggleAttribute("aria-disabled", !username);
+      if (username) link.href = `https://www.tiktok.com/@${username}`;
+      else link.removeAttribute("href");
+    }
+
+    function markDirty(row) {
+      row.classList.remove("saved-change");
+      row.classList.add("dirty");
+      row.querySelector(".row-change-badge").textContent = "Edited";
+      row.querySelector(".row-message").textContent = "";
+      row.querySelector(".row-message").className = "row-message";
+    }
+
+    function captureRowState(row) {
+      return {
+        name: row.querySelector('[data-field="name"]').value,
+        username: row.querySelector('[data-field="username"]').value,
+        items: [...row._items],
+        logoPath: row.dataset.logoPath || "",
+        importIssues: row._importIssues.map(issue => ({
+          ...issue,
+          parameters: { ...(issue.parameters || {}) }
+        }))
+      };
+    }
+
+    function undoRowEdits(row) {
+      if (!row.dataset.originalKey) {
+        if (row._logoPreviewUrl) URL.revokeObjectURL(row._logoPreviewUrl);
+        row.remove();
+        rows = rows.filter(candidate => candidate !== row);
+        applyView();
+        return;
+      }
+
+      const original = row._originalState;
+      row.querySelector('[data-field="name"]').value = original.name;
+      row.querySelector('[data-field="username"]').value = original.username;
+      row._items = [...original.items];
+      row.dataset.logoPath = original.logoPath;
+      row._logoFile = null;
+      row._importIssues = original.importIssues.map(issue => ({
+        ...issue,
+        parameters: { ...(issue.parameters || {}) }
+      }));
+      const logoInput = row.querySelector('.logo-picker input[type="file"]');
+      logoInput.value = "";
+      row.querySelector(".logo-picker").childNodes[0].textContent =
+        original.logoPath ? "Change image" : "Choose image";
+      row.classList.remove("dirty", "saved-change");
+      row.querySelector(".row-change-badge").textContent = "";
+      row.querySelector(".row-message").textContent = "";
+      row.querySelector(".row-message").className = "row-message";
+      updateLogoPreview(row);
+      updateProfileLink(row);
+      renderItemsEditor(row);
+      renderImportIssues(row);
+      applyView();
+    }
+
+    function makeCell(className = "") {
+      const cell = document.createElement("td");
+      cell.className = className;
+      return cell;
+    }
+
+    function renderImportIssues(row) {
+      const cell = row.querySelector(".issue-cell");
+      cell.replaceChildren();
+      if (row._importIssues.length === 0) {
+        const empty = document.createElement("span");
+        empty.className = "issue-none";
+        empty.textContent = "None";
+        cell.append(empty);
+        return;
+      }
+      const badge = document.createElement("button");
+      badge.type = "button";
+      badge.className = "issue-badge";
+      badge.textContent = `⚑ ${row._importIssues.length}`;
+      badge.title = "View captured import details";
+      badge.addEventListener("click", () => {
+        const details = row._importIssues.map((issue, index) =>
+          `${index + 1}. ${String(issue.type || "import").toUpperCase()} — ${new Date(issue.createdAt || Date.now()).toLocaleString()}\n${JSON.stringify(issue.parameters || {}, null, 2)}`
+        ).join("\n\n");
+        window.alert(details);
+      });
+      const clear = document.createElement("button");
+      clear.type = "button";
+      clear.className = "issue-clear";
+      clear.textContent = "Mark resolved";
+      clear.addEventListener("click", () => {
+        row._importIssues = [];
+        markDirty(row);
+        renderImportIssues(row);
+      });
+      cell.append(badge, clear);
+    }
+
+    function createRow(live = {}) {
+      const row = document.createElement("tr");
+      row.dataset.originalKey = live.key || "";
+      row.dataset.logoPath = live.logo_path || "";
+      row.dataset.lastGiveawayAt = live.last_giveaway_at || live.updated_at || "";
+      row._importIssues = Array.isArray(live.import_issues) ? [...live.import_issues] : [];
+
+      const logoCell = makeCell("logo-cell");
+      const logoHolder = document.createElement("div");
+      logoHolder.className = "logo-holder";
+      const logoPicker = document.createElement("label");
+      logoPicker.className = "logo-picker";
+      logoPicker.textContent = live.logo_path ? "Change image" : "Choose image";
+      const logoInput = document.createElement("input");
+      logoInput.type = "file";
+      logoInput.accept = "image/png,image/jpeg,image/webp,image/gif";
+      logoInput.addEventListener("change", () => {
+        const file = logoInput.files[0];
+        if (!file) return;
+        row._logoFile = file;
+        logoPicker.childNodes[0].textContent = "Image selected";
+        markDirty(row);
+        updateLogoPreview(row);
+      });
+      logoPicker.append(logoInput);
+      const changeBadge = document.createElement("span");
+      changeBadge.className = "row-change-badge";
+      logoCell.append(logoHolder, logoPicker, changeBadge);
+
+      const nameCell = makeCell("name-cell");
+      nameCell.append(createInput("name", live.name));
+      const usernameCell = makeCell("username-cell");
+      usernameCell.append(createInput("username", live.username));
+      const itemsCell = makeCell("items-cell");
+      itemsCell.append(createItemsEditor(row, live.items));
+      const issueCell = makeCell("issue-cell");
+      const createdAt = live.created_at || (live.key ? "" : new Date().toISOString());
+      row.dataset.createdAt = createdAt;
+      const addedCell = makeCell("updated-cell");
+      addedCell.dataset.added = "";
+      addedCell.textContent = createdAt
+        ? new Date(createdAt).toLocaleString()
+        : "Unavailable (legacy live)";
+
+      const actionsCell = makeCell("actions-cell");
+      const undo = document.createElement("button");
+      undo.type = "button";
+      undo.className = "button button-secondary row-undo";
+      undo.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 11a8 8 0 1 0-2.34 5.66" />
+          <path d="M20 5v6h-6" />
+        </svg>
+      `;
+      undo.title = "Undo edits";
+      undo.setAttribute("aria-label", "Undo edits");
+      undo.addEventListener("click", () => undoRowEdits(row));
+      const profile = document.createElement("a");
+      profile.className = "profile-link";
+      profile.textContent = "Go to Profile";
+      profile.target = "_blank";
+      profile.rel = "noopener noreferrer";
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "button button-danger";
+      remove.textContent = "Delete";
+      remove.addEventListener("click", () => deleteRow(row));
+      const message = document.createElement("span");
+      message.className = "row-message";
+      actionsCell.append(profile, " ", remove, " ", undo, message);
+
+      row.append(logoCell, nameCell, usernameCell, itemsCell, issueCell, addedCell, actionsCell);
+      row.querySelectorAll("[data-field]").forEach(input => {
+        input.addEventListener("input", () => {
+          markDirty(row);
+          if (["name", "username"].includes(input.dataset.field)) updateLogoPreview(row);
+          if (input.dataset.field === "username") updateProfileLink(row);
+        });
+        input.addEventListener("change", () => markDirty(row));
+      });
+      updateLogoPreview(row);
+      updateProfileLink(row);
+      renderItemsEditor(row);
+      renderImportIssues(row);
+      row._originalState = captureRowState(row);
+      return row;
+    }
+
+    function readRow(row) {
+      const name = row.querySelector('[data-field="name"]').value.trim();
+      const username = row.querySelector('[data-field="username"]').value.trim().replace(/^@/, "");
+      const key = row.dataset.originalKey || normalizeKey(username || name);
+      const record = {
+        key,
+        name,
+        username,
+        items: normalizeItems(row._items),
+        logo_path: row.dataset.logoPath || "",
+        updated_at: new Date().toISOString()
+      };
+      if (createdAtSupported && row.dataset.createdAt) {
+        record.created_at = row.dataset.createdAt;
+      }
+      if (importIssuesSupported) record.import_issues = [...row._importIssues];
+      return record;
+    }
+
+    async function uploadRowLogo(row, key) {
+      const file = row._logoFile;
+      if (!file) return row.dataset.logoPath || "";
+      if (!file.type.startsWith("image/")) throw new Error("Choose an image file for the logo.");
+      if (file.size > 2 * 1024 * 1024) throw new Error("Logo files must be 2 MB or smaller.");
+
+      const extensionByType = {
+        "image/png": "png",
+        "image/jpeg": "jpeg",
+        "image/webp": "webp",
+        "image/gif": "gif"
+      };
+      const extension = extensionByType[file.type] || file.name.split(".").pop().toLowerCase();
+      const safeKey = String(key || "live")
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "live";
+      const logoPath = `${safeKey}-${Date.now()}.${extension}`;
+      const { error } = await database.storage
+        .from("live-logos")
+        .upload(logoPath, file, {
+          upsert: true,
+          contentType: file.type,
+          cacheControl: "3600"
+        });
+      if (error) throw error;
+      return logoPath;
+    }
+
+    async function saveRow(row) {
+      const message = row.querySelector(".row-message");
+      const originalKey = row.dataset.originalKey;
+      const record = readRow(row);
+
+      if (!record.name || !record.key) {
+        message.textContent = "Name and key are required.";
+        message.className = "row-message error";
+        return false;
+      }
+
+      row.classList.add("saving");
+      message.textContent = "Saving…";
+      message.className = "row-message";
+
+      try {
+        if (originalKey !== record.key) {
+          const { data: conflict, error: conflictError } = await database
+            .from("lives")
+            .select("key")
+            .eq("key", record.key)
+            .maybeSingle();
+          if (conflictError) throw conflictError;
+          if (conflict) throw new Error(`Key “${record.key}” already exists.`);
+        }
+
+        const previousLogoPath = row.dataset.logoPath || "";
+        record.logo_path = await uploadRowLogo(row, record.key);
+
+        const { error } = await database.from("lives").upsert(record, { onConflict: "key" });
+        if (error) throw error;
+
+        if (originalKey && originalKey !== record.key) {
+          const { error: deleteError } = await database.from("lives").delete().eq("key", originalKey);
+          if (deleteError) throw deleteError;
+        }
+
+        row.dataset.originalKey = record.key;
+        row.dataset.createdAt = record.created_at || row.dataset.createdAt;
+        row.dataset.logoPath = record.logo_path;
+        row._logoFile = null;
+        row._items = [...record.items];
+        row.querySelector('[data-field="username"]').value = record.username;
+        row.querySelector(".logo-picker").childNodes[0].textContent = "Change image";
+        row.querySelector('.logo-picker input[type="file"]').value = "";
+        updateLogoPreview(row);
+        renderItemsEditor(row);
+        row._originalState = captureRowState(row);
+        if (previousLogoPath && previousLogoPath !== record.logo_path) {
+          database.storage.from("live-logos").remove([previousLogoPath]).then(({ error: removeError }) => {
+            if (removeError) console.warn("Could not remove the previous logo:", removeError);
+          });
+        }
+        row.classList.remove("dirty");
+        row.classList.add("saved-change");
+        row.querySelector(".row-change-badge").textContent = "Saved";
+        message.textContent = "Saved";
+        message.className = "row-message success";
+        return true;
+      } catch (error) {
+        console.error(error);
+        message.textContent = error.message || "Could not save.";
+        message.className = "row-message error";
+        return false;
+      } finally {
+        row.classList.remove("saving");
+      }
+    }
+
+    async function deleteRow(row) {
+      const name = row.querySelector('[data-field="name"]').value.trim() || "this live";
+      if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return;
+      const originalKey = row.dataset.originalKey;
+      if (originalKey) {
+        row.classList.add("saving");
+        const { error } = await database.from("lives").delete().eq("key", originalKey);
+        if (error) {
+          row.classList.remove("saving");
+          const message = row.querySelector(".row-message");
+          message.textContent = error.message || "Could not delete.";
+          message.className = "row-message error";
+          return;
+        }
+        if (row.dataset.logoPath) {
+          database.storage.from("live-logos").remove([row.dataset.logoPath]).then(({ error: removeError }) => {
+            if (removeError) console.warn("Could not remove the deleted live's logo:", removeError);
+          });
+        }
+      }
+      if (row._logoPreviewUrl) URL.revokeObjectURL(row._logoPreviewUrl);
+      row.remove();
+      rows = rows.filter(candidate => candidate !== row);
+      setStatus(`${name} was deleted.`, "success");
+      applyView();
+    }
+
+    function addLive() {
+      const row = createRow();
+      rows.unshift(row);
+      body.prepend(row);
+      markDirty(row);
+      row.querySelector('[data-field="name"]').focus();
+      document.querySelector(".grid-shell").scrollTop = 0;
+      applyView();
+    }
+
+    function applyView() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      const missingLogoOnly = document.getElementById("missingLogoFilter").checked;
+      const sort = document.getElementById("sortSelect").value;
+      rows.sort((left, right) => {
+        if (sort === "name" || sort === "username") {
+          const leftValue = left.querySelector(`[data-field="${sort}"]`).value.trim();
+          const rightValue = right.querySelector(`[data-field="${sort}"]`).value.trim();
+          return leftValue.localeCompare(rightValue, undefined, { sensitivity: "base" });
+        }
+        const useGiveawayDate = sort === "giveaway-newest" || sort === "giveaway-oldest";
+        const leftTime = Date.parse(
+          useGiveawayDate ? left.dataset.lastGiveawayAt : left.dataset.createdAt
+        );
+        const rightTime = Date.parse(
+          useGiveawayDate ? right.dataset.lastGiveawayAt : right.dataset.createdAt
+        );
+        const leftHasDate = Number.isFinite(leftTime);
+        const rightHasDate = Number.isFinite(rightTime);
+        if (leftHasDate !== rightHasDate) return leftHasDate ? -1 : 1;
+        if (!leftHasDate) {
+          const leftName = left.querySelector('[data-field="name"]').value.trim();
+          const rightName = right.querySelector('[data-field="name"]').value.trim();
+          return leftName.localeCompare(rightName, undefined, { sensitivity: "base" });
+        }
+        const delta = leftTime - rightTime;
+        return sort === "oldest" || sort === "giveaway-oldest" ? delta : -delta;
+      });
+      rows.forEach(row => body.append(row));
+
+      let visible = 0;
+      rows.forEach(row => {
+        const values = [...row.querySelectorAll("input, textarea")]
+          .map(input => input.type === "checkbox" ? "" : input.value)
+          .join(" ")
+          .toLowerCase();
+        const hasLogo = Boolean(row.dataset.logoPath || row._logoFile);
+        const show = (!query || values.includes(query)) && (!missingLogoOnly || !hasLogo);
+        row.classList.toggle("hidden-row", !show);
+        if (show) visible += 1;
+      });
+      emptyState.hidden = visible > 0;
+    }
+
+    async function saveAll() {
+      const dirtyRows = rows.filter(row => row.classList.contains("dirty"));
+      if (dirtyRows.length === 0) {
+        setStatus("There are no unsaved changes.");
+        return;
+      }
+      const button = document.getElementById("saveAllButton");
+      button.disabled = true;
+      setStatus(`Saving ${dirtyRows.length} ${dirtyRows.length === 1 ? "live" : "lives"}…`);
+      const results = [];
+      for (const row of dirtyRows) results.push(await saveRow(row));
+      const saved = results.filter(Boolean).length;
+      setStatus(
+        saved === dirtyRows.length
+          ? `Saved ${saved} ${saved === 1 ? "live" : "lives"}.`
+          : `Saved ${saved} of ${dirtyRows.length}. Check the row messages for errors.`,
+        saved === dirtyRows.length ? "success" : "error"
+      );
+      applyView();
+      button.disabled = false;
+    }
+
+    async function loadLives() {
+      const { data, error } = await database
+        .from("lives")
+        .select("*");
+      if (error) {
+        console.error(error);
+        setStatus(error.message || "Could not load lives.", "error");
+        return;
+      }
+      body.replaceChildren();
+      createdAtSupported = data.some(live => Object.prototype.hasOwnProperty.call(live, "created_at"));
+      importIssuesSupported = data.some(live => Object.prototype.hasOwnProperty.call(live, "import_issues"));
+      rows = data.map(live => {
+        const row = createRow(live);
+        body.append(row);
+        return row;
+      });
+      setStatus(`${rows.length} saved ${rows.length === 1 ? "live" : "lives"}.`);
+      applyView();
+    }
+
+    document.getElementById("addButton").addEventListener("click", addLive);
+    document.getElementById("saveAllButton").addEventListener("click", saveAll);
+    document.getElementById("searchInput").addEventListener("input", applyView);
+    document.getElementById("sortSelect").addEventListener("change", applyView);
+    document.getElementById("missingLogoFilter").addEventListener("change", applyView);
+    window.addEventListener("beforeunload", event => {
+      if (!rows.some(row => row.classList.contains("dirty"))) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+    loadLives();
+  </script>
+</body>
+</html>

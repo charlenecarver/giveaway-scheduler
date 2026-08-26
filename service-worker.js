@@ -1,8 +1,9 @@
-const CACHE_NAME = "givvy-time-v42";
+const CACHE_NAME = "givvy-time-v43";
 const IMAGE_CACHE_NAME = "givvy-time-images-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./lives-admin.html",
   "./manifest.webmanifest",
   "./favicon-32.png",
   "./app-icon-180.png",

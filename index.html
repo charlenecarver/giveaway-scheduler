@@ -374,6 +374,24 @@
       display: block;
     }
 
+    .import-flag-control {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 14px;
+      padding: 9px 11px;
+      border: 1px solid #e6c6ce;
+      border-radius: 9px;
+      background: #fff4f6;
+      color: #7d4050;
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .import-flag-control.visible { display: flex; }
+    .import-flag-control input { width: 18px; height: 18px; margin: 0; accent-color: #d85d79; }
+
     .live-editor-field + .live-editor-field {
       margin-top: 14px;
     }
@@ -477,6 +495,7 @@
       font-size: 12px;
     }
 
+    .live-editor-item-edit,
     .live-editor-item-remove {
       width: 18px;
       height: 18px;
@@ -485,6 +504,25 @@
       background: #d9dde3;
       color: #6b717a;
       line-height: 1;
+    }
+
+    .live-editor-item-edit {
+      font-size: 10px;
+    }
+
+    .live-editor-item-remove {
+      font-size: 14px;
+    }
+
+    .live-editor-item-rename {
+      width: min(180px, 45vw);
+      height: 28px;
+      padding: 3px 8px;
+      border: 1px solid #a98abe;
+      border-radius: 8px;
+      outline: none;
+      background: white;
+      font-size: 12px;
     }
 
     .live-editor-empty-items {
@@ -2603,6 +2641,26 @@
       font-weight: 800;
     }
 
+    .admin-lives-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 14px;
+      padding: 10px 12px;
+      border: 1px solid #eaddea;
+      border-radius: 10px;
+      background: #faf6ff;
+      color: #594964;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .admin-lives-link:hover {
+      border-color: #cdb9da;
+      background: #f3eaff;
+    }
+
     .settings-row {
       display: flex;
       align-items: center;
@@ -3811,6 +3869,10 @@
       <h2 id="liveEditorTitle">Edit Live</h2>
 
       <div id="liveImportNotice" class="live-import-notice" role="alert"></div>
+      <label id="liveImportFlagControl" class="import-flag-control">
+        <input id="liveImportIssueFlag" type="checkbox" />
+        <span>⚑ Flag this import—it needs correction</span>
+      </label>
 
       <div class="live-editor-field">
         <label for="liveEditorName">Live Name</label>
@@ -4012,6 +4074,11 @@
 
   <div id="settingsPanel" class="settings-panel">
     <div class="settings-title">Settings</div>
+
+    <a class="admin-lives-link" href="lives-admin.html">
+      Manage Lives
+      <span aria-hidden="true">›</span>
+    </a>
 
     <div class="settings-row">
       <label for="delaySeconds">Delay amount</label>
@@ -4246,6 +4313,11 @@
         <strong>Shortcut import needs attention</strong>
         <ul id="importErrorMessages"></ul>
       </div>
+
+      <label id="giveawayImportFlagControl" class="import-flag-control">
+        <input id="giveawayImportIssueFlag" type="checkbox" />
+        <span>⚑ Flag this giveaway import—it needs correction</span>
+      </label>
 
       <div id="editNotice" class="edit-notice">
         <div>
@@ -4934,21 +5006,6 @@
       sensitivity: "base"
     }));
 
-    const builtInQuickLives = starterQuickLives.map(live => ({
-      ...live,
-      items: [...live.items]
-    }));
-
-    const builtInQuickLiveKeys = new Set(
-      builtInQuickLives.map(live =>
-        String(live.username || live.name).trim().toLowerCase()
-      )
-    );
-
-    const defaultQuickLiveKeys = new Set(
-      builtInQuickLiveKeys
-    );
-
     function replaceLiveLibrary(lives) {
       const normalizedLives = lives
         .map(live => {
@@ -4962,9 +5019,10 @@
             username,
             items: Array.isArray(live.items) ? live.items : [],
             logoPath: String(live.logo_path ?? live.logoPath ?? "").trim(),
-            isDefault:
-              Boolean(live.is_default ?? live.isDefault) ||
-              builtInQuickLiveKeys.has(key)
+            importIssues: Array.isArray(live.import_issues ?? live.importIssues)
+              ? [...(live.import_issues ?? live.importIssues)]
+              : [],
+            lastGiveawayAt: live.last_giveaway_at ?? live.lastGiveawayAt ?? null
           };
         })
         .filter(live => live.name || live.username)
@@ -4977,15 +5035,6 @@
         starterQuickLives.length,
         ...normalizedLives
       );
-      defaultQuickLiveKeys.clear();
-      starterQuickLives.forEach(live => {
-        const key = (live.username || live.name).trim().toLowerCase();
-
-        if (key && live.isDefault) {
-          defaultQuickLiveKeys.add(key);
-        }
-      });
-
       refreshImportedLiveMatch();
     }
 
@@ -5023,6 +5072,14 @@
         .replace(/\.{2,}$/, "")
         .replace(/^@/, "")
         .replace(/[^a-z0-9]/g, "");
+    }
+
+    function createImportIssue(type) {
+      return {
+        type,
+        createdAt: new Date().toISOString(),
+        parameters: Object.fromEntries(new URLSearchParams(window.location.search))
+      };
     }
 
     function getImportedLiveSimilarity(left, right) {
@@ -5144,6 +5201,9 @@
       if (searchParameters.get("import") !== "giveaway") {
         return;
       }
+
+      document.getElementById("giveawayImportFlagControl").classList.add("visible");
+      document.getElementById("giveawayImportIssueFlag").checked = false;
 
       const receivedLiveName = searchParameters.get("live") || "";
 
@@ -5388,7 +5448,6 @@
     let editingLiveLibraryKey = null;
     let editingLiveLibraryName = "";
     let editingLiveLibraryItems = [];
-    let editingLiveLibraryIsDefault = false;
     let editingLiveLibraryLogoPath = "";
     let importedLiveEditorOpened = false;
     let liveEditorIsImport = false;
@@ -6255,9 +6314,10 @@
         name,
         username,
         items = [],
-        isDefault = false,
         storedKey = "",
-        logoPath = ""
+        logoPath = "",
+        importIssues = [],
+        lastGiveawayAt = null
       ) => {
         const cleanName = String(name || "").trim();
         const cleanUsername = String(username || "").trim();
@@ -6269,9 +6329,7 @@
           return;
         }
 
-        const defaultLive = isDefault || defaultQuickLiveKeys.has(key);
-
-        if (!defaultLive && hiddenQuickLiveKeys.has(key)) {
+        if (hiddenQuickLiveKeys.has(key)) {
           return;
         }
 
@@ -6279,16 +6337,20 @@
           name: cleanName || cleanUsername,
           username: cleanUsername,
           items: [],
-          isDefault: defaultLive,
           isActive: activeQuickLiveKeys.has(key),
           logoKey: cleanUsername,
           logoPath: String(logoPath || "").trim(),
+          importIssues: Array.isArray(importIssues) ? [...importIssues] : [],
+          lastGiveawayAt,
           key
         };
 
-        existing.isDefault = existing.isDefault || defaultLive;
         existing.isActive = activeQuickLiveKeys.has(key);
         existing.logoPath ||= String(logoPath || "").trim();
+        if (Array.isArray(importIssues) && importIssues.length > existing.importIssues.length) {
+          existing.importIssues = [...importIssues];
+        }
+        existing.lastGiveawayAt ||= lastGiveawayAt;
 
         if (cleanName && existing.name === existing.username) {
           existing.name = cleanName;
@@ -6314,9 +6376,10 @@
           live.name,
           live.username,
           live.items,
-          live.isDefault ?? true,
           live.key,
-          live.logoPath
+          live.logoPath,
+          live.importIssues,
+          live.lastGiveawayAt
         );
       });
 
@@ -6896,11 +6959,12 @@
       }
 
       liveEditorIsImport = false;
+      document.getElementById("liveImportFlagControl").classList.remove("visible");
+      document.getElementById("liveImportIssueFlag").checked = false;
       setLiveImportNotice();
       editingLiveLibraryKey = live.key;
       editingLiveLibraryName = live.name;
       editingLiveLibraryItems = [...live.items];
-      editingLiveLibraryIsDefault = live.isDefault;
       editingLiveLibraryLogoPath = live.logoPath || "";
       document.getElementById("liveEditorTitle").textContent = "Edit Live";
       document.getElementById("liveEditorName").value = live.name;
@@ -6912,8 +6976,7 @@
         editingLiveLibraryLogoPath
           ? `Current logo: ${editingLiveLibraryLogoPath}`
           : "No uploaded logo. The bundled logo will be used when available.";
-      document.getElementById("liveEditorDeleteButton").style.display =
-        live.isDefault ? "none" : "inline-flex";
+      document.getElementById("liveEditorDeleteButton").style.display = "inline-flex";
       renderLiveEditorItems();
       document.body.classList.add("live-editor-open");
       document.getElementById("liveEditorBackdrop").classList.add("open");
@@ -6923,11 +6986,12 @@
 
     function openNewLiveEditor() {
       liveEditorIsImport = false;
+      document.getElementById("liveImportFlagControl").classList.remove("visible");
+      document.getElementById("liveImportIssueFlag").checked = false;
       setLiveImportNotice();
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
-      editingLiveLibraryIsDefault = false;
       editingLiveLibraryLogoPath = "";
       document.getElementById("liveEditorTitle").textContent = "Add Live";
       document.getElementById("liveEditorName").value = "";
@@ -6974,6 +7038,8 @@
       }
 
       liveEditorIsImport = true;
+      document.getElementById("liveImportFlagControl").classList.add("visible");
+      document.getElementById("liveImportIssueFlag").checked = false;
       document.getElementById("liveEditorTitle").textContent =
         existingLive ? "Update Imported Live" : "Import Live";
       document.getElementById("liveEditorName").value = existingLive
@@ -7023,6 +7089,48 @@
         const text = document.createElement("span");
         text.textContent = item;
 
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "live-editor-item-edit";
+        edit.textContent = "✎";
+        edit.title = `Rename ${item}`;
+        edit.setAttribute("aria-label", `Rename ${item}`);
+        edit.addEventListener("click", () => {
+          const input = document.createElement("input");
+          input.className = "live-editor-item-rename";
+          input.value = item;
+          let finished = false;
+          const finish = save => {
+            if (finished) {
+              return;
+            }
+            finished = true;
+            const nextItem = input.value.trim();
+            const duplicate = editingLiveLibraryItems.some(
+              (existing, existingIndex) =>
+                existingIndex !== index &&
+                existing.toLowerCase() === nextItem.toLowerCase()
+            );
+            if (save && nextItem && !duplicate) {
+              editingLiveLibraryItems[index] = nextItem;
+              editingLiveLibraryItems.sort((a, b) => a.localeCompare(b));
+            }
+            renderLiveEditorItems();
+          };
+          input.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              finish(true);
+            } else if (event.key === "Escape") {
+              finish(false);
+            }
+          });
+          input.addEventListener("blur", () => finish(true));
+          chip.replaceChildren(input);
+          input.focus();
+          input.select();
+        });
+
         const remove = document.createElement("button");
         remove.type = "button";
         remove.className = "live-editor-item-remove";
@@ -7034,7 +7142,7 @@
           renderLiveEditorItems();
         });
 
-        chip.append(text, remove);
+        chip.append(text, edit, remove);
         container.appendChild(chip);
       });
     }
@@ -7109,11 +7217,12 @@
       document.body.classList.remove("live-editor-open");
       clearLiveEditorLogoPreview();
       liveEditorIsImport = false;
+      document.getElementById("liveImportFlagControl").classList.remove("visible");
+      document.getElementById("liveImportIssueFlag").checked = false;
       setLiveImportNotice();
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
-      editingLiveLibraryIsDefault = false;
       editingLiveLibraryLogoPath = "";
     }
 
@@ -7218,6 +7327,7 @@
 
       const logoFile = document.getElementById("liveEditorLogo").files[0];
       const existingLives = getQuickLives();
+      const currentLive = existingLives.find(live => live.key === editingLiveLibraryKey);
       const duplicateUsername = username && existingLives.find(live =>
         live.key !== editingLiveLibraryKey &&
         live.username.trim().toLowerCase() === username.toLowerCase()
@@ -7241,6 +7351,11 @@
       }
 
       let logoPath;
+      const importIssues = [...(currentLive?.importIssues || [])];
+
+      if (liveEditorIsImport && document.getElementById("liveImportIssueFlag").checked) {
+        importIssues.push(createImportIssue("live"));
+      }
 
       try {
         logoPath = await uploadLiveLogo(logoFile, key);
@@ -7254,7 +7369,8 @@
         username,
         items,
         logoPath,
-        isDefault: editingLiveLibraryIsDefault
+        importIssues,
+        lastGiveawayAt: currentLive?.lastGiveawayAt || null
       });
 
       if (!sharedDatabase) {
@@ -7264,7 +7380,8 @@
           username,
           items,
           logoPath,
-          isDefault: editingLiveLibraryIsDefault
+          importIssues,
+          lastGiveawayAt: currentLive?.lastGiveawayAt || null
         };
         const existingIndex = starterQuickLives.findIndex(
           live => String(live.key || live.username || live.name)
@@ -7303,7 +7420,7 @@
       const name = editingLiveLibraryName;
       const logoPath = editingLiveLibraryLogoPath;
 
-      if (!key || editingLiveLibraryIsDefault) {
+      if (!key) {
         return;
       }
 
@@ -7324,7 +7441,7 @@
     ) {
       const key = String(username || "").trim().toLowerCase();
 
-      if (!key || defaultQuickLiveKeys.has(key)) {
+      if (!key) {
         return;
       }
 
@@ -7695,7 +7812,10 @@
         username,
         items: Array.isArray(live.items) ? [...new Set(live.items)] : [],
         logo_path: String(live.logo_path ?? live.logoPath ?? "").trim(),
-        is_default: live.is_default ?? live.isDefault ?? false,
+        import_issues: Array.isArray(live.import_issues ?? live.importIssues)
+          ? [...(live.import_issues ?? live.importIssues)]
+          : [],
+        last_giveaway_at: live.last_giveaway_at ?? live.lastGiveawayAt ?? null,
         updated_at: new Date().toISOString()
       };
     }
@@ -7704,7 +7824,7 @@
     async function loadSharedLiveLibrary() {
       const { data, error } = await sharedDatabase
         .from("lives")
-        .select("key, name, username, items, logo_path, is_default")
+        .select("key, name, username, items, logo_path, import_issues, last_giveaway_at")
         .order("name");
 
       if (error) {
@@ -7714,67 +7834,9 @@
         return;
       }
 
-      if (data.length > 0) {
-        const builtInRecords = builtInQuickLives.map(live =>
-          getSharedLiveRecord({ ...live, isDefault: true })
-        );
-        const databaseLivesByKey = new Map(
-          data.map(live => [live.key, live])
-        );
-        const defaultsToUpsert = builtInRecords.flatMap(record => {
-          const existing = databaseLivesByKey.get(record.key);
-
-          if (!existing) {
-            return [record];
-          }
-
-          if (existing.is_default !== true) {
-            return [{
-              ...existing,
-              is_default: true,
-              updated_at: new Date().toISOString()
-            }];
-          }
-
-          return [];
-        });
-
-        if (defaultsToUpsert.length > 0) {
-          const { error: correctionError } = await sharedDatabase
-            .from("lives")
-            .upsert(defaultsToUpsert, { onConflict: "key" });
-
-          if (correctionError) {
-            console.error("Could not seed or protect the default lives:", correctionError);
-          }
-        }
-
-        const mergedLivesByKey = new Map(
-          data.map(live => [live.key, live])
-        );
-        defaultsToUpsert.forEach(live => {
-          mergedLivesByKey.set(live.key, live);
-        });
-
-        sharedLiveLibraryReady = true;
-        replaceLiveLibrary([...mergedLivesByKey.values()]);
-        render();
-        return;
-      }
-
-      const seedLives = builtInQuickLives.map(live =>
-        getSharedLiveRecord({ ...live, isDefault: true })
-      );
-      const { error: seedError } = await sharedDatabase
-        .from("lives")
-        .upsert(seedLives, { onConflict: "key" });
-
-      if (seedError) {
-        console.error("Could not seed the shared live library:", seedError);
-      }
-
       sharedLiveLibraryReady = true;
-      refreshImportedLiveMatch();
+      replaceLiveLibrary(data);
+      render();
     }
 
 
@@ -8017,10 +8079,20 @@
           key: liveKey,
           name: liveName,
           username: "",
-          items: []
+          items: [],
+          importIssues: []
         };
+        const importIssues = [...(sharedLive.importIssues || [])];
+        if (
+          new URLSearchParams(window.location.search).get("import") === "giveaway" &&
+          document.getElementById("giveawayImportIssueFlag").checked
+        ) {
+          importIssues.push(createImportIssue("giveaway"));
+        }
         saveSharedLive({
           ...sharedLive,
+          importIssues,
+          lastGiveawayAt: new Date(now).toISOString(),
           items: enteredItemName
             ? [...new Set([...sharedLive.items, itemName])]
             : sharedLive.items
@@ -8090,6 +8162,8 @@
       document.getElementById("importTimeEditButton").classList.remove("visible");
       document.getElementById("importErrorNotice").classList.remove("visible");
       document.getElementById("importErrorMessages").replaceChildren();
+      document.getElementById("giveawayImportFlagControl").classList.remove("visible");
+      document.getElementById("giveawayImportIssueFlag").checked = false;
       document.getElementById("countdownMinutes").value = "none";
       document.getElementById("isBuyerGiveaway").checked = false;
 
