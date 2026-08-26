@@ -796,6 +796,54 @@
       min-width: 0;
     }
 
+    .live-name-input-wrap {
+      position: relative;
+    }
+
+    .live-name-input-wrap.has-logo #liveName {
+      padding-left: 50px;
+    }
+
+    .selected-live-logo-holder {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      z-index: 1;
+      display: none;
+      width: 30px;
+      height: 30px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .live-name-input-wrap.has-logo .selected-live-logo-holder {
+      display: grid;
+    }
+
+    .selected-live-logo,
+    .selected-live-logo-fallback {
+      grid-column: 1;
+      grid-row: 1;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+
+    .selected-live-logo {
+      object-fit: contain;
+      background: white;
+    }
+
+    .selected-live-logo-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f2eafa;
+      color: #665573;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
     .import-time-edit-button {
       position: absolute;
       right: 7px;
@@ -4251,12 +4299,19 @@
             Live Name
           </label>
 
-          <input
-            id="liveName"
-            type="text"
-            placeholder="Live Name"
-            autocomplete="off"
-          />
+          <div id="liveNameInputWrap" class="live-name-input-wrap">
+            <span
+              id="selectedLiveLogoHolder"
+              class="selected-live-logo-holder"
+              aria-hidden="true"
+            ></span>
+            <input
+              id="liveName"
+              type="text"
+              placeholder="Live Name"
+              autocomplete="off"
+            />
+          </div>
 
           <div
             id="liveNameAutocomplete"
@@ -4869,6 +4924,7 @@
         )
       : null;
     let sharedDataReady = !sharedDatabase;
+    let sharedLiveLibraryReady = !sharedDatabase;
     let pendingSharedSaves = 0;
     let sharedSaveQueue = Promise.resolve();
 
@@ -5065,6 +5121,23 @@
       }
     }
 
+    function updateImportedLiveWarning(receivedName, liveMatch) {
+      clearResolvedImportedLiveWarning();
+
+      if (!sharedLiveLibraryReady || liveMatch.status === "matched") {
+        return;
+      }
+
+      const list = document.getElementById("importErrorMessages");
+      const item = document.createElement("li");
+      item.textContent = liveMatch.status === "ambiguous"
+        ? "The live name matched more than one Quick Live. Choose the correct live manually."
+        : `No saved Quick Live confidently matched “${receivedName}”. Review the Live Name field.`;
+      list.append(item);
+      document.getElementById("importErrorNotice").classList.add("visible");
+      setAddFormCollapsed(false);
+    }
+
     function refreshImportedLiveMatch() {
       const searchParameters = new URLSearchParams(window.location.search);
 
@@ -5084,9 +5157,7 @@
         ? (liveMatch.matches[0].name || liveMatch.matches[0].username)
         : receivedLiveName;
 
-      if (liveMatch.status === "matched") {
-        clearResolvedImportedLiveWarning();
-      }
+      updateImportedLiveWarning(receivedLiveName, liveMatch);
 
       if (!liveInput.value || liveInput.value === importedLiveAutofilledValue) {
         liveInput.value = nextValue;
@@ -5161,12 +5232,13 @@
       document.getElementById("liveName").value = importedLiveName;
       importedLiveAutofilledValue = importedLiveName;
       document.getElementById("itemName").value = itemName;
+      updateGiveawayItemSuggestions();
 
       if (!receivedLiveName) {
         errors.push("No live name was received. Check the Header Text extraction.");
-      } else if (liveMatch.status === "ambiguous") {
+      } else if (sharedLiveLibraryReady && liveMatch.status === "ambiguous") {
         errors.push("The live name matched more than one Quick Live. Choose the correct live manually.");
-      } else if (liveMatch.status === "none") {
+      } else if (sharedLiveLibraryReady && liveMatch.status === "none") {
         errors.push(`No saved Quick Live confidently matched “${receivedLiveName}”. Review the Live Name field.`);
       }
 
@@ -6062,6 +6134,7 @@
         live.name.toLowerCase() === liveValue ||
         live.username.toLowerCase() === liveValue
       );
+      updateSelectedLiveLogo(matchedLive);
       const sourceItems = matchedLive
         ? matchedLive.items
         : lives.flatMap(live => live.items);
@@ -6098,6 +6171,28 @@
       itemInput.placeholder = matchedLive && sortedItems.length
         ? sortedItems[0]
         : "Giveaway item";
+    }
+
+
+    function updateSelectedLiveLogo(live) {
+      const wrapper = document.getElementById("liveNameInputWrap");
+      const holder = document.getElementById("selectedLiveLogoHolder");
+      holder.replaceChildren();
+      wrapper.classList.toggle("has-logo", Boolean(live));
+
+      if (!live) {
+        return;
+      }
+
+      const fallback = document.createElement("span");
+      fallback.className = "selected-live-logo-fallback";
+      fallback.textContent = getLiveInitials(live.name);
+
+      const logo = document.createElement("img");
+      logo.className = "selected-live-logo";
+      logo.alt = "";
+      holder.append(fallback, logo);
+      loadLocalLogo(logo, fallback, live.logoKey, live.logoPath);
     }
 
 
@@ -7612,6 +7707,8 @@
 
       if (error) {
         console.error("Could not load the shared live library:", error);
+        sharedLiveLibraryReady = true;
+        refreshImportedLiveMatch();
         return;
       }
 
@@ -7657,6 +7754,7 @@
           mergedLivesByKey.set(live.key, live);
         });
 
+        sharedLiveLibraryReady = true;
         replaceLiveLibrary([...mergedLivesByKey.values()]);
         render();
         return;
@@ -7672,6 +7770,9 @@
       if (seedError) {
         console.error("Could not seed the shared live library:", seedError);
       }
+
+      sharedLiveLibraryReady = true;
+      refreshImportedLiveMatch();
     }
 
 
@@ -7989,6 +8090,7 @@
       importedLiveAutofilledValue = "";
 
       document.getElementById("liveName").value = "";
+      updateSelectedLiveLogo(null);
       document.getElementById("itemName").value = "";
       document.getElementById("itemName").placeholder = "Giveaway item";
       document.getElementById("liveNameAutocomplete").classList.remove("open");
@@ -8038,6 +8140,7 @@
 
       document.getElementById("liveName").value = giveaway.liveName;
       document.getElementById("itemName").value = giveaway.itemName;
+      updateGiveawayItemSuggestions();
 
       // Min/Sec intentionally start blank while editing.
       // The live "Current" value above shows the actual remaining time.
@@ -8129,6 +8232,7 @@
 
       document.getElementById("liveName").value = entry.liveName || "";
       document.getElementById("itemName").value = entry.itemName || "";
+      updateGiveawayItemSuggestions();
       document.getElementById("minutes").value = "";
       document.getElementById("seconds").value = "";
 
