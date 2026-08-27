@@ -77,7 +77,7 @@
 
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) auto auto auto;
+      grid-template-columns: minmax(220px, 1fr) 190px auto auto auto;
       gap: 10px;
       margin-bottom: 12px;
       padding: 14px;
@@ -87,7 +87,7 @@
       box-shadow: var(--shadow);
     }
 
-    .search, .cell-input {
+    .search, .sort-select, .cell-input {
       width: 100%;
       border: 1px solid #dfd3d8;
       border-radius: 9px;
@@ -97,6 +97,7 @@
     }
 
     .search { height: 42px; padding: 9px 12px; }
+    .sort-select { height: 42px; padding: 8px 10px; }
     .cell-input { height: 38px; padding: 7px 9px; font-size: 13px; }
     .search:focus, .cell-input:focus { border-color: #a98abe; box-shadow: 0 0 0 3px rgba(169, 138, 190, 0.14); }
 
@@ -312,6 +313,7 @@
       .back-link { padding: 9px 11px; font-size: 12px; }
       .toolbar { grid-template-columns: 1fr 1fr; }
       .search { grid-column: 1 / -1; }
+      .sort-select { width: 100%; }
       .page { padding-bottom: 10px; }
     }
   </style>
@@ -331,6 +333,12 @@
 
     <section class="toolbar" aria-label="Live management controls">
       <input id="searchInput" class="search" type="search" placeholder="Search name, username, or item…" />
+      <select id="sortSelect" class="sort-select" aria-label="Sort lives">
+        <option value="giveaway-newest" selected>Latest giveaway activity</option>
+        <option value="giveaway-oldest">Oldest giveaway activity</option>
+        <option value="name">Name A–Z</option>
+        <option value="username">Username A–Z</option>
+      </select>
       <label class="logo-filter">
         <input id="missingLogoFilter" type="checkbox" />
         Missing logo only
@@ -934,6 +942,28 @@
     function applyView() {
       const query = document.getElementById("searchInput").value.trim().toLowerCase();
       const missingLogoOnly = document.getElementById("missingLogoFilter").checked;
+      const sort = document.getElementById("sortSelect").value;
+      rows.sort((left, right) => {
+        if (sort === "name" || sort === "username") {
+          const leftValue = left.querySelector(`[data-field="${sort}"]`).value.trim();
+          const rightValue = right.querySelector(`[data-field="${sort}"]`).value.trim();
+          return leftValue.localeCompare(rightValue, undefined, { sensitivity: "base" });
+        }
+
+        const leftTime = Date.parse(left.dataset.lastGiveawayAt);
+        const rightTime = Date.parse(right.dataset.lastGiveawayAt);
+        const leftHasDate = Number.isFinite(leftTime);
+        const rightHasDate = Number.isFinite(rightTime);
+        if (leftHasDate !== rightHasDate) return leftHasDate ? -1 : 1;
+        if (!leftHasDate) {
+          const leftName = left.querySelector('[data-field="name"]').value.trim();
+          const rightName = right.querySelector('[data-field="name"]').value.trim();
+          return leftName.localeCompare(rightName, undefined, { sensitivity: "base" });
+        }
+        const delta = leftTime - rightTime;
+        return sort === "giveaway-oldest" ? delta : -delta;
+      });
+      rows.forEach(row => body.append(row));
 
       let visible = 0;
       rows.forEach(row => {
@@ -995,6 +1025,7 @@
     document.getElementById("addButton").addEventListener("click", addLive);
     document.getElementById("saveAllButton").addEventListener("click", saveAll);
     document.getElementById("searchInput").addEventListener("input", applyView);
+    document.getElementById("sortSelect").addEventListener("change", applyView);
     document.getElementById("missingLogoFilter").addEventListener("change", applyView);
     window.addEventListener("beforeunload", event => {
       if (!rows.some(row => row.classList.contains("dirty"))) return;
