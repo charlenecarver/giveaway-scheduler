@@ -499,9 +499,9 @@
       <div class="quick-category-heading">
         <div class="quick-category-heading-copy">
           <h2 id="quickCategoryTitle">Quick Categories</h2>
-          <p>Choose a category, then tap lives to add or remove it. Use Save All Changes when finished.</p>
+          <p>Choose a category, then tap lives to add or remove it. Changes save when you finish.</p>
         </div>
-        <button class="button button-secondary quick-category-close" type="button" onclick="closeQuickCategories()">Done</button>
+        <button id="quickCategoryDoneButton" class="button button-secondary quick-category-close" type="button" onclick="closeQuickCategories()">Save &amp; Done</button>
       </div>
       <div class="quick-category-controls">
         <label for="quickCategorySelect">Category</label>
@@ -522,6 +522,8 @@
     let rows = [];
     let createdAtSupported = false;
     let importIssuesSupported = false;
+    const quickCategoryChangedRows = new Set();
+    let quickCategoriesSaving = false;
     const STARTER_CATEGORIES = [
       "All Star",
       "Nails",
@@ -665,6 +667,7 @@
             );
             if (index >= 0) row._categories.splice(index, 1);
             else row._categories.push(category);
+            quickCategoryChangedRows.add(row);
             markDirty(row);
             renderCategoryEditor(row);
             renderQuickCategoryGrid();
@@ -674,6 +677,7 @@
     }
 
     function openQuickCategories() {
+      quickCategoryChangedRows.clear();
       populateQuickCategorySelect();
       renderQuickCategoryGrid();
       document.getElementById("quickCategoryBackdrop").classList.add("open");
@@ -681,7 +685,42 @@
       document.getElementById("quickCategorySelect").focus();
     }
 
-    function closeQuickCategories() {
+    async function closeQuickCategories() {
+      if (quickCategoriesSaving) return;
+
+      const changedRows = [...quickCategoryChangedRows];
+      const doneButton = document.getElementById("quickCategoryDoneButton");
+
+      if (changedRows.length > 0) {
+        quickCategoriesSaving = true;
+        doneButton.disabled = true;
+        doneButton.textContent = "Saving…";
+        setStatus(`Saving categories for ${changedRows.length} ${changedRows.length === 1 ? "live" : "lives"}…`);
+
+        const results = [];
+        for (const row of changedRows) results.push(await saveRow(row));
+        const failedRows = changedRows.filter((row, index) => !results[index]);
+
+        quickCategoryChangedRows.clear();
+        failedRows.forEach(row => quickCategoryChangedRows.add(row));
+        quickCategoriesSaving = false;
+        doneButton.disabled = false;
+        doneButton.textContent = "Save & Done";
+
+        if (failedRows.length > 0) {
+          setStatus(
+            `Could not save categories for ${failedRows.length} ${failedRows.length === 1 ? "live" : "lives"}. Check the row messages and try again.`,
+            "error"
+          );
+          return;
+        }
+
+        setStatus(
+          `Saved categories for ${changedRows.length} ${changedRows.length === 1 ? "live" : "lives"}.`,
+          "success"
+        );
+      }
+
       document.getElementById("quickCategoryBackdrop").classList.remove("open");
       document.body.style.overflow = "";
       applyView();
