@@ -523,6 +523,7 @@
     let createdAtSupported = false;
     let importIssuesSupported = false;
     const quickCategoryChangedRows = new Set();
+    const quickCategoryInitiallyDirtyRows = new Set();
     let quickCategoriesSaving = false;
     const STARTER_CATEGORIES = [
       "All Star",
@@ -662,6 +663,12 @@
           usernameLabel.textContent = username ? `@${username}` : "No username";
           tile.append(nameLabel, usernameLabel);
           tile.addEventListener("click", () => {
+            if (
+              !quickCategoryChangedRows.has(row) &&
+              row.classList.contains("dirty")
+            ) {
+              quickCategoryInitiallyDirtyRows.add(row);
+            }
             const index = row._categories.findIndex(
               saved => saved.toLowerCase() === category.toLowerCase()
             );
@@ -677,6 +684,7 @@
 
     function openQuickCategories() {
       quickCategoryChangedRows.clear();
+      quickCategoryInitiallyDirtyRows.clear();
       populateQuickCategorySelect();
       renderQuickCategoryGrid();
       document.getElementById("quickCategoryBackdrop").classList.add("open");
@@ -700,6 +708,13 @@
       row._categories = [...categories];
       if (row._originalState) {
         row._originalState.categories = [...categories];
+      }
+
+      if (!quickCategoryInitiallyDirtyRows.has(row)) {
+        row.classList.remove("dirty", "saved-change");
+        row.querySelector(".row-change-badge").textContent = "";
+        row.querySelector(".row-message").textContent = "";
+        row.querySelector(".row-message").className = "row-message";
       }
     }
 
