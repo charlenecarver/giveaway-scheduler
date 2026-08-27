@@ -555,6 +555,36 @@
       font-size: 12px;
     }
 
+    .live-editor-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 7px;
+    }
+
+    .live-editor-category {
+      min-height: 30px;
+      padding: 5px 9px;
+      border: 1px solid #d8d4e3;
+      border-radius: 999px;
+      background: #fcfbff;
+      color: #665d70;
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .live-editor-category.selected {
+      border-color: #b08bc2;
+      background: #eee4f5;
+      color: #5f3f72;
+    }
+
+    .live-editor-category.all-star {
+      border-color: #e4b85f;
+      background: #fff7db;
+      color: #735417;
+    }
+
     .live-editor-actions {
       display: flex;
       align-items: center;
@@ -4478,6 +4508,11 @@
           </button>
         </div>
         <div id="liveEditorItems" class="live-editor-items"></div>
+      </div>
+
+      <div class="live-editor-field">
+        <label>Categories</label>
+        <div id="liveEditorCategories" class="live-editor-categories"></div>
       </div>
 
       <div class="live-editor-actions">
@@ -8927,7 +8962,9 @@
     let editingLiveLibraryKey = null;
     let editingLiveLibraryName = "";
     let editingLiveLibraryItems = [];
+    let editingLiveLibraryCategories = [];
     let editingLiveLibraryLogoPath = "";
+    let liveCategoryCatalog = [...STARTER_LIVE_CATEGORIES];
     let importedLiveEditorOpened = false;
     let liveEditorIsImport = false;
     let liveEditorPreviewObjectUrl = "";
@@ -10110,10 +10147,12 @@
 
 
     function getQuickLiveCategoryOptions(lives) {
-      const categories = normalizeLiveCategories([
-        ...STARTER_LIVE_CATEGORIES,
-        ...lives.flatMap(live => live.categories || [])
-      ]);
+      const assignedCategories = lives.flatMap(live => live.categories || []);
+      const categories = normalizeLiveCategories(
+        assignedCategories.length > 0
+          ? assignedCategories
+          : STARTER_LIVE_CATEGORIES
+      );
       return categories.sort((left, right) => {
         if (left.toLowerCase() === "all star") return -1;
         if (right.toLowerCase() === "all star") return 1;
@@ -10175,10 +10214,6 @@
         return;
       }
 
-      delete list.dataset.needsRender;
-      quickLiveLogoObserver?.disconnect();
-      quickLiveLogoObserver = null;
-
       if (resetButton) {
         resetButton.disabled = activeQuickLiveKeys.size === 0;
       }
@@ -10212,6 +10247,31 @@
       if (filterButton) {
         filterButton.hidden = !isMobile || navigableLives.length === 0;
       }
+
+      const renderSignature = JSON.stringify({
+        isMobile,
+        query,
+        categories: [...selectedQuickLiveCategories].sort(),
+        lives: filteredLives.map(live => [
+          live.key,
+          live.name,
+          live.username,
+          live.logoPath,
+          live.isActive
+        ])
+      });
+
+      if (
+        list.dataset.needsRender !== "true" &&
+        list.dataset.renderSignature === renderSignature
+      ) {
+        return;
+      }
+
+      delete list.dataset.needsRender;
+      list.dataset.renderSignature = renderSignature;
+      quickLiveLogoObserver?.disconnect();
+      quickLiveLogoObserver = null;
 
       if (filteredLives.length === 0) {
         list.innerHTML = `
@@ -10625,6 +10685,41 @@
       preview.hidden = false;
     }
 
+    function renderLiveEditorCategories() {
+      const holder = document.getElementById("liveEditorCategories");
+      const options = normalizeLiveCategories([
+        ...liveCategoryCatalog,
+        ...editingLiveLibraryCategories
+      ]).sort((left, right) => {
+        if (left.toLowerCase() === "all star") return -1;
+        if (right.toLowerCase() === "all star") return 1;
+        return left.localeCompare(right, undefined, { sensitivity: "base" });
+      });
+      holder.replaceChildren();
+
+      options.forEach(category => {
+        const selected = editingLiveLibraryCategories.some(saved =>
+          saved.toLowerCase() === category.toLowerCase()
+        );
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `live-editor-category${selected ? " selected" : ""}${category.toLowerCase() === "all star" ? " all-star" : ""}`;
+        button.textContent = category.toLowerCase() === "all star"
+          ? `★ ${category}`
+          : category;
+        button.setAttribute("aria-pressed", String(selected));
+        button.addEventListener("click", () => {
+          const index = editingLiveLibraryCategories.findIndex(saved =>
+            saved.toLowerCase() === category.toLowerCase()
+          );
+          if (index >= 0) editingLiveLibraryCategories.splice(index, 1);
+          else editingLiveLibraryCategories.push(category);
+          renderLiveEditorCategories();
+        });
+        holder.append(button);
+      });
+    }
+
 
     function openLiveEditor(live) {
       if (!live) {
@@ -10638,6 +10733,7 @@
       editingLiveLibraryKey = live.key;
       editingLiveLibraryName = live.name;
       editingLiveLibraryItems = [...live.items];
+      editingLiveLibraryCategories = [...(live.categories || [])];
       editingLiveLibraryLogoPath = live.logoPath || "";
       document.getElementById("liveEditorTitle").textContent = "Edit Live";
       document.getElementById("liveEditorName").value = live.name;
@@ -10651,6 +10747,7 @@
           : "No uploaded logo. The bundled logo will be used when available.";
       document.getElementById("liveEditorDeleteButton").style.display = "inline-flex";
       renderLiveEditorItems();
+      renderLiveEditorCategories();
       document.body.classList.add("live-editor-open");
       document.getElementById("liveEditorBackdrop").classList.add("open");
       document.getElementById("liveEditorName").focus();
@@ -10665,6 +10762,7 @@
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
+      editingLiveLibraryCategories = [];
       editingLiveLibraryLogoPath = "";
       document.getElementById("liveEditorTitle").textContent = "Add Live";
       document.getElementById("liveEditorName").value = "";
@@ -10676,6 +10774,7 @@
         "Choose an image to upload a logo.";
       document.getElementById("liveEditorDeleteButton").style.display = "none";
       renderLiveEditorItems();
+      renderLiveEditorCategories();
       document.body.classList.add("live-editor-open");
       document.getElementById("liveEditorBackdrop").classList.add("open");
       document.getElementById("liveEditorName").focus();
@@ -10896,6 +10995,7 @@
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
       editingLiveLibraryItems = [];
+      editingLiveLibraryCategories = [];
       editingLiveLibraryLogoPath = "";
     }
 
@@ -10986,6 +11086,7 @@
         String(username || name).trim().toLowerCase();
       const previousName = editingLiveLibraryName;
       const items = [...editingLiveLibraryItems];
+      const categories = normalizeLiveCategories(editingLiveLibraryCategories);
       const pendingItem = document
         .getElementById("liveEditorItemInput")
         .value
@@ -11041,7 +11142,7 @@
         name,
         username,
         items,
-        categories: currentLive?.categories || [],
+        categories,
         logoPath,
         importIssues,
         lastGiveawayAt: currentLive?.lastGiveawayAt || null
@@ -11053,7 +11154,7 @@
           name,
           username,
           items,
-          categories: currentLive?.categories || [],
+          categories,
           logoPath,
           importIssues,
           lastGiveawayAt: currentLive?.lastGiveawayAt || null
@@ -11552,6 +11653,19 @@
       if (!sharedDatabase) {
         initializeImportedLiveEditor();
         return;
+      }
+
+      const categoryResult = await sharedDatabase
+        .from("live_categories")
+        .select("name, sort_order")
+        .order("sort_order")
+        .order("name");
+      if (categoryResult.error) {
+        console.warn("Could not load the live category catalog:", categoryResult.error);
+      } else {
+        liveCategoryCatalog = normalizeLiveCategories(
+          (categoryResult.data || []).map(category => category.name)
+        );
       }
 
       await loadSharedLiveLibrary();

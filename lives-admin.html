@@ -499,13 +499,17 @@
       <div class="quick-category-heading">
         <div class="quick-category-heading-copy">
           <h2 id="quickCategoryTitle">Quick Categories</h2>
-          <p>Choose a category, then tap lives to add or remove it. Changes save when you finish.</p>
+          <p>Choose a category, then tap lives to add or remove it. Select Save to apply your changes.</p>
         </div>
+        <button id="quickCategorySaveButton" class="button button-primary quick-category-close" type="button" onclick="saveQuickCategories()">Save</button>
         <button id="quickCategoryDoneButton" class="button button-secondary quick-category-close" type="button" onclick="closeQuickCategories()">Done</button>
       </div>
       <div class="quick-category-controls">
         <label for="quickCategorySelect">Category</label>
         <select id="quickCategorySelect" class="quick-category-select"></select>
+        <button class="button button-secondary" type="button" onclick="addQuickCategory()">New Category</button>
+        <button class="button button-secondary" type="button" onclick="renameQuickCategory()" aria-label="Rename selected category">Rename</button>
+        <button class="button button-danger" type="button" onclick="deleteQuickCategory()" aria-label="Delete selected category">Delete</button>
       </div>
       <div id="quickCategoryGrid" class="quick-category-grid"></div>
     </section>
@@ -525,6 +529,9 @@
     const quickCategoryChangedRows = new Set();
     const quickCategoryInitiallyDirtyRows = new Set();
     let quickCategoriesSaving = false;
+    let categoryCatalog = [];
+    let savedCategoryCatalog = [];
+    let quickCategoryCatalogSnapshot = [];
     const STARTER_CATEGORIES = [
       "All Star",
       "Nails",
@@ -594,13 +601,75 @@
     }
 
     function getCategoryOptions() {
-      const categories = [...STARTER_CATEGORIES];
+      const categories = [...categoryCatalog];
       rows.forEach(row => categories.push(...(row._categories || [])));
       return normalizeCategories(categories).sort((left, right) => {
         if (left.toLowerCase() === "all star") return -1;
         if (right.toLowerCase() === "all star") return 1;
         return left.localeCompare(right, undefined, { sensitivity: "base" });
       });
+    }
+
+    function renameQuickCategory() {
+      const select = document.getElementById("quickCategorySelect");
+      const current = select.value;
+      if (!current) return;
+      const next = window.prompt(`Rename “${current}”:`, current)?.trim();
+      if (!next || next.toLowerCase() === current.toLowerCase()) return;
+      if (getCategoryOptions().some(category => category.toLowerCase() === next.toLowerCase())) {
+        window.alert(`A category named “${next}” already exists.`);
+        return;
+      }
+      categoryCatalog = categoryCatalog.map(category =>
+        category.toLowerCase() === current.toLowerCase() ? next : category
+      );
+      rows.forEach(row => {
+        if (!row._categories.some(category => category.toLowerCase() === current.toLowerCase())) return;
+        if (row.classList.contains("dirty")) quickCategoryInitiallyDirtyRows.add(row);
+        row._categories = row._categories.map(category =>
+          category.toLowerCase() === current.toLowerCase() ? next : category
+        );
+        quickCategoryChangedRows.add(row);
+        renderCategoryEditor(row);
+      });
+      populateQuickCategorySelect();
+      select.value = next;
+      renderQuickCategoryGrid();
+    }
+
+    function addQuickCategory() {
+      const name = window.prompt("New category name:")?.trim();
+      if (!name) return;
+      if (getCategoryOptions().some(category => category.toLowerCase() === name.toLowerCase())) {
+        window.alert(`A category named “${name}” already exists.`);
+        return;
+      }
+      categoryCatalog.push(name);
+      categoryCatalog = normalizeCategories(categoryCatalog);
+      populateQuickCategorySelect();
+      document.getElementById("quickCategorySelect").value = name;
+      renderQuickCategoryGrid();
+    }
+
+    function deleteQuickCategory() {
+      const select = document.getElementById("quickCategorySelect");
+      const current = select.value;
+      if (!current || !window.confirm(`Delete “${current}” from the category list and every live?`)) return;
+      categoryCatalog = categoryCatalog.filter(category =>
+        category.toLowerCase() !== current.toLowerCase()
+      );
+      rows.forEach(row => {
+        const next = row._categories.filter(category =>
+          category.toLowerCase() !== current.toLowerCase()
+        );
+        if (next.length === row._categories.length) return;
+        if (row.classList.contains("dirty")) quickCategoryInitiallyDirtyRows.add(row);
+        row._categories = next;
+        quickCategoryChangedRows.add(row);
+        renderCategoryEditor(row);
+      });
+      populateQuickCategorySelect();
+      renderQuickCategoryGrid();
     }
 
     function populateQuickCategorySelect() {
@@ -685,6 +754,7 @@
     function openQuickCategories() {
       quickCategoryChangedRows.clear();
       quickCategoryInitiallyDirtyRows.clear();
+      quickCategoryCatalogSnapshot = [...categoryCatalog];
       populateQuickCategorySelect();
       renderQuickCategoryGrid();
       document.getElementById("quickCategoryBackdrop").classList.add("open");
@@ -718,49 +788,108 @@
       }
     }
 
-    async function closeQuickCategories() {
-      if (quickCategoriesSaving) return;
-
+    async function saveQuickCategories() {
+      if (quickCategoriesSaving) return false;
       const changedRows = [...quickCategoryChangedRows];
-      const doneButton = document.getElementById("quickCategoryDoneButton");
+      const saveButton = document.getElementById("quickCategorySaveButton");
+      const catalogChanged =
+        JSON.stringify(categoryCatalog) !== JSON.stringify(savedCategoryCatalog);
 
-      if (changedRows.length > 0) {
-        quickCategoriesSaving = true;
-        doneButton.disabled = true;
-        doneButton.textContent = "Saving…";
-        setStatus(`Saving categories for ${changedRows.length} ${changedRows.length === 1 ? "live" : "lives"}…`);
+      if (changedRows.length === 0 && !catalogChanged) {
+        setStatus("There are no category changes to save.");
+        return true;
+      }
 
-        const results = [];
-        for (const row of changedRows) {
-          try {
-            await saveQuickCategoryRow(row);
-            results.push(true);
-          } catch (error) {
-            console.error(error);
-            results.push(false);
+      quickCategoriesSaving = true;
+      saveButton.disabled = true;
+      saveButton.textContent = "Saving…";
+      setStatus(`Saving categories for ${changedRows.length} ${changedRows.length === 1 ? "live" : "lives"}…`);
+
+      try {
+        if (catalogChanged) {
+          const catalogRows = categoryCatalog.map((name, index) => ({
+            name,
+            sort_order: name.toLowerCase() === "all star" ? 0 : (index + 1) * 10
+          }));
+          if (catalogRows.length) {
+            const { error: upsertError } = await database
+              .from("live_categories")
+              .upsert(catalogRows, { onConflict: "name" });
+            if (upsertError) throw upsertError;
+          }
+          const removed = savedCategoryCatalog.filter(saved =>
+            !categoryCatalog.some(category => category.toLowerCase() === saved.toLowerCase())
+          );
+          if (removed.length) {
+            const { error: deleteError } = await database
+              .from("live_categories")
+              .delete()
+              .in("name", removed);
+            if (deleteError) throw deleteError;
           }
         }
-        const failedRows = changedRows.filter((row, index) => !results[index]);
-
-        quickCategoryChangedRows.clear();
-        failedRows.forEach(row => quickCategoryChangedRows.add(row));
+      } catch (error) {
+        console.error(error);
         quickCategoriesSaving = false;
-        doneButton.disabled = false;
-        doneButton.textContent = "Done";
-
-        if (failedRows.length > 0) {
-          setStatus(
-            `Could not save categories for ${failedRows.length} ${failedRows.length === 1 ? "live" : "lives"}. Check the row messages and try again.`,
-            "error"
-          );
-          return;
-        }
-
-        setStatus(
-          `Saved categories for ${changedRows.length} ${changedRows.length === 1 ? "live" : "lives"}.`,
-          "success"
-        );
+        saveButton.disabled = false;
+        saveButton.textContent = "Save";
+        setStatus(error.message || "Could not save the category list.", "error");
+        return false;
       }
+
+      const results = [];
+      for (const row of changedRows) {
+        try {
+          await saveQuickCategoryRow(row);
+          results.push(true);
+        } catch (error) {
+          console.error(error);
+          results.push(false);
+        }
+      }
+      const failedRows = changedRows.filter((row, index) => !results[index]);
+
+      quickCategoryChangedRows.clear();
+      failedRows.forEach(row => quickCategoryChangedRows.add(row));
+      quickCategoryInitiallyDirtyRows.clear();
+      failedRows.forEach(row => {
+        if (row.classList.contains("dirty")) {
+          quickCategoryInitiallyDirtyRows.add(row);
+        }
+      });
+      quickCategoriesSaving = false;
+      saveButton.disabled = false;
+      saveButton.textContent = "Save";
+
+      if (failedRows.length > 0) {
+        setStatus(
+          `Could not save categories for ${failedRows.length} ${failedRows.length === 1 ? "live" : "lives"}. Try again.`,
+          "error"
+        );
+        return false;
+      }
+
+      savedCategoryCatalog = [...categoryCatalog];
+      quickCategoryCatalogSnapshot = [...categoryCatalog];
+
+      setStatus(
+        `Saved categories for ${changedRows.length} ${changedRows.length === 1 ? "live" : "lives"}.`,
+        "success"
+      );
+      renderQuickCategoryGrid();
+      return true;
+    }
+
+    function closeQuickCategories() {
+      if (quickCategoriesSaving) return;
+
+      quickCategoryChangedRows.forEach(row => {
+        row._categories = [...(row._originalState?.categories || [])];
+        renderCategoryEditor(row);
+      });
+      categoryCatalog = [...quickCategoryCatalogSnapshot];
+      quickCategoryChangedRows.clear();
+      quickCategoryInitiallyDirtyRows.clear();
 
       document.getElementById("quickCategoryBackdrop").classList.remove("open");
       document.body.style.overflow = "";
@@ -893,7 +1022,7 @@
         }
       });
       addRow.append(input, add);
-      editor.append(list, trigger, addRow);
+      editor.append(trigger, addRow, list);
       return editor;
     }
 
@@ -914,28 +1043,6 @@
           chip.className = `category-chip${category.toLowerCase() === "all star" ? " all-star" : ""}`;
           const text = document.createElement("span");
           text.textContent = category.toLowerCase() === "all star" ? `★ ${category}` : category;
-          const rename = document.createElement("button");
-          rename.type = "button";
-          rename.className = "category-remove";
-          rename.textContent = "✎";
-          rename.setAttribute("aria-label", `Rename ${category}`);
-          rename.addEventListener("click", () => {
-            const nextName = window.prompt(`Rename “${category}” everywhere:`, category)?.trim();
-            if (!nextName || nextName.toLowerCase() === category.toLowerCase()) return;
-            rows.forEach(savedRow => {
-              const matches = savedRow._categories.some(
-                saved => saved.toLowerCase() === category.toLowerCase()
-              );
-              if (!matches) return;
-              savedRow._categories = normalizeCategories(
-                savedRow._categories.map(saved =>
-                  saved.toLowerCase() === category.toLowerCase() ? nextName : saved
-                )
-              );
-              markDirty(savedRow);
-            });
-            rows.forEach(savedRow => renderCategoryEditor(savedRow));
-          });
           const remove = document.createElement("button");
           remove.type = "button";
           remove.className = "category-remove";
@@ -946,7 +1053,7 @@
             markDirty(row);
             renderCategoryEditor(row);
           });
-          chip.append(text, rename, remove);
+          chip.append(text, remove);
           list.append(chip);
         });
       }
@@ -1031,7 +1138,7 @@
       });
       controls.append(select, add);
       newRow.append(newInput, create);
-      editor.append(list, controls, newRow);
+      editor.append(controls, newRow, list);
       return editor;
     }
 
@@ -1117,6 +1224,22 @@
           parameters: { ...(issue.parameters || {}) }
         }))
       };
+    }
+
+    function rowHasUnsavedChanges(row) {
+      if (!row.dataset.originalKey || row._logoFile) return true;
+      if (!row._originalState) return false;
+
+      const current = captureRowState(row);
+      const original = row._originalState;
+      return (
+        current.name !== original.name ||
+        current.username !== original.username ||
+        current.logoPath !== original.logoPath ||
+        JSON.stringify(current.items) !== JSON.stringify(original.items) ||
+        JSON.stringify(current.categories) !== JSON.stringify(original.categories) ||
+        JSON.stringify(current.importIssues) !== JSON.stringify(original.importIssues)
+      );
     }
 
     function undoRowEdits(row) {
@@ -1516,14 +1639,25 @@
     }
 
     async function loadLives() {
-      const { data, error } = await database
-        .from("lives")
-        .select("*");
+      const [livesResult, categoriesResult] = await Promise.all([
+        database.from("lives").select("*"),
+        database.from("live_categories").select("name, sort_order").order("sort_order").order("name")
+      ]);
+      const { data, error } = livesResult;
       if (error) {
         console.error(error);
         setStatus(error.message || "Could not load lives.", "error");
         return;
       }
+      if (categoriesResult.error) {
+        console.warn("Could not load the category catalog:", categoriesResult.error);
+        categoryCatalog = [...STARTER_CATEGORIES];
+      } else {
+        categoryCatalog = normalizeCategories(
+          (categoriesResult.data || []).map(category => category.name)
+        );
+      }
+      savedCategoryCatalog = [...categoryCatalog];
       body.replaceChildren();
       createdAtSupported = data.some(live => Object.prototype.hasOwnProperty.call(live, "created_at"));
       importIssuesSupported = data.some(live => Object.prototype.hasOwnProperty.call(live, "import_issues"));
@@ -1547,7 +1681,7 @@
     document.getElementById("sortSelect").addEventListener("change", applyView);
     document.getElementById("missingLogoFilter").addEventListener("change", applyView);
     window.addEventListener("beforeunload", event => {
-      if (!rows.some(row => row.classList.contains("dirty"))) return;
+      if (!rows.some(rowHasUnsavedChanges)) return;
       event.preventDefault();
       event.returnValue = "";
     });
