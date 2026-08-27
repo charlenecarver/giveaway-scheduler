@@ -501,7 +501,7 @@
           <h2 id="quickCategoryTitle">Quick Categories</h2>
           <p>Choose a category, then tap lives to add or remove it. Changes save when you finish.</p>
         </div>
-        <button id="quickCategoryDoneButton" class="button button-secondary quick-category-close" type="button" onclick="closeQuickCategories()">Save &amp; Done</button>
+        <button id="quickCategoryDoneButton" class="button button-secondary quick-category-close" type="button" onclick="closeQuickCategories()">Done</button>
       </div>
       <div class="quick-category-controls">
         <label for="quickCategorySelect">Category</label>
@@ -668,7 +668,6 @@
             if (index >= 0) row._categories.splice(index, 1);
             else row._categories.push(category);
             quickCategoryChangedRows.add(row);
-            markDirty(row);
             renderCategoryEditor(row);
             renderQuickCategoryGrid();
           });
@@ -685,6 +684,25 @@
       document.getElementById("quickCategorySelect").focus();
     }
 
+    async function saveQuickCategoryRow(row) {
+      const key = row.dataset.originalKey;
+      if (!key) {
+        throw new Error("Save newly added lives before assigning quick categories.");
+      }
+
+      const categories = normalizeCategories(row._categories);
+      const { error } = await database
+        .from("lives")
+        .update({ categories, updated_at: new Date().toISOString() })
+        .eq("key", key);
+      if (error) throw error;
+
+      row._categories = [...categories];
+      if (row._originalState) {
+        row._originalState.categories = [...categories];
+      }
+    }
+
     async function closeQuickCategories() {
       if (quickCategoriesSaving) return;
 
@@ -698,14 +716,22 @@
         setStatus(`Saving categories for ${changedRows.length} ${changedRows.length === 1 ? "live" : "lives"}…`);
 
         const results = [];
-        for (const row of changedRows) results.push(await saveRow(row));
+        for (const row of changedRows) {
+          try {
+            await saveQuickCategoryRow(row);
+            results.push(true);
+          } catch (error) {
+            console.error(error);
+            results.push(false);
+          }
+        }
         const failedRows = changedRows.filter((row, index) => !results[index]);
 
         quickCategoryChangedRows.clear();
         failedRows.forEach(row => quickCategoryChangedRows.add(row));
         quickCategoriesSaving = false;
         doneButton.disabled = false;
-        doneButton.textContent = "Save & Done";
+        doneButton.textContent = "Done";
 
         if (failedRows.length > 0) {
           setStatus(
