@@ -1666,8 +1666,41 @@
 
     .history-header {
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       margin-bottom: 8px;
+    }
+
+    .completed-history-link,
+    .back-to-active-link {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #766d86;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    .completed-history-link {
+      display: block;
+      width: fit-content;
+      margin: 11px auto 0;
+      padding: 4px 8px;
+    }
+
+    .completed-history-link:hover:not(:disabled),
+    .back-to-active-link:hover {
+      color: #514960;
+    }
+
+    .completed-history-link:disabled {
+      color: #aaa4b2;
+      cursor: default;
+      text-decoration: none;
     }
 
     .clear-button {
@@ -2417,17 +2450,22 @@
     }
 
     .cancel-edit-button {
-      padding: 5px 8px;
-      border-radius: 7px;
-      background: #e8eaee;
-      color: #555;
-      font-size: 11px;
-      font-weight: 700;
+      flex: 0 0 auto;
+      min-height: 32px;
+      padding: 6px 11px;
+      border: 1px solid #d8cbd5;
+      border-radius: 8px;
+      background: #fff;
+      color: #765568;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .cancel-edit-button:hover {
-      background: #dde0e5;
-      color: #222;
+      border-color: #bc9eaf;
+      background: #f8eef3;
+      color: #5f3f51;
     }
 
     .entry-actions {
@@ -3622,6 +3660,7 @@
       .install-banner,
       .add-card,
       .tabs,
+      .completed-history-link,
       #historyView {
         display: none !important;
       }
@@ -4396,7 +4435,7 @@
           type="button"
           onclick="cancelEdit()"
         >
-          Cancel
+          × Cancel Edit
         </button>
       </div>
 
@@ -4543,33 +4582,20 @@
 
     <div id="quickLivesMobileAnchor" class="quick-lives-anchor"></div>
 
-    <div class="tabs">
-
-      <button
-        id="activeTab"
-        class="tab active"
-        onclick="showTab('active')"
-      >
-        Active
-        <span id="activeCount" class="count">0</span>
-      </button>
-
-      <button
-        id="historyTab"
-        class="tab"
-        onclick="showTab('history')"
-      >
-        History
-        <span id="historyCount" class="count">0</span>
-      </button>
-
-    </div>
-
     <div id="activeView">
       <div
         id="activeList"
         class="list"
       ></div>
+
+      <button
+        id="completedHistoryLink"
+        class="completed-history-link"
+        type="button"
+        onclick="showTab('history')"
+      >
+        See last 25 completed
+      </button>
     </div>
 
     <div
@@ -4578,6 +4604,14 @@
     >
 
       <div class="history-header">
+        <button
+          class="back-to-active-link"
+          type="button"
+          onclick="showTab('active')"
+        >
+          ← Back to active giveaways
+        </button>
+
         <button
           id="clearHistoryButton"
           class="clear-button"
@@ -5105,7 +5139,7 @@
     let importedTimeEndTime = null;
     let importedTimeWasUsed = false;
     let importedLiveAutofilledValue = "";
-    const MAX_HISTORY_ENTRIES = 50;
+    const MAX_HISTORY_ENTRIES = 25;
 
     function normalizeImportedLiveName(value) {
       return String(value || "")
@@ -9285,24 +9319,12 @@
       const historyView =
         document.getElementById("historyView");
 
-      const activeTab =
-        document.getElementById("activeTab");
-
-      const historyTab =
-        document.getElementById("historyTab");
-
       if (tab === "active") {
         activeView.style.display = "block";
         historyView.style.display = "none";
-
-        activeTab.classList.add("active");
-        historyTab.classList.remove("active");
       } else {
         activeView.style.display = "none";
         historyView.style.display = "block";
-
-        activeTab.classList.remove("active");
-        historyTab.classList.add("active");
       }
     }
 
@@ -9320,12 +9342,8 @@
       renderQuickLives();
 
       document.getElementById(
-        "activeCount"
-      ).textContent = giveaways.length;
-
-      document.getElementById(
-        "historyCount"
-      ).textContent = history.length;
+        "completedHistoryLink"
+      ).disabled = history.length === 0;
 
       document.getElementById(
         "clearHistoryButton"
