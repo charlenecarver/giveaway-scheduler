@@ -1,5 +1,6 @@
-const CACHE_NAME = "givvy-time-v46";
+const CACHE_NAME = "givvy-time-v47";
 const IMAGE_CACHE_NAME = "givvy-time-images-v3";
+const REMOTE_IMAGE_TIMEOUT_MS = 8000;
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -47,7 +48,27 @@ self.addEventListener("fetch", event => {
       // Never cache cross-origin logos as opaque responses. A failed opaque
       // response can otherwise leave one device permanently stuck on initials.
       if (requestUrl.origin !== self.location.origin) {
-        return fetch(event.request, { cache: "no-store" });
+        const controller = new AbortController();
+        const timeout = setTimeout(
+          () => controller.abort(),
+          REMOTE_IMAGE_TIMEOUT_MS
+        );
+
+        try {
+          return await fetch(event.request, {
+            cache: "no-store",
+            signal: controller.signal
+          });
+        } catch (error) {
+          // Resolve the request promptly so the image element can run its
+          // normal error handler and try a bundled-logo fallback.
+          return new Response("", {
+            status: 504,
+            statusText: "Logo request timed out"
+          });
+        } finally {
+          clearTimeout(timeout);
+        }
       }
 
       try {
