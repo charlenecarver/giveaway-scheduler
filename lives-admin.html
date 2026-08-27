@@ -77,7 +77,7 @@
 
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) 190px auto auto auto;
+      grid-template-columns: minmax(220px, 1fr) auto auto auto;
       gap: 10px;
       margin-bottom: 12px;
       padding: 14px;
@@ -87,7 +87,7 @@
       box-shadow: var(--shadow);
     }
 
-    .search, .sort-select, .cell-input {
+    .search, .cell-input {
       width: 100%;
       border: 1px solid #dfd3d8;
       border-radius: 9px;
@@ -97,7 +97,6 @@
     }
 
     .search { height: 42px; padding: 9px 12px; }
-    .sort-select { height: 42px; padding: 8px 10px; }
     .cell-input { height: 38px; padding: 7px 9px; font-size: 13px; }
     .search:focus, .cell-input:focus { border-color: #a98abe; box-shadow: 0 0 0 3px rgba(169, 138, 190, 0.14); }
 
@@ -262,7 +261,6 @@
     }
     .item-add-trigger[hidden] { display: none; }
     .items-empty { color: #9a8992; font-size: 11px; font-style: italic; }
-    .updated-cell { width: 165px; color: var(--muted); font-size: 12px; line-height: 1.4; }
     .issue-cell { width: 135px; }
     .issue-badge { padding: 6px 9px; border: 1px solid #e5b9c4; border-radius: 999px; background: #fff0f3; color: #9a3f56; cursor: pointer; font-size: 11px; font-weight: 850; }
     .issue-clear { display: block; margin-top: 5px; padding: 0; border: 0; background: transparent; color: #826f78; cursor: pointer; font-size: 10px; text-decoration: underline; }
@@ -314,7 +312,6 @@
       .back-link { padding: 9px 11px; font-size: 12px; }
       .toolbar { grid-template-columns: 1fr 1fr; }
       .search { grid-column: 1 / -1; }
-      .sort-select { width: 100%; }
       .page { padding-bottom: 10px; }
     }
   </style>
@@ -334,14 +331,6 @@
 
     <section class="toolbar" aria-label="Live management controls">
       <input id="searchInput" class="search" type="search" placeholder="Search name, username, or item…" />
-      <select id="sortSelect" class="sort-select" aria-label="Sort lives">
-        <option value="newest" selected>Newest added</option>
-        <option value="oldest">Oldest added</option>
-        <option value="giveaway-newest">Latest giveaway activity</option>
-        <option value="giveaway-oldest">Oldest giveaway activity</option>
-        <option value="name">Name A–Z</option>
-        <option value="username">Username A–Z</option>
-      </select>
       <label class="logo-filter">
         <input id="missingLogoFilter" type="checkbox" />
         Missing logo only
@@ -361,7 +350,6 @@
             <th>Username</th>
             <th>Giveaway Items</th>
             <th>Import Flags</th>
-            <th>Added</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -586,6 +574,15 @@
       else image.remove();
     }
 
+    function updateLogoInitials(row) {
+      const fallback = row.querySelector(".logo-fallback");
+      if (fallback) {
+        fallback.textContent = getInitials(
+          row.querySelector('[data-field="name"]').value.trim()
+        );
+      }
+    }
+
     function updateProfileLink(row) {
       const username = row.querySelector('[data-field="username"]').value.trim().replace(/^@/, "");
       const link = row.querySelector(".profile-link");
@@ -727,12 +724,6 @@
       const issueCell = makeCell("issue-cell");
       const createdAt = live.created_at || (live.key ? "" : new Date().toISOString());
       row.dataset.createdAt = createdAt;
-      const addedCell = makeCell("updated-cell");
-      addedCell.dataset.added = "";
-      addedCell.textContent = createdAt
-        ? new Date(createdAt).toLocaleString()
-        : "Unavailable (legacy live)";
-
       const actionsCell = makeCell("actions-cell");
       const undo = document.createElement("button");
       undo.type = "button";
@@ -760,14 +751,23 @@
       message.className = "row-message";
       actionsCell.append(profile, " ", remove, " ", undo, message);
 
-      row.append(logoCell, nameCell, usernameCell, itemsCell, issueCell, addedCell, actionsCell);
+      row.append(logoCell, nameCell, usernameCell, itemsCell, issueCell, actionsCell);
       row.querySelectorAll("[data-field]").forEach(input => {
         input.addEventListener("input", () => {
           markDirty(row);
-          if (["name", "username"].includes(input.dataset.field)) updateLogoPreview(row);
+          if (input.dataset.field === "name") updateLogoInitials(row);
           if (input.dataset.field === "username") updateProfileLink(row);
         });
-        input.addEventListener("change", () => markDirty(row));
+        input.addEventListener("change", () => {
+          markDirty(row);
+          if (
+            input.dataset.field === "username" &&
+            !row.dataset.logoPath &&
+            !row._logoFile
+          ) {
+            updateLogoPreview(row);
+          }
+        });
       });
       updateLogoPreview(row);
       updateProfileLink(row);
@@ -934,32 +934,6 @@
     function applyView() {
       const query = document.getElementById("searchInput").value.trim().toLowerCase();
       const missingLogoOnly = document.getElementById("missingLogoFilter").checked;
-      const sort = document.getElementById("sortSelect").value;
-      rows.sort((left, right) => {
-        if (sort === "name" || sort === "username") {
-          const leftValue = left.querySelector(`[data-field="${sort}"]`).value.trim();
-          const rightValue = right.querySelector(`[data-field="${sort}"]`).value.trim();
-          return leftValue.localeCompare(rightValue, undefined, { sensitivity: "base" });
-        }
-        const useGiveawayDate = sort === "giveaway-newest" || sort === "giveaway-oldest";
-        const leftTime = Date.parse(
-          useGiveawayDate ? left.dataset.lastGiveawayAt : left.dataset.createdAt
-        );
-        const rightTime = Date.parse(
-          useGiveawayDate ? right.dataset.lastGiveawayAt : right.dataset.createdAt
-        );
-        const leftHasDate = Number.isFinite(leftTime);
-        const rightHasDate = Number.isFinite(rightTime);
-        if (leftHasDate !== rightHasDate) return leftHasDate ? -1 : 1;
-        if (!leftHasDate) {
-          const leftName = left.querySelector('[data-field="name"]').value.trim();
-          const rightName = right.querySelector('[data-field="name"]').value.trim();
-          return leftName.localeCompare(rightName, undefined, { sensitivity: "base" });
-        }
-        const delta = leftTime - rightTime;
-        return sort === "oldest" || sort === "giveaway-oldest" ? delta : -delta;
-      });
-      rows.forEach(row => body.append(row));
 
       let visible = 0;
       rows.forEach(row => {
@@ -1021,7 +995,6 @@
     document.getElementById("addButton").addEventListener("click", addLive);
     document.getElementById("saveAllButton").addEventListener("click", saveAll);
     document.getElementById("searchInput").addEventListener("input", applyView);
-    document.getElementById("sortSelect").addEventListener("change", applyView);
     document.getElementById("missingLogoFilter").addEventListener("change", applyView);
     window.addEventListener("beforeunload", event => {
       if (!rows.some(row => row.classList.contains("dirty"))) return;

@@ -1,5 +1,5 @@
-const CACHE_NAME = "givvy-time-v43";
-const IMAGE_CACHE_NAME = "givvy-time-images-v2";
+const CACHE_NAME = "givvy-time-v44";
+const IMAGE_CACHE_NAME = "givvy-time-images-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -42,18 +42,26 @@ self.addEventListener("fetch", event => {
 
   if (event.request.destination === "image") {
     event.respondWith((async () => {
-      const cached = await caches.match(event.request);
-      if (cached) {
-        return cached;
+      const requestUrl = new URL(event.request.url);
+
+      // Never cache cross-origin logos as opaque responses. A failed opaque
+      // response can otherwise leave one device permanently stuck on initials.
+      if (requestUrl.origin !== self.location.origin) {
+        return fetch(event.request, { cache: "no-store" });
       }
 
-      return fetch(event.request).then(async response => {
-        if (response.ok || response.type === "opaque") {
+      try {
+        const response = await fetch(event.request, { cache: "no-cache" });
+        if (response.ok) {
           const imageCache = await caches.open(IMAGE_CACHE_NAME);
           await imageCache.put(event.request, response.clone());
         }
         return response;
-      });
+      } catch (error) {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        throw error;
+      }
     })());
     return;
   }
