@@ -842,6 +842,42 @@
       padding-left: 50px;
     }
 
+    .live-name-input-wrap.has-value #liveName {
+      padding-right: 42px;
+    }
+
+    .clear-selected-live {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      z-index: 2;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      transform: translateY(-50%);
+      border: 1px solid #d9d3e4;
+      border-radius: 50%;
+      background: #f7f4fb;
+      color: #665b72;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .live-name-input-wrap.has-value .clear-selected-live {
+      display: inline-flex;
+    }
+
+    .clear-selected-live:hover,
+    .clear-selected-live:focus-visible {
+      border-color: #b9abd0;
+      background: #eee8f6;
+      color: #4f405f;
+    }
+
     .selected-live-logo-holder {
       position: absolute;
       left: 11px;
@@ -4383,6 +4419,13 @@
               placeholder="Live Name"
               autocomplete="off"
             />
+            <button
+              id="clearSelectedLiveButton"
+              class="clear-selected-live"
+              type="button"
+              aria-label="Clear selected live"
+              title="Clear selected live"
+            >×</button>
           </div>
 
           <div
@@ -6238,6 +6281,10 @@
       const holder = document.getElementById("selectedLiveLogoHolder");
       holder.replaceChildren();
       wrapper.classList.toggle("has-logo", Boolean(live));
+      wrapper.classList.toggle(
+        "has-value",
+        Boolean(document.getElementById("liveName").value.trim())
+      );
 
       if (!live) {
         return;
@@ -6252,6 +6299,15 @@
       logo.alt = "";
       holder.append(fallback, logo);
       loadLocalLogo(logo, fallback, live.logoKey, live.logoPath);
+    }
+
+    function clearSelectedLive() {
+      const input = document.getElementById("liveName");
+      importedLiveAutofilledValue = "";
+      input.value = "";
+      document.getElementById("liveNameAutocomplete").classList.remove("open");
+      updateGiveawayItemSuggestions();
+      input.focus({ preventScroll: true });
     }
 
 
@@ -9400,6 +9456,10 @@
     document
       .getElementById("liveName")
       .addEventListener("focus", renderLiveNameSuggestions);
+
+    document
+      .getElementById("clearSelectedLiveButton")
+      .addEventListener("click", clearSelectedLive);
 
     document
       .getElementById("itemName")
