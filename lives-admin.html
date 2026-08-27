@@ -58,6 +58,8 @@
 
     .heading { display: flex; align-items: center; gap: 14px; }
     .heading img { width: 58px; height: 58px; object-fit: contain; }
+    .heading-logo-link { display: inline-flex; border-radius: 14px; }
+    .heading-logo-link:focus-visible { outline: 3px solid rgba(139, 111, 168, 0.35); outline-offset: 3px; }
     h1 { margin: 0; font-size: clamp(25px, 4vw, 36px); letter-spacing: -0.035em; }
     .subtitle { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
 
@@ -65,19 +67,20 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 10px 14px;
+      padding: 8px 11px;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: white;
       color: var(--ink);
-      font-weight: 800;
+      font-size: 12px;
+      font-weight: 700;
       text-decoration: none;
       box-shadow: 0 4px 14px rgba(112, 71, 89, 0.07);
     }
 
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) 190px auto auto auto;
+      grid-template-columns: minmax(220px, 1fr) 190px auto auto auto auto;
       gap: 10px;
       margin-bottom: 12px;
       padding: 14px;
@@ -85,6 +88,7 @@
       border-radius: 16px;
       background: var(--panel);
       box-shadow: var(--shadow);
+      align-items: center;
     }
 
     .search, .sort-select, .cell-input {
@@ -96,19 +100,22 @@
       color: #44343c;
     }
 
-    .search { height: 42px; padding: 9px 12px; }
-    .sort-select { height: 42px; padding: 8px 10px; }
+    .search { height: 38px; padding: 7px 11px; font-size: 12px; }
+    .sort-select { height: 38px; padding: 7px 9px; font-size: 12px; }
     .cell-input { height: 38px; padding: 7px 9px; font-size: 13px; }
     .search:focus, .cell-input:focus { border-color: #a98abe; box-shadow: 0 0 0 3px rgba(169, 138, 190, 0.14); }
 
     .button {
-      min-height: 42px;
-      padding: 9px 15px;
+      min-height: 34px;
+      padding: 7px 11px;
       border: 0;
       border-radius: 10px;
       cursor: pointer;
-      font-weight: 850;
+      font-size: 12px;
+      font-weight: 700;
     }
+
+    .toolbar > .button { height: 38px; font-size: 12px; }
 
     .button:disabled { cursor: wait; opacity: 0.55; }
     .button-primary { background: linear-gradient(135deg, #ef718c, #ed7b73); color: white; }
@@ -119,7 +126,8 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      min-height: 42px;
+      height: 38px;
+      min-height: 38px;
       padding: 8px 12px;
       border: 1px solid #d9cce1;
       border-radius: 10px;
@@ -152,7 +160,7 @@
       overscroll-behavior: contain;
     }
 
-    table { width: 100%; min-width: 1325px; border-collapse: separate; border-spacing: 0; }
+    table { width: 100%; min-width: 1575px; border-collapse: separate; border-spacing: 0; }
     th {
       position: sticky;
       top: 0;
@@ -262,6 +270,45 @@
     }
     .item-add-trigger[hidden] { display: none; }
     .items-empty { color: #9a8992; font-size: 11px; font-style: italic; }
+    .categories-cell { width: 250px; }
+    .category-editor { display: grid; gap: 6px; }
+    .category-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .category-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 5px 4px 9px;
+      border-radius: 999px;
+      background: #eee8f6;
+      color: #5f4d70;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .category-chip.all-star {
+      background: linear-gradient(135deg, #fff0a8, #ffd6dd);
+      color: #714718;
+      box-shadow: inset 0 0 0 1px rgba(206, 147, 42, 0.25);
+    }
+    .category-remove {
+      display: grid;
+      place-items: center;
+      width: 17px;
+      height: 17px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(91, 69, 108, 0.12);
+      color: inherit;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .category-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
+    .category-select { height: 34px; padding: 5px 7px; border: 1px solid #d9cce1; border-radius: 8px; background: white; color: #594765; font-size: 11px; }
+    .category-new-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
+    .category-new-row[hidden] { display: none; }
+    .categories-empty { color: #9a8992; font-size: 11px; font-style: italic; }
     .issue-cell { width: 135px; }
     .issue-badge { padding: 6px 9px; border: 1px solid #e5b9c4; border-radius: 999px; background: #fff0f3; color: #9a3f56; cursor: pointer; font-size: 11px; font-weight: 850; }
     .issue-clear { display: block; margin-top: 5px; padding: 0; border: 0; background: transparent; color: #826f78; cursor: pointer; font-size: 10px; text-decoration: underline; }
@@ -305,16 +352,91 @@
     .row-message.success { color: #357151; }
     .empty { padding: 46px 20px; text-align: center; color: var(--muted); }
 
+    .quick-category-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(54, 39, 48, 0.5);
+      backdrop-filter: blur(4px);
+    }
+    .quick-category-backdrop.open { display: grid; }
+    .quick-category-panel {
+      display: flex;
+      flex-direction: column;
+      width: min(940px, 100%);
+      max-height: min(88dvh, 900px);
+      padding: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: #fffdfb;
+      box-shadow: 0 24px 70px rgba(71, 43, 58, 0.24);
+    }
+    .quick-category-heading { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .quick-category-heading-copy { min-width: 0; margin-right: auto; }
+    .quick-category-heading h2 { margin: 0; font-size: 22px; }
+    .quick-category-heading p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .quick-category-close { min-height: 36px; padding: 7px 11px; }
+    .quick-category-controls { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+    .quick-category-controls label { font-size: 12px; font-weight: 850; }
+    .quick-category-select { width: min(300px, 100%); height: 40px; padding: 7px 10px; border: 1px solid #d9cce1; border-radius: 10px; background: white; color: var(--ink); font-weight: 750; }
+    .quick-category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+      gap: 10px;
+      min-height: 0;
+      padding: 4px 4px 18px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .quick-category-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+      min-height: 112px;
+      padding: 9px 6px 7px;
+      border: 2px solid transparent;
+      border-radius: 15px;
+      background: #faf7f9;
+      color: var(--ink);
+      box-shadow: none;
+      cursor: pointer;
+    }
+    .quick-category-tile:hover { border-color: #d7c8df; background: #f7f0f8; transform: none; }
+    .quick-category-tile.selected {
+      border-color: #9a76ac;
+      background: #eee2f4;
+      box-shadow: 0 0 0 2px rgba(154, 118, 172, 0.13);
+    }
+    .quick-category-tile.selected.all-star {
+      border-color: #e2aa3c;
+      background: linear-gradient(145deg, #fff5bd, #ffe2e7);
+    }
+    .quick-category-tile .logo-holder { width: 58px; height: 58px; margin-bottom: 7px; }
+    .quick-category-tile .logo-preview,
+    .quick-category-tile .logo-fallback { width: 58px; height: 58px; margin: 0; }
+    .quick-category-tile-name { width: 100%; overflow: hidden; font-size: 11px; font-weight: 850; line-height: 1.2; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+    .quick-category-tile-username { width: 100%; margin-top: 2px; overflow: hidden; color: var(--muted); font-size: 9px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+
     @media (max-width: 700px) {
       .page { width: min(100% - 20px, 1800px); padding-top: 12px; }
       header { align-items: flex-start; }
       .heading img { width: 48px; height: 48px; }
       .subtitle { display: none; }
-      .back-link { padding: 9px 11px; font-size: 12px; }
+      .back-link { padding: 7px 9px; font-size: 11px; }
       .toolbar { grid-template-columns: 1fr 1fr; }
       .search { grid-column: 1 / -1; }
       .sort-select { width: 100%; }
       .page { padding-bottom: 10px; }
+      .quick-category-backdrop { padding: 8px; }
+      .quick-category-panel { max-height: 94dvh; padding: 13px; border-radius: 17px; }
+      .quick-category-controls { align-items: stretch; flex-direction: column; }
+      .quick-category-controls label, .quick-category-select { width: 100%; }
+      .quick-category-grid { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 7px; }
     }
   </style>
 </head>
@@ -322,7 +444,9 @@
   <main class="page">
     <header>
       <div class="heading">
-        <img src="app-icon-192.png" alt="" />
+        <a class="heading-logo-link" href="index.html" aria-label="Back to Givvy Time">
+          <img src="app-icon-192.png" alt="" />
+        </a>
         <div>
           <h1>Manage Lives</h1>
           <p class="subtitle">Edit every saved live directly in the grid.</p>
@@ -336,6 +460,7 @@
       <select id="sortSelect" class="sort-select" aria-label="Sort lives">
         <option value="giveaway-newest" selected>Latest giveaway activity</option>
         <option value="giveaway-oldest">Oldest giveaway activity</option>
+        <option value="import-flags">Import flags first</option>
         <option value="name">Name A–Z</option>
         <option value="username">Username A–Z</option>
       </select>
@@ -343,6 +468,7 @@
         <input id="missingLogoFilter" type="checkbox" />
         Missing logo only
       </label>
+      <button id="quickCategoriesButton" class="button button-secondary" type="button">Quick Categories</button>
       <button id="addButton" class="button button-secondary" type="button">+ Add Live</button>
       <button id="saveAllButton" class="button button-primary" type="button">Save All Changes</button>
     </section>
@@ -357,6 +483,7 @@
             <th>Live Name</th>
             <th>Username</th>
             <th>Giveaway Items</th>
+            <th>Categories</th>
             <th>Import Flags</th>
             <th>Actions</th>
           </tr>
@@ -366,6 +493,23 @@
       <div id="emptyState" class="empty" hidden>No lives match this search.</div>
     </div>
   </main>
+
+  <div id="quickCategoryBackdrop" class="quick-category-backdrop" role="dialog" aria-modal="true" aria-labelledby="quickCategoryTitle">
+    <section class="quick-category-panel">
+      <div class="quick-category-heading">
+        <div class="quick-category-heading-copy">
+          <h2 id="quickCategoryTitle">Quick Categories</h2>
+          <p>Choose a category, then tap lives to add or remove it. Use Save All Changes when finished.</p>
+        </div>
+        <button class="button button-secondary quick-category-close" type="button" onclick="closeQuickCategories()">Done</button>
+      </div>
+      <div class="quick-category-controls">
+        <label for="quickCategorySelect">Category</label>
+        <select id="quickCategorySelect" class="quick-category-select"></select>
+      </div>
+      <div id="quickCategoryGrid" class="quick-category-grid"></div>
+    </section>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -378,6 +522,31 @@
     let rows = [];
     let createdAtSupported = false;
     let importIssuesSupported = false;
+    const STARTER_CATEGORIES = [
+      "All Star",
+      "Nails",
+      "Boo Faves",
+      "Jes Faves",
+      "Mom Faves",
+      "Pokemon Cards",
+      "Clothing",
+      "Beauty",
+      "Stationery",
+      "Home Goods",
+      "Pet",
+      "Hair",
+      "Cosmetics",
+      "Tech",
+      "Kitchen",
+      "Skincare",
+      "Food",
+      "Handbags & Wallets",
+      "Plants",
+      "Official Company",
+      "Car",
+      "Jewelry",
+      "Kids"
+    ];
 
     function setStatus(message, type = "") {
       status.textContent = message;
@@ -407,6 +576,116 @@
       return [...new Set((Array.isArray(items) ? items : [])
         .map(item => String(item || "").trim())
         .filter(Boolean))];
+    }
+
+    function normalizeCategories(categories) {
+      const seen = new Set();
+      return (Array.isArray(categories) ? categories : [])
+        .map(category => String(category || "").trim())
+        .filter(category => {
+          const key = category.toLowerCase();
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+
+    function getCategoryOptions() {
+      const categories = [...STARTER_CATEGORIES];
+      rows.forEach(row => categories.push(...(row._categories || [])));
+      return normalizeCategories(categories).sort((left, right) => {
+        if (left.toLowerCase() === "all star") return -1;
+        if (right.toLowerCase() === "all star") return 1;
+        return left.localeCompare(right, undefined, { sensitivity: "base" });
+      });
+    }
+
+    function populateQuickCategorySelect() {
+      const select = document.getElementById("quickCategorySelect");
+      const previous = select.value;
+      select.replaceChildren();
+      getCategoryOptions().forEach(category => {
+        select.add(new Option(
+          category.toLowerCase() === "all star" ? `★ ${category}` : category,
+          category
+        ));
+      });
+      if ([...select.options].some(option => option.value === previous)) {
+        select.value = previous;
+      }
+    }
+
+    function renderQuickCategoryGrid() {
+      const grid = document.getElementById("quickCategoryGrid");
+      const category = document.getElementById("quickCategorySelect").value;
+      grid.replaceChildren();
+
+      rows
+        .slice()
+        .sort((left, right) => {
+          const leftSelected = left._categories.some(
+            saved => saved.toLowerCase() === category.toLowerCase()
+          );
+          const rightSelected = right._categories.some(
+            saved => saved.toLowerCase() === category.toLowerCase()
+          );
+          if (leftSelected !== rightSelected) return leftSelected ? -1 : 1;
+          return left.querySelector('[data-field="name"]').value.trim().localeCompare(
+            right.querySelector('[data-field="name"]').value.trim(),
+            undefined,
+            { sensitivity: "base" }
+          );
+        })
+        .forEach(row => {
+          const name = row.querySelector('[data-field="name"]').value.trim() || "Unnamed live";
+          const username = row.querySelector('[data-field="username"]').value.trim();
+          const selected = row._categories.some(
+            saved => saved.toLowerCase() === category.toLowerCase()
+          );
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = `quick-category-tile${selected ? " selected" : ""}${category.toLowerCase() === "all star" ? " all-star" : ""}`;
+          tile.setAttribute("aria-pressed", String(selected));
+          tile.setAttribute(
+            "aria-label",
+            `${selected ? "Remove" : "Add"} ${category} ${selected ? "from" : "to"} ${name}`
+          );
+          const logo = row.querySelector(".logo-holder")?.cloneNode(true);
+          if (logo) tile.append(logo);
+          const nameLabel = document.createElement("span");
+          nameLabel.className = "quick-category-tile-name";
+          nameLabel.textContent = name;
+          const usernameLabel = document.createElement("span");
+          usernameLabel.className = "quick-category-tile-username";
+          usernameLabel.textContent = username ? `@${username}` : "No username";
+          tile.append(nameLabel, usernameLabel);
+          tile.addEventListener("click", () => {
+            const index = row._categories.findIndex(
+              saved => saved.toLowerCase() === category.toLowerCase()
+            );
+            if (index >= 0) row._categories.splice(index, 1);
+            else row._categories.push(category);
+            markDirty(row);
+            renderCategoryEditor(row);
+            renderQuickCategoryGrid();
+          });
+          grid.append(tile);
+        });
+    }
+
+    function openQuickCategories() {
+      populateQuickCategorySelect();
+      renderQuickCategoryGrid();
+      document.getElementById("quickCategoryBackdrop").classList.add("open");
+      document.body.style.overflow = "hidden";
+      document.getElementById("quickCategorySelect").focus();
+    }
+
+    function closeQuickCategories() {
+      document.getElementById("quickCategoryBackdrop").classList.remove("open");
+      document.body.style.overflow = "";
+      applyView();
+      document.getElementById("quickCategoriesButton").focus();
     }
 
     function createInput(field, value, className = "cell-input") {
@@ -538,6 +817,144 @@
       return editor;
     }
 
+    function renderCategoryEditor(row) {
+      const list = row.querySelector(".category-list");
+      const select = row.querySelector(".category-select");
+      if (!list || !select) return;
+      list.replaceChildren();
+
+      if (row._categories.length === 0) {
+        const empty = document.createElement("span");
+        empty.className = "categories-empty";
+        empty.textContent = "No categories";
+        list.append(empty);
+      } else {
+        row._categories.forEach((category, index) => {
+          const chip = document.createElement("span");
+          chip.className = `category-chip${category.toLowerCase() === "all star" ? " all-star" : ""}`;
+          const text = document.createElement("span");
+          text.textContent = category.toLowerCase() === "all star" ? `★ ${category}` : category;
+          const rename = document.createElement("button");
+          rename.type = "button";
+          rename.className = "category-remove";
+          rename.textContent = "✎";
+          rename.setAttribute("aria-label", `Rename ${category}`);
+          rename.addEventListener("click", () => {
+            const nextName = window.prompt(`Rename “${category}” everywhere:`, category)?.trim();
+            if (!nextName || nextName.toLowerCase() === category.toLowerCase()) return;
+            rows.forEach(savedRow => {
+              const matches = savedRow._categories.some(
+                saved => saved.toLowerCase() === category.toLowerCase()
+              );
+              if (!matches) return;
+              savedRow._categories = normalizeCategories(
+                savedRow._categories.map(saved =>
+                  saved.toLowerCase() === category.toLowerCase() ? nextName : saved
+                )
+              );
+              markDirty(savedRow);
+            });
+            rows.forEach(savedRow => renderCategoryEditor(savedRow));
+          });
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "category-remove";
+          remove.textContent = "×";
+          remove.setAttribute("aria-label", `Remove ${category}`);
+          remove.addEventListener("click", () => {
+            row._categories.splice(index, 1);
+            markDirty(row);
+            renderCategoryEditor(row);
+          });
+          chip.append(text, rename, remove);
+          list.append(chip);
+        });
+      }
+
+      const selected = new Set(row._categories.map(category => category.toLowerCase()));
+      select.replaceChildren(new Option("Add category…", ""));
+      getCategoryOptions()
+        .filter(category => !selected.has(category.toLowerCase()))
+        .forEach(category => select.add(new Option(
+          category.toLowerCase() === "all star" ? `★ ${category}` : category,
+          category
+        )));
+      select.add(new Option("+ New category…", "__new__"));
+    }
+
+    function createCategoryEditor(row, categories) {
+      row._categories = normalizeCategories(categories);
+      const editor = document.createElement("div");
+      editor.className = "category-editor";
+      const list = document.createElement("div");
+      list.className = "category-list";
+      const controls = document.createElement("div");
+      controls.className = "category-controls";
+      const select = document.createElement("select");
+      select.className = "category-select";
+      select.setAttribute("aria-label", "Add a category");
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "item-add";
+      add.textContent = "Add";
+      const newRow = document.createElement("div");
+      newRow.className = "category-new-row";
+      newRow.hidden = true;
+      const newInput = document.createElement("input");
+      newInput.className = "cell-input";
+      newInput.placeholder = "New category";
+      const create = document.createElement("button");
+      create.type = "button";
+      create.className = "item-add";
+      create.textContent = "Create";
+
+      const addCategory = value => {
+        const category = String(value || "").trim();
+        if (!category) return;
+        if (!row._categories.some(saved => saved.toLowerCase() === category.toLowerCase())) {
+          row._categories.push(category);
+          markDirty(row);
+        }
+        select.value = "";
+        newInput.value = "";
+        newRow.hidden = true;
+        controls.hidden = false;
+        rows.forEach(savedRow => renderCategoryEditor(savedRow));
+      };
+      add.addEventListener("click", () => {
+        if (select.value === "__new__") {
+          controls.hidden = true;
+          newRow.hidden = false;
+          newInput.focus();
+          return;
+        }
+        addCategory(select.value);
+      });
+      select.addEventListener("change", () => {
+        if (select.value === "__new__") {
+          controls.hidden = true;
+          newRow.hidden = false;
+          newInput.focus();
+        }
+      });
+      create.addEventListener("click", () => addCategory(newInput.value));
+      newInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addCategory(newInput.value);
+        } else if (event.key === "Escape") {
+          newInput.value = "";
+          newRow.hidden = true;
+          controls.hidden = false;
+          select.value = "";
+        }
+      });
+      controls.append(select, add);
+      newRow.append(newInput, create);
+      editor.append(list, controls, newRow);
+      return editor;
+    }
+
     function updateLogoPreview(row) {
       const holder = row.querySelector(".logo-holder");
       const path = row.dataset.logoPath || "";
@@ -613,6 +1030,7 @@
         name: row.querySelector('[data-field="name"]').value,
         username: row.querySelector('[data-field="username"]').value,
         items: [...row._items],
+        categories: [...row._categories],
         logoPath: row.dataset.logoPath || "",
         importIssues: row._importIssues.map(issue => ({
           ...issue,
@@ -634,6 +1052,7 @@
       row.querySelector('[data-field="name"]').value = original.name;
       row.querySelector('[data-field="username"]').value = original.username;
       row._items = [...original.items];
+      row._categories = [...original.categories];
       row.dataset.logoPath = original.logoPath;
       row._logoFile = null;
       row._importIssues = original.importIssues.map(issue => ({
@@ -651,6 +1070,7 @@
       updateLogoPreview(row);
       updateProfileLink(row);
       renderItemsEditor(row);
+      renderCategoryEditor(row);
       renderImportIssues(row);
       applyView();
     }
@@ -729,6 +1149,8 @@
       usernameCell.append(createInput("username", live.username));
       const itemsCell = makeCell("items-cell");
       itemsCell.append(createItemsEditor(row, live.items));
+      const categoriesCell = makeCell("categories-cell");
+      categoriesCell.append(createCategoryEditor(row, live.categories));
       const issueCell = makeCell("issue-cell");
       const createdAt = live.created_at || (live.key ? "" : new Date().toISOString());
       row.dataset.createdAt = createdAt;
@@ -759,7 +1181,7 @@
       message.className = "row-message";
       actionsCell.append(profile, " ", remove, " ", undo, message);
 
-      row.append(logoCell, nameCell, usernameCell, itemsCell, issueCell, actionsCell);
+      row.append(logoCell, nameCell, usernameCell, itemsCell, categoriesCell, issueCell, actionsCell);
       row.querySelectorAll("[data-field]").forEach(input => {
         input.addEventListener("input", () => {
           markDirty(row);
@@ -780,6 +1202,7 @@
       updateLogoPreview(row);
       updateProfileLink(row);
       renderItemsEditor(row);
+      renderCategoryEditor(row);
       renderImportIssues(row);
       row._originalState = captureRowState(row);
       return row;
@@ -794,6 +1217,7 @@
         name,
         username,
         items: normalizeItems(row._items),
+        categories: normalizeCategories(row._categories),
         logo_path: row.dataset.logoPath || "",
         updated_at: new Date().toISOString()
       };
@@ -875,11 +1299,13 @@
         row.dataset.logoPath = record.logo_path;
         row._logoFile = null;
         row._items = [...record.items];
+        row._categories = [...record.categories];
         row.querySelector('[data-field="username"]').value = record.username;
         row.querySelector(".logo-picker").childNodes[0].textContent = "Change image";
         row.querySelector('.logo-picker input[type="file"]').value = "";
         updateLogoPreview(row);
         renderItemsEditor(row);
+        renderCategoryEditor(row);
         row._originalState = captureRowState(row);
         if (previousLogoPath && previousLogoPath !== record.logo_path) {
           database.storage.from("live-logos").remove([previousLogoPath]).then(({ error: removeError }) => {
@@ -944,6 +1370,14 @@
       const missingLogoOnly = document.getElementById("missingLogoFilter").checked;
       const sort = document.getElementById("sortSelect").value;
       rows.sort((left, right) => {
+        if (sort === "import-flags") {
+          const flagDelta = right._importIssues.length - left._importIssues.length;
+          if (flagDelta) return flagDelta;
+          const leftName = left.querySelector('[data-field="name"]').value.trim();
+          const rightName = right.querySelector('[data-field="name"]').value.trim();
+          return leftName.localeCompare(rightName, undefined, { sensitivity: "base" });
+        }
+
         if (sort === "name" || sort === "username") {
           const leftValue = left.querySelector(`[data-field="${sort}"]`).value.trim();
           const rightValue = right.querySelector(`[data-field="${sort}"]`).value.trim();
@@ -1023,6 +1457,11 @@
     }
 
     document.getElementById("addButton").addEventListener("click", addLive);
+    document.getElementById("quickCategoriesButton").addEventListener("click", openQuickCategories);
+    document.getElementById("quickCategorySelect").addEventListener("change", renderQuickCategoryGrid);
+    document.getElementById("quickCategoryBackdrop").addEventListener("click", event => {
+      if (event.target === event.currentTarget) closeQuickCategories();
+    });
     document.getElementById("saveAllButton").addEventListener("click", saveAll);
     document.getElementById("searchInput").addEventListener("input", applyView);
     document.getElementById("sortSelect").addEventListener("change", applyView);
@@ -1031,6 +1470,14 @@
       if (!rows.some(row => row.classList.contains("dirty"))) return;
       event.preventDefault();
       event.returnValue = "";
+    });
+    document.addEventListener("keydown", event => {
+      if (
+        event.key === "Escape" &&
+        document.getElementById("quickCategoryBackdrop").classList.contains("open")
+      ) {
+        closeQuickCategories();
+      }
     });
     loadLives();
   </script>

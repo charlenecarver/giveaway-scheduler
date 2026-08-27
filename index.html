@@ -100,6 +100,31 @@
       flex-direction: column;
     }
 
+    .quick-lives-show-all {
+      display: none;
+    }
+
+    .quick-lives-filter-toggle {
+      display: none;
+    }
+
+    .quick-lives-filter-menu {
+      display: contents;
+    }
+
+    .quick-lives-category-filters {
+      display: none;
+    }
+
+    .quick-lives-filter-clear {
+      display: none;
+    }
+
+    .quick-lives-show-all[hidden],
+    .quick-lives-filter-toggle[hidden] {
+      display: none !important;
+    }
+
     .quick-lives-add {
       padding: 4px 7px;
       border: 1px solid #cbd8e7;
@@ -2070,7 +2095,7 @@
       }
 
       .timer-area {
-        gap: 12px;
+        gap: 4px;
       }
     }
 
@@ -3929,6 +3954,440 @@
       }
     }
 
+    /* Mobile Quick Lives works like TikTok's LIVE navigation row. */
+    @media (min-width: 201px) and (max-width: 760px) {
+      .brand-heading {
+        margin-bottom: 2px;
+      }
+
+      .install-banner {
+        margin-bottom: 4px;
+      }
+
+      .quick-lives-panel,
+      .quick-lives-panel.mobile-collapsed {
+        display: flex;
+        width: 100%;
+        margin-bottom: 2px;
+        padding: 2px 0 0;
+        overflow: hidden;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .quick-lives-header,
+      .quick-lives-panel.mobile-collapsed .quick-lives-header {
+        display: none;
+      }
+
+      .quick-lives-header-actions,
+      .quick-lives-mobile-toggle,
+      .quick-lives-subtitle,
+      .quick-lives-filter-menu {
+        display: none !important;
+      }
+
+      .quick-lives-content,
+      .quick-lives-panel.mobile-collapsed .quick-lives-content {
+        position: relative;
+        display: block !important;
+        min-width: 0;
+      }
+
+      .quick-lives-show-all {
+        position: absolute;
+        top: 0;
+        right: 3px;
+        z-index: 2;
+        display: inline;
+        padding: 2px 3px;
+        border: 0;
+        background: transparent;
+        color: #75687e;
+        font: inherit;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        box-shadow: none;
+      }
+
+      .quick-lives-show-all:hover {
+        background: transparent;
+        color: #4f4358;
+        transform: none;
+      }
+
+      .quick-lives-filter-toggle {
+        position: absolute;
+        top: -4px;
+        right: 55px;
+        z-index: 3;
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 24px;
+        padding: 3px;
+        border: 0;
+        background: transparent;
+        color: #75687e;
+        box-shadow: none;
+      }
+
+      .quick-lives-panel.mobile-show-all .quick-lives-filter-toggle {
+        right: 68px;
+      }
+
+      .quick-lives-filter-toggle:hover {
+        background: transparent;
+        color: #4f4358;
+        transform: none;
+      }
+
+      .quick-lives-filter-toggle.has-active-filter {
+        color: #9b4770;
+      }
+
+      .quick-lives-filter-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      .quick-lives-list {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 12px;
+        width: 100%;
+        max-height: none;
+        padding: 22px 2px 3px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+      }
+
+      .quick-lives-panel.mobile-show-all {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+      }
+
+      .quick-lives-panel.mobile-filter-open {
+        overflow: visible;
+      }
+
+      .quick-lives-panel.mobile-show-all .quick-lives-content {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+      }
+
+      .quick-lives-panel.mobile-filter-open .quick-lives-filter-menu {
+        position: relative;
+        top: auto;
+        right: auto;
+        z-index: 8;
+        display: block !important;
+        width: calc(100% - 4px);
+        margin: 22px 2px 8px;
+        padding: 9px;
+        border: 1px solid #e5dce8;
+        border-radius: 13px;
+        background: #fffdfb;
+        box-shadow: 0 8px 22px rgba(91, 68, 86, 0.16);
+      }
+
+      .quick-lives-panel.mobile-filter-open .quick-lives-search {
+        display: block !important;
+        width: 100%;
+        height: 38px;
+        margin: 0 0 8px;
+        border-color: #ded8e5;
+        border-radius: 9px;
+        background: white;
+        box-shadow: none;
+        font-size: 16px !important;
+      }
+
+      .quick-lives-category-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+
+      .quick-lives-category-filter {
+        min-height: 27px;
+        padding: 4px 8px;
+        border: 1px solid #ddd3e3;
+        border-radius: 999px;
+        background: #f7f2f9;
+        color: #66566f;
+        box-shadow: none;
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      .quick-lives-category-filter.selected {
+        border-color: #9879aa;
+        background: #eadef1;
+        color: #4e3d59;
+      }
+
+      .quick-lives-category-filter.all-star {
+        border-color: #e9b34d;
+        background: linear-gradient(135deg, #fff0a8, #ffd6dd);
+        color: #714718;
+      }
+
+      .quick-lives-category-filter.all-star.selected {
+        box-shadow: 0 0 0 2px rgba(218, 153, 40, 0.24);
+      }
+
+      .quick-lives-filter-clear {
+        display: block;
+        margin: 8px 0 0 auto;
+        padding: 3px 2px;
+        border: 0;
+        background: transparent;
+        color: #875f76;
+        box-shadow: none;
+        font-size: 10px;
+        font-weight: 850;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .quick-lives-filter-clear:hover {
+        background: transparent;
+        color: #604454;
+        transform: none;
+      }
+
+      .quick-lives-panel.mobile-show-all .quick-lives-list {
+        justify-content: center;
+        flex-wrap: wrap;
+        height: auto;
+        max-height: none;
+        padding-top: 22px;
+        overflow-x: visible;
+        overflow-y: visible;
+        overscroll-behavior: auto;
+        scroll-snap-type: none;
+      }
+
+      .quick-lives-panel.mobile-filter-open .quick-lives-list {
+        padding-top: 4px;
+      }
+
+      .quick-lives-list::-webkit-scrollbar {
+        display: none;
+      }
+
+      .quick-live-row {
+        flex: 0 0 68px;
+        width: 68px;
+        contain-intrinsic-block-size: 96px;
+        content-visibility: visible;
+        scroll-snap-align: start;
+      }
+
+      .quick-live-btn.quick-live-mobile-nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        width: 68px;
+        min-width: 68px;
+        min-height: 92px;
+        padding: 0;
+        overflow: visible;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        color: var(--givvy-ink);
+        text-align: center;
+        text-decoration: none;
+        transform: none;
+      }
+
+      .quick-live-btn.quick-live-mobile-nav:hover,
+      .quick-live-btn.quick-live-mobile-nav.active:hover {
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        color: var(--givvy-ink);
+        filter: none;
+        transform: none;
+      }
+
+      .quick-live-mobile-avatar {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 64px;
+        height: 64px;
+        flex: 0 0 64px;
+        padding: 3px;
+        border-radius: 50%;
+        background: #ddd7e2;
+      }
+
+      .quick-live-mobile-nav.active .quick-live-mobile-avatar {
+        background: linear-gradient(145deg, #ff2e61, #ed4d82);
+        box-shadow: 0 0 0 1px rgba(255, 46, 97, 0.16);
+      }
+
+      .quick-live-mobile-logo,
+      .quick-live-mobile-logo-fallback {
+        grid-column: 1;
+        grid-row: 1;
+        position: static;
+        width: 58px;
+        height: 58px;
+        transform: none;
+        border: 2px solid white;
+        border-radius: 50%;
+      }
+
+      .quick-live-mobile-logo {
+        object-fit: contain;
+        background: white;
+      }
+
+      .quick-live-mobile-logo-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eee8f1;
+        color: #65586d;
+        font-size: 14px;
+        font-weight: 850;
+      }
+
+      .quick-live-mobile-badge {
+        position: absolute;
+        left: 50%;
+        bottom: -4px;
+        z-index: 3;
+        display: none;
+        min-width: 32px;
+        padding: 2px 6px;
+        transform: translateX(-50%);
+        border: 2px solid #fffdfb;
+        border-radius: 5px;
+        background: #ff2e61;
+        color: white;
+        font-size: 8px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        line-height: 1.1;
+      }
+
+      .quick-live-mobile-nav.active .quick-live-mobile-badge {
+        display: block;
+      }
+
+      .quick-live-mobile-name {
+        display: block;
+        width: 68px;
+        margin-top: 8px;
+        overflow: hidden;
+        color: #594953;
+        font-size: 10px;
+        font-weight: 750;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .quick-lives-empty {
+        flex: 0 0 auto;
+        width: 100%;
+        padding: 18px 4px 10px;
+        text-align: center;
+      }
+    }
+
+    @media (min-width: 761px) {
+      .quick-lives-category-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        max-height: 108px;
+        margin: -2px 0 5px;
+        padding: 2px 2px 4px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+
+      .quick-lives-category-filter {
+        min-height: 25px;
+        padding: 3px 7px;
+        border: 1px solid #ddd3e3;
+        border-radius: 999px;
+        background: #f7f2f9;
+        color: #66566f;
+        box-shadow: none;
+        font-size: 9px;
+        font-weight: 800;
+      }
+
+      .quick-lives-category-filter:hover {
+        border-color: #bdaac7;
+        background: #efe6f3;
+        color: #4e3d59;
+        transform: none;
+      }
+
+      .quick-lives-category-filter.selected {
+        border-color: #9879aa;
+        background: #eadef1;
+        color: #4e3d59;
+      }
+
+      .quick-lives-category-filter.all-star {
+        border-color: #e9b34d;
+        background: linear-gradient(135deg, #fff0a8, #ffd6dd);
+        color: #714718;
+      }
+
+      .quick-lives-category-filter.all-star.selected {
+        box-shadow: 0 0 0 2px rgba(218, 153, 40, 0.24);
+      }
+
+      .quick-lives-filter-clear {
+        display: block;
+        align-self: flex-end;
+        margin: 0 2px 7px;
+        padding: 2px;
+        border: 0;
+        background: transparent;
+        color: #875f76;
+        box-shadow: none;
+        font-size: 9px;
+        font-weight: 850;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .quick-lives-filter-clear:hover {
+        background: transparent;
+        color: #604454;
+        transform: none;
+      }
+    }
+
   </style>
 </head>
 
@@ -4046,17 +4505,10 @@
     <div class="app-layout">
 
       <div id="quickLivesDesktopAnchor" class="quick-lives-anchor"></div>
-      <aside id="quickLivesPanel" class="quick-lives-panel mobile-collapsed">
+      <aside id="quickLivesPanel" class="quick-lives-panel">
         <div class="quick-lives-header">
           <h2 class="quick-lives-title">Quick Lives</h2>
           <div class="quick-lives-header-actions">
-            <button
-              class="quick-lives-add"
-              type="button"
-              onclick="openNewLiveEditor()"
-            >
-              + Add Live
-            </button>
             <button
               id="resetQuickLivesButton"
               class="quick-lives-reset"
@@ -4078,17 +4530,54 @@
           </button>
         </div>
         <div id="quickLivesContent" class="quick-lives-content">
+          <button
+            id="quickLivesShowAll"
+            class="quick-lives-show-all"
+            type="button"
+            aria-expanded="false"
+            aria-controls="quickLivesList"
+            onclick="toggleAllMobileQuickLives()"
+          >
+            Show all
+          </button>
+          <button
+            id="quickLivesFilterToggle"
+            class="quick-lives-filter-toggle"
+            type="button"
+            aria-label="Filter lives"
+            aria-expanded="false"
+            aria-controls="quickLivesFilterMenu"
+            onclick="toggleMobileQuickLivesFilter()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M7 12h10M10 18h4"></path>
+            </svg>
+          </button>
           <p class="quick-lives-subtitle">
-            Click a tile to prefill the form with that live’s information. Use the status tag to mark the live as on or off.
+            Open a live on TikTok. Active lives appear first; use the status tag to mark a live on or off.
           </p>
 
-          <input
-            id="quickLivesSearch"
-            class="quick-lives-search"
-            type="search"
-            placeholder="Search lives"
-            aria-label="Search lives"
-          />
+          <div id="quickLivesFilterMenu" class="quick-lives-filter-menu">
+            <input
+              id="quickLivesSearch"
+              class="quick-lives-search"
+              type="search"
+              placeholder="Search lives"
+              aria-label="Search lives"
+            />
+            <div
+              id="quickLivesCategoryFilters"
+              class="quick-lives-category-filters"
+              aria-label="Filter by category"
+            ></div>
+            <button
+              class="quick-lives-filter-clear"
+              type="button"
+              onclick="clearQuickLiveFilters()"
+            >
+              Clear filters
+            </button>
+          </div>
 
           <div id="quickLivesList" class="quick-lives-list"></div>
         </div>
@@ -4124,6 +4613,8 @@
         ×
       </button>
     </aside>
+
+    <div id="quickLivesMobileAnchor" class="quick-lives-anchor"></div>
 
     <div class="add-card">
 
@@ -4580,8 +5071,6 @@
 
     </div>
 
-    <div id="quickLivesMobileAnchor" class="quick-lives-anchor"></div>
-
     <div id="activeView">
       <div
         id="activeList"
@@ -4638,404 +5127,3274 @@
   <script id="starterQuickLives" type="application/json">
     [
       {
-        "name": "Akunbem Official",
-        "username": "akunbem.official",
-        "items": ["Pimple Patches"]
+        "key": "savannah.smiles.always",
+        "name": "⚡️🌼SavannahSmiles🌼⚡️",
+        "username": "savannah.smiles.always",
+        "items": [
+          "BrüMate Müv 100% Leakproof Insulat... Matte Black,15oz"
+        ],
+        "categories": [],
+        "logo_path": "savannahsmilesalways-1787851000019.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:16:59.746+00:00"
       },
       {
-        "name": "AMINNAH SKINCARE",
-        "username": "amnhskincare",
-        "items": ["Lip Gloss", "Doughnut Spoon"]
+        "key": "sunflowerhigh",
+        "name": "🌻𓋼𓍊๓𝔠𝓀єຖ𝔷𝒾e𓍊𓋼🌻",
+        "username": "sunflowerhigh",
+        "items": [
+          "Nails",
+          "Toe Nails",
+          "Portland Leather Horizon Bifold Wallet..."
+        ],
+        "categories": [],
+        "logo_path": "sunflowerhigh-1787544901394.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-25T04:32:15.646+00:00"
       },
       {
-        "name": "Angela",
-        "username": "angelafindsdeals",
-        "items": ["Portland Leather Bag"]
+        "key": "amandalee_1185",
+        "name": "💖amandalee_1185💖",
+        "username": "amandalee_1185",
+        "items": [
+          "Glamnetic Velvet & Glazed Press-On..."
+        ],
+        "categories": [],
+        "logo_path": "amandalee_1185-1787836536308.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:15:36.308+00:00"
       },
       {
-        "name": "ANKER",
-        "username": "ankerofficial",
-        "items": ["Charging Cable"]
+        "key": "abuckley0304124",
+        "name": "💜 Angela I UGC Creator❌️📚💅",
+        "username": "abuckley0304124",
+        "items": [
+          "New Super Strong 15g Nail Glue for Pr... NailPro Glue - 15g"
+        ],
+        "categories": [],
+        "logo_path": "abuckley0304124-1787866062986.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:22:03.576+00:00"
       },
       {
-        "name": "bareMinerals",
-        "username": "bareminerals",
-        "items": ["BareMinerals Mineral Veil"]
-      },
-      {
-        "name": "BlitzBreakz",
-        "username": "blitzbreakzz",
-        "items": ["Pokemon Booster Pack"]
-      },
-      {
-        "name": "buxomcosmetics",
-        "username": "buxomcosmetics",
-        "items": ["BUXOM Plumping Lip Glow"]
-      },
-      {
-        "name": "CAKES Body",
-        "username": "cakesbody",
-        "items": ["CAKES", "CAKES Tape"]
-      },
-      {
-        "name": "Case-Mate",
-        "username": "case.mate",
-        "items": ["Tote Bag", "Phone Charm", "Makeup Bag", "Jelly Bag", "Phone Holder"]
-      },
-      {
-        "name": "Chefman",
-        "username": "my_chefman",
-        "items": ["Appliance"]
-      },
-      {
-        "name": "CHOCBOX",
-        "username": "chocboxla",
-        "items": ["Chocbox Dubai Chocolate"]
-      },
-      {
-        "name": "CROCS US SHOP",
-        "username": "crocsshop_us",
-        "items": ["Jibbitz", "Jibbitz Pack"]
-      },
-      {
-        "name": "Dani Morgan's Boutique",
-        "username": "danimorgansboutique",
-        "items": ["Purse", "Earrings", "Necklace", "Wallet"]
-      },
-      {
-        "name": "Edikted",
-        "username": "edikted",
-        "items": ["Tote Bag"]
-      },
-      {
-        "name": "Ello",
-        "username": "elloparty",
-        "items": ["Daschund Charm"]
-      },
-      {
-        "name": "ElloByEvol",
-        "username": "ellobyevol",
-        "items": ["Purse"]
-      },
-      {
-        "name": "Ello honey",
-        "username": "ellohoney",
-        "items": ["Purse", "Wallet"]
-      },
-      {
-        "name": "Fanttik",
-        "username": "fanttik_official",
-        "items": ["Vaccuum"]
-      },
-      {
-        "name": "FEELINGIRL",
-        "username": "feelingirlus",
-        "items": ["Bra"]
-      },
-      {
-        "name": "FHI HEAT",
-        "username": "fhiheat",
-        "items": ["Mini Brush"]
-      },
-      {
-        "name": "filthyhits",
-        "username": "filthy.hits",
-        "items": ["Pokemon Keychain", "Pokemon Booster Pack"]
-      },
-      {
-        "name": "Glamnetic",
-        "username": "glamnetic",
-        "items": ["Nails"]
-      },
-      {
-        "name": "GuruNanda LLC",
-        "username": "gurunanda.official",
-        "items": ["Whitening Strips", "Toothbrush"]
-      },
-      {
-        "name": "Happy Plant",
-        "username": "happyplantclub",
-        "items": ["Plant"]
-      },
-      {
-        "name": "Heydudeshoesus",
-        "username": "heydudeshop_us",
-        "items": ["Hat"]
-      },
-      {
-        "name": "Hsia-Bras",
-        "username": "hsia_official",
-        "items": ["Tote Bag", "Lingerie Organizer"]
-      },
-      {
-        "name": "HSN, Inc",
-        "username": "hsn",
-        "items": ["Teacups", "Tupperware"]
-      },
-      {
-        "name": "Hulken",
-        "username": "hulkenbag",
-        "items": ["Hat", "Luggage Tag", "Hulken"]
-      },
-      {
-        "name": "JOOCAR US",
-        "username": "joocar.us",
-        "items": ["Ramen Blanket"]
-      },
-      {
-        "name": "JustJames",
-        "username": "jamesjustsurviving",
-        "items": ["Portland Leather Bag", "Portland Leather Wallet"]
-      },
-      {
-        "name": "KarmaNepalCrafts",
-        "username": "karmanepalcrafts",
-        "items": ["Bandana"]
-      },
-      {
+        "key": "kindnessmom",
         "name": "🔥🌸KINDNESSMOM🌸🔥",
         "username": "kindnessmom",
-        "items": ["Snoopy Plushie", "Keychain"]
+        "items": [
+          "Snoopy Plushie",
+          "Keychain"
+        ],
+        "categories": [],
+        "logo_path": "kindnessmom.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T13:54:59.091+00:00"
       },
       {
+        "key": "aelfriceden_store",
+        "name": "AELFRIC EDEN",
+        "username": "aelfriceden_store",
+        "items": [],
+        "categories": [],
+        "logo_path": "aelfriceden_store-1787790475291.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T00:27:55.291+00:00"
+      },
+      {
+        "key": "akunbem.official",
+        "name": "Akunbem Official",
+        "username": "akunbem.official",
+        "items": [
+          "Pimple Patches"
+        ],
+        "categories": [],
+        "logo_path": "akunbemofficial.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T02:26:08.162+00:00"
+      },
+      {
+        "key": "theamandagray",
+        "name": "Amanda Gray   Your...",
+        "username": "theamandagray",
+        "items": [
+          "Portland Leather Mini Bifold Wallet, Mi... Meadow"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:20:40.296+00:00"
+      },
+      {
+        "key": "amberbaleanu1",
+        "name": "Amber Baleanu",
+        "username": "amberbaleanu1",
+        "items": [
+          "RitFit Lightweight Waterproof Gym Ba...",
+          "RITFIT Soft Super Absorbent Microfib…",
+          "RITFIT Soft Super Absorbent Microfib... Pink",
+          "RitFit Lightweight Waterproof Gym Ba... Pink"
+        ],
+        "categories": [],
+        "logo_path": "amberbaleanu1-1787836616290.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T15:44:03.177+00:00"
+      },
+      {
+        "key": "amnhskincare",
+        "name": "AMINNAH SKINCARE",
+        "username": "amnhskincare",
+        "items": [
+          "Lip Gloss",
+          "Doughnut Spoon",
+          "AMINNAH Hot Pink Sprinkle Donut En..."
+        ],
+        "categories": [],
+        "logo_path": "amnhskincare.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T01:22:17.443+00:00"
+      },
+      {
+        "key": "anastasiabeverlyhills",
+        "name": "Anastasia Beverly Hills",
+        "username": "anastasiabeverlyhills",
+        "items": [
+          "Soft Glam Eyeshadow Palette Default"
+        ],
+        "categories": [],
+        "logo_path": "anastasiabeverlyhills-1787836616985.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:48:33.093+00:00"
+      },
+      {
+        "key": "angelafindsdeals",
+        "name": "Angela",
+        "username": "angelafindsdeals",
+        "items": [
+          "Portland Leather Bag",
+          "Vintage Tan, Large",
+          "Portland Leather Mini Bifold Wallet, Mi... Meadow"
+        ],
+        "categories": [],
+        "logo_path": "angelafindsdeals-1787595496434.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:02:37.116+00:00"
+      },
+      {
+        "key": "angela...",
+        "name": "Angela...",
+        "username": "",
+        "items": [
+          "Tropic Hue Press On Nails | CurvLife N... Bunny Sparkle"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:30:06.77+00:00"
+      },
+      {
+        "key": "ankerofficial",
+        "name": "ANKER",
+        "username": "ankerofficial",
+        "items": [
+          "Charging Cable"
+        ],
+        "categories": [],
+        "logo_path": "ankerofficial.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:15:58.906+00:00"
+      },
+      {
+        "key": "aprilery.picks",
+        "name": "Aprilery Picks",
+        "username": "aprilery.picks",
+        "items": [],
+        "categories": [],
+        "logo_path": "aprilery-picks-1787790544625.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T00:29:04.624+00:00"
+      },
+      {
+        "key": "arajo.rarities",
+        "name": "Arajo Rarities",
+        "username": "arajo.rarities",
+        "items": [],
+        "categories": [],
+        "logo_path": "arajorarities-1787851000012.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "babygodewy",
+        "name": "babygodewybeauty",
+        "username": "babygodewy",
+        "items": [
+          "Pimple Patches"
+        ],
+        "categories": [],
+        "logo_path": "babygodewy-1787593227759.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:40:28.196+00:00"
+      },
+      {
+        "key": "bag bestie",
+        "name": "bagbestie1314",
+        "username": "bagbestie1314",
+        "items": [
+          "Office Scissors"
+        ],
+        "categories": [],
+        "logo_path": "bagbestie1314-1787851000026.jpeg",
+        "import_issues": [
+          {
+            "type": "giveaway",
+            "createdAt": "2026-08-27T14:34:44.664Z",
+            "parameters": {
+              "item": "Office Scissors Default",
+              "live": "Bad Bestie",
+              "time": "09:28",
+              "buyer": "0",
+              "import": "giveaway",
+              "captured": "2026-08-27T10:34:11-04:00",
+              "countdown": "none"
+            }
+          }
+        ],
+        "last_giveaway_at": "2026-08-27T14:34:44.658+00:00"
+      },
+      {
+        "key": "bareminerals",
+        "name": "bareMinerals",
+        "username": "bareminerals",
+        "items": [
+          "BareMinerals Mineral Veil"
+        ],
+        "categories": [],
+        "logo_path": "bareminerals.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:28:35.155+00:00"
+      },
+      {
+        "key": "basuragang",
+        "name": "basuragang",
+        "username": "basuragang",
+        "items": [],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "bedlorehome",
+        "name": "Bedlore",
+        "username": "bedlorehome",
+        "items": [
+          "[BEDLORE"
+        ],
+        "categories": [],
+        "logo_path": "bedlorehome-1787836617358.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:16:57.357+00:00"
+      },
+      {
+        "key": "beetlesnailboutique",
+        "name": "Beetles Nail Boutique",
+        "username": "beetlesnailboutique",
+        "items": [],
+        "categories": [],
+        "logo_path": "beetlesnailboutique-1787790545571.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T00:29:05.571+00:00"
+      },
+      {
+        "key": "bellabubear",
+        "name": "Bellabu Bear",
+        "username": "bellabubear",
+        "items": [],
+        "categories": [],
+        "logo_path": "bellabubear-1787836617933.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:16:57.933+00:00"
+      },
+      {
+        "key": "bianyoart",
+        "name": "bianyomarkers",
+        "username": "bianyoart",
+        "items": [
+          "12 Pack Markers",
+          "6 Pack Markers",
+          "Marker Case",
+          "Cute Paper Clips",
+          "Bianyo 3PCS Lightweight Jelly Color P... Default",
+          "Bianyo Cute Double -Sided Glitter Acr... Blue Bianyo Bow"
+        ],
+        "categories": [],
+        "logo_path": "bianyoart-1787542876890.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:49:36.911+00:00"
+      },
+      {
+        "key": "biodance_global",
+        "name": "Biodance Store US",
+        "username": "biodance_global",
+        "items": [
+          "[Biodance Official] Liposome Bubble... Caviar PDRN Bubble Booster",
+          "[Biodance Official] Hydrating & Radia... Collagen Peptide Serum",
+          "[Biodance Official] Hydrating & Ra... Sea Kelp Serum",
+          "[Biodance Official] 4-Mini Serums Dis... Default"
+        ],
+        "categories": [],
+        "logo_path": "biodance_global-1787836619267.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:27:37.069+00:00"
+      },
+      {
+        "key": "pandablindboxoversea",
+        "name": "Bitetoy",
+        "username": "pandablindboxoversea",
+        "items": [
+          "POP MART Blindbox"
+        ],
+        "categories": [],
+        "logo_path": "pandablindboxoversea-1787593260775.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:41:01.581+00:00"
+      },
+      {
+        "key": "bitetoy.x.auction",
+        "name": "Bitetoy X auction",
+        "username": "bitetoy.x.auction",
+        "items": [],
+        "categories": [],
+        "logo_path": "bitetoy-x-auction-1787836298358.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:38.357+00:00"
+      },
+      {
+        "key": "blackline",
+        "name": "Blackline",
+        "username": "blackline",
+        "items": [],
+        "categories": [],
+        "logo_path": "blackline-1787851000004.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "blitzbreakzz",
+        "name": "BlitzBreakz",
+        "username": "blitzbreakzz",
+        "items": [
+          "Pokemon Booster Pack",
+          "Nihil Zero Booster Pack - M3: Nihil Zer... Default"
+        ],
+        "categories": [],
+        "logo_path": "blitzbreakzz.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T15:54:08.335+00:00"
+      },
+      {
+        "key": "bm baremin...",
+        "name": "bM bareMin...",
+        "username": "bareminerals",
+        "items": [
+          "bareMinerals ORIGINAL Mineral Veil S..."
+        ],
+        "categories": [],
+        "logo_path": "bm-baremin-1787837315659.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:28:35.659+00:00"
+      },
+      {
+        "key": "bottled beauty live",
+        "name": "Bottled Beauty Live",
+        "username": "bottledbeauty",
+        "items": [
+          "Luxury vial",
+          "FREE LUXURY VIAL!! Default"
+        ],
+        "categories": [],
+        "logo_path": "bottled-beauty-live-1787837316334.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T15:37:08.283+00:00"
+      },
+      {
+        "key": "brutusandbarnaby",
+        "name": "Brutus & Barnaby",
+        "username": "brutusandbarnaby",
+        "items": [
+          "Sweet Potato Dog Treats - USA Grown... Full Slices - 8 oz"
+        ],
+        "categories": [],
+        "logo_path": "brutusandbarnaby-1787836300186.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:40.185+00:00"
+      },
+      {
+        "key": "brxlus",
+        "name": "BRXL",
+        "username": "brxlus",
+        "items": [],
+        "categories": [],
+        "logo_path": "brxlus-1787836300820.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:40.82+00:00"
+      },
+      {
+        "key": "buffbunny collection",
+        "name": "Buffbunny Collection",
+        "username": "buffbunnycollection",
+        "items": [
+          "Mini Puffer Backpack - Plastic Pink Default",
+          "Colorado Fleece Headband - Honeydew Default"
+        ],
+        "categories": [],
+        "logo_path": "buffbunnycollection-1787851000020.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:26:46.261+00:00"
+      },
+      {
+        "key": "buxomcosmetics",
+        "name": "buxomcosmetics",
+        "username": "buxomcosmetics",
+        "items": [
+          "BUXOM Plumping Lip Glow",
+          "Silver Pencil Case Default"
+        ],
+        "categories": [],
+        "logo_path": "buxomcosmetics.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:54:07.397+00:00"
+      },
+      {
+        "key": "cakesbody",
+        "name": "CAKES Body",
+        "username": "cakesbody",
+        "items": [
+          "CAKES",
+          "CAKES Tape",
+          "Nails"
+        ],
+        "categories": [],
+        "logo_path": "cakesbody.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T01:53:35.192+00:00"
+      },
+      {
+        "key": "cardboys2",
+        "name": "CARDBOYS",
+        "username": "cardboys2",
+        "items": [
+          "Pokemon TCG: Mega Evolutions - Perf... Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:10:48.001+00:00"
+      },
+      {
+        "key": "case.mate",
+        "name": "Case-Mate",
+        "username": "case.mate",
+        "items": [
+          "Tote Bag",
+          "Phone Charm",
+          "Makeup Bag",
+          "Phone Holder",
+          "Jelly Makeup Bag",
+          "MagSafe Grip",
+          "Mini Jelly Tote",
+          "MagSafe Portable Charger",
+          "Loop Grip MagSafe Wallet Twinkle",
+          "Canvas Tote Bag Ballet Pink Bow",
+          "Train Case, Cosmetic Travel Bag, Mak... Ballet Pink Bow",
+          "MagSafe Ring Kickstand for Smartpho... Mother of Pearl",
+          "Loop Grip MagSafe Wallet Iridescent",
+          "Case-Mate Special Edition Jelly Tote... Mulberry Twilly"
+        ],
+        "categories": [],
+        "logo_path": "casemate.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:29:17.636+00:00"
+      },
+      {
+        "key": "ceeceesclosetnyc",
+        "name": "Cee Cee's Closet NYC LLC",
+        "username": "ceeceesclosetnyc",
+        "items": [
+          "1 oz Travel Size Sugar Body Scrub for... Cocoa Moringa 1 oz Scrub",
+          "Queen of Hearts Scented Dry Body Oil... Queen of Hearts 3.4 fl oz"
+        ],
+        "categories": [],
+        "logo_path": "ceeceesclosetnyc-1787851000013.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:29:21.611+00:00"
+      },
+      {
+        "key": "chefpowerofficial",
+        "name": "Chef Power US",
+        "username": "chefpowerofficial",
+        "items": [
+          "Chef Power Chef Aprons with Pockets..."
+        ],
+        "categories": [],
+        "logo_path": "chefpowerofficial-1787836301469.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:41.469+00:00"
+      },
+      {
+        "key": "my_chefman",
+        "name": "Chefman",
+        "username": "my_chefman",
+        "items": [
+          "Appliance"
+        ],
+        "categories": [],
+        "logo_path": "my_chefman.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:24.061+00:00"
+      },
+      {
+        "key": "chemicalguys",
+        "name": "Chemical Guys",
+        "username": "chemicalguys",
+        "items": [
+          "Air Freshener",
+          "Cleaner",
+          "Maxi Suds II High Suds Car Wash Soap",
+          "Megalodon Twisted Loop Towel",
+          "Soft Brushed Microfiber Applicators",
+          "Snow Foam Pre-Wash Soap",
+          "Chemical Guys Creamy Orange Swirl...",
+          "Chemical Guys Mr. Pink Bubble Rush...",
+          "CHEMICAL GUYS Sticky Snowball - Ul….",
+          "Chemical Guys Maxi Suds I| High-Foa... Fresh Cherry, 16 oz",
+          "Chemical Guys Mr. Pink Bubble Rush... 16 oz",
+          "Megalodon Pocket Grip Twisted Loop... Default"
+        ],
+        "categories": [],
+        "logo_path": "chemicalguys-1787543061082.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:52:59.035+00:00"
+      },
+      {
+        "key": "chocboxla",
+        "name": "CHOCBOX",
+        "username": "chocboxla",
+        "items": [
+          "Chocbox Dubai Chocolate",
+          "Cookie Butter Knafeh",
+          "Cookie Butter Knafeh Stuffed Chocola...",
+          "Cookie Butter Knafeh Stuffed Chocola... Milk Chocolate",
+          "Cookie Butter Knafeh Stuffed Cho... Milk Chocolate"
+        ],
+        "categories": [],
+        "logo_path": "chocboxla.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T18:44:32.633+00:00"
+      },
+      {
+        "key": "cleanskinclub",
+        "name": "Clean Skin Club",
+        "username": "cleanskinclub",
+        "items": [
+          "CLEAN SKIN CLUB Towels",
+          "Pouch",
+          "CLEAN SKIN CLUB Healthy Aging... White,10 Count (Pack of 1)"
+        ],
+        "categories": [],
+        "logo_path": "cleanskinclub-1787543052607.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:44:57.644+00:00"
+      },
+      {
+        "key": "cofierlashes",
+        "name": "Cofier Lashes",
+        "username": "cofierlashes",
+        "items": [
+          "Cofier Lashes"
+        ],
+        "categories": [],
+        "logo_path": "cofierlashes-1787543041238.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T03:44:01.948+00:00"
+      },
+      {
+        "key": "coldest",
+        "name": "COLDEST",
+        "username": "coldest",
+        "items": [
+          "COLDEST Boots - 5 Pack Silicone Wat... Glitter"
+        ],
+        "categories": [],
+        "logo_path": "coldest-1787836302086.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T14:39:57.347+00:00"
+      },
+      {
+        "key": "cotton candy",
+        "name": "Cotton Candy Cravings",
+        "username": "cottoncandycravings",
+        "items": [
+          "Cotton Candy",
+          "Tubs of Cotton Candy (In a 32oz Delit... Mystery Mix (Random Mix of Flavors)"
+        ],
+        "categories": [],
+        "logo_path": "cotton-candy-1787593289458.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T20:11:59.697+00:00"
+      },
+      {
+        "key": "cowgirlwear",
+        "name": "Cowgirlwear",
+        "username": "cowgirlswear",
+        "items": [
+          "Detachable Bag Charm Chain",
+          "Wallet",
+          "Wrangler Small Leopard Print Wallets... Black"
+        ],
+        "categories": [],
+        "logo_path": "cowgirlwear-1787596357478.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T14:39:03.239+00:00"
+      },
+      {
+        "key": "crazybeautifulhomeschool",
+        "name": "Crazy Beautiful Homeschool",
+        "username": "crazybeautifulhomeschool",
+        "items": [
+          "Reading Fluency Stories"
+        ],
+        "categories": [],
+        "logo_path": "crazybeautifulhomeschool-1787595445218.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:17:25.971+00:00"
+      },
+      {
+        "key": "creativelyzee",
+        "name": "Creativelyzee",
+        "username": "creativelyzee",
+        "items": [],
+        "categories": [],
+        "logo_path": "creativelyzee-1787851000027.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "crocsshop_us",
+        "name": "CROCS US SHOP",
+        "username": "crocsshop_us",
+        "items": [
+          "Jibbitz",
+          "Jibbitz Pack",
+          "Crocs Jibbitz Elevated Single Shoe Ch... Bling Daisy"
+        ],
+        "categories": [],
+        "logo_path": "crocsshop_us.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:59:07.945+00:00"
+      },
+      {
+        "key": "cubitoy",
+        "name": "CubiToy",
+        "username": "cubibricks1",
+        "items": [
+          "CubiToy Blue Alien",
+          "CubiToy Animation Series Blue Alie... Default"
+        ],
+        "categories": [],
+        "logo_path": "cubitoy-1787593403922.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:48:36.706+00:00"
+      },
+      {
+        "key": "ccappareltx",
+        "name": "Cutting Creative Apparel",
+        "username": "ccappareltx",
+        "items": [
+          "Piddling Around Comfort Colors Shirt |... Crimson, XL"
+        ],
+        "categories": [],
+        "logo_path": "ccappareltx-1787851000002.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:50:59.386+00:00"
+      },
+      {
+        "key": "daily_charme",
+        "name": "Daily Charme",
+        "username": "daily_charme",
+        "items": [
+          "Double-Sided Flower & Stripe Cat Eye... Default",
+          "Charme Gel / Jelly J11 Reverie Default"
+        ],
+        "categories": [],
+        "logo_path": "daily_charme-1787836302481.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:42.481+00:00"
+      },
+      {
+        "key": "danimorgansboutique",
+        "name": "Dani Morgan's Boutique",
+        "username": "danimorgansboutique",
+        "items": [
+          "Purse",
+          "Earrings",
+          "Necklace",
+          "Wallet",
+          "Beanie",
+          "Beanie Hat - Mystery Cow Print"
+        ],
+        "categories": [],
+        "logo_path": "danimorgansboutique.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T15:36:32.441+00:00"
+      },
+      {
+        "key": "opalnichole",
+        "name": "Danielle",
+        "username": "opalnichole",
+        "items": [
+          "Portland Leather Bag"
+        ],
+        "categories": [],
+        "logo_path": "opalnichole-1787594013404.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:53:34.253+00:00"
+      },
+      {
+        "key": "doll10beauty",
+        "name": "Doll 10 Beauty",
+        "username": "doll10beauty",
+        "items": [],
+        "categories": [],
+        "logo_path": "doll10beauty-1787836302883.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:42.883+00:00"
+      },
+      {
+        "key": "doss official us",
+        "name": "DOSS Official US",
+        "username": "user8178146155090",
+        "items": [
+          "Mini Handheld Fan"
+        ],
+        "categories": [],
+        "logo_path": "doss-official-us-1787593672802.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:47:53.332+00:00"
+      },
+      {
+        "key": "drsquatch",
+        "name": "Dr. Squatch",
+        "username": "drsquatch",
+        "items": [
+          "Single Natural Bar Soaps - Dr. Squatc... Pine Tar",
+          "Single Natural Bar Soaps - Dr. Squatc... Wood Barrel Bourbon"
+        ],
+        "categories": [],
+        "logo_path": "drsquatch-1787851000015.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:28:03.556+00:00"
+      },
+      {
+        "key": "dr.melaxin.official",
+        "name": "Dr.Melaxin",
+        "username": "dr.melaxin.official",
+        "items": [
+          "[Dr.Melaxin Official] Peel Shot Glow Ri... Default"
+        ],
+        "categories": [],
+        "logo_path": "drmelaxinofficial-1787851000007.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:16:54.988+00:00"
+      },
+      {
+        "key": "elfyeah",
+        "name": "e.l.f. Cosmetics",
+        "username": "elfyeah",
+        "items": [],
+        "categories": [],
+        "logo_path": "elfyeah-1787836303331.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:43.331+00:00"
+      },
+      {
+        "key": "easyclothesusa",
+        "name": "Easy Clothes USA",
+        "username": "easyclothesusa",
+        "items": [
+          "Tote Bag"
+        ],
+        "categories": [],
+        "logo_path": "easyclothesusa-1787594030769.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:53:51.193+00:00"
+      },
+      {
+        "key": "edikted",
+        "name": "Edikted",
+        "username": "edikted",
+        "items": [
+          "Tote Bag",
+          "My Edikted Tote Bag PINK, OS"
+        ],
+        "categories": [],
+        "logo_path": "edikted.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T22:34:22.063+00:00"
+      },
+      {
+        "key": "educationalinsights",
+        "name": "Educational Insights",
+        "username": "educationalinsights",
+        "items": [
+          "Educational Insights Playfoam, Multipl... 4-Pack-Green/Purple/Blue/Orange"
+        ],
+        "categories": [],
+        "logo_path": "educationalinsights-1787836303745.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:43.745+00:00"
+      },
+      {
+        "key": "elloparty",
+        "name": "Ello",
+        "username": "elloparty",
+        "items": [
+          "Daschund Charm"
+        ],
+        "categories": [],
+        "logo_path": "elloparty.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:07.674+00:00"
+      },
+      {
+        "key": "ellohoney",
+        "name": "Ello honey",
+        "username": "ellohoney",
+        "items": [
+          "Purse",
+          "Wallet"
+        ],
+        "categories": [],
+        "logo_path": "ellohoney.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:07.107+00:00"
+      },
+      {
+        "key": "ellobyevol",
+        "name": "ElloByEvol",
+        "username": "ellobyevol",
+        "items": [
+          "Purse",
+          "Recycled Knit Tote Bag 2026 Women'...",
+          "Recycled Knit Tote Bag 2026 Women' Luminous green, 8 × 3 x 6 foot",
+          "Vegan Leather Zip Wristlet Wallet, Wo... Pink, 2 × 3 x 4 foot"
+        ],
+        "categories": [],
+        "logo_path": "ellobyevol.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:16:27.797+00:00"
+      },
+      {
+        "key": "emilydeck6",
+        "name": "Emily • Functional Finds",
+        "username": "emilydeck6",
+        "items": [
+          "Portland Leather Bag",
+          "Portland Leather Wallet"
+        ],
+        "categories": [],
+        "logo_path": "emilydeck6-1787542866238.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T05:08:19.266+00:00"
+      },
+      {
+        "key": "gamechangerz_23",
+        "name": "Erin",
+        "username": "gamechangerz_23",
+        "items": [
+          "Portland Leather Wallet"
+        ],
+        "categories": [],
+        "logo_path": "gamechangerz_23-1787593731100.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:48:51.54+00:00"
+      },
+      {
+        "key": "eufyclean",
+        "name": "eufyOfficial",
+        "username": "eufyclean",
+        "items": [
+          "eufy Security SmartTrack Card E30"
+        ],
+        "categories": [],
+        "logo_path": "eufyclean-1787836304122.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:11:44.122+00:00"
+      },
+      {
+        "key": "fanttik_official",
+        "name": "Fanttik",
+        "username": "fanttik_official",
+        "items": [
+          "Vaccuum"
+        ],
+        "categories": [],
+        "logo_path": "fanttik_official.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:08.325+00:00"
+      },
+      {
+        "key": "feelingirlus",
+        "name": "FEELINGIRL",
+        "username": "feelingirlus",
+        "items": [
+          "Bra"
+        ],
+        "categories": [],
+        "logo_path": "feelingirlus.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:08.907+00:00"
+      },
+      {
+        "key": "fhiheat",
+        "name": "FHI HEAT",
+        "username": "fhiheat",
+        "items": [
+          "Mini Brush"
+        ],
+        "categories": [],
+        "logo_path": "fhiheat.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:09.724+00:00"
+      },
+      {
+        "key": "filthy.hits",
+        "name": "filthyhits",
+        "username": "filthy.hits",
+        "items": [
+          "Pokemon Keychain",
+          "Pokemon Booster Pack"
+        ],
+        "categories": [],
+        "logo_path": "filthyhits.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:10.227+00:00"
+      },
+      {
+        "key": "finalbosssour",
+        "name": "finalbosssour",
+        "username": "finalbosssour",
+        "items": [
+          "Final Boss Sour - Level 2 Shirley Temp... 1-Pack"
+        ],
+        "categories": [],
+        "logo_path": "finalbosssour-1787851000005.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:26:24.74+00:00"
+      },
+      {
+        "key": "freezbone",
+        "name": "Freezbone",
+        "username": "freezbone",
+        "items": [
+          "FreezHeart - Durable Heart Enrichme... Pink,L | UP TO 140 LB DOGS"
+        ],
+        "categories": [],
+        "logo_path": "freezbone-1787851000014.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:26:25.678+00:00"
+      },
+      {
+        "key": "gainsns bags2",
+        "name": "GAINSNS Bags2",
+        "username": "Gainsnsbag2",
+        "items": [
+          "Wallet"
+        ],
+        "categories": [],
+        "logo_path": "gainsns-bags2-1787594421711.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:00:22.185+00:00"
+      },
+      {
+        "key": "gamechestshop",
+        "name": "Gamechest",
+        "username": "gamechestshop",
+        "items": [
+          "Patrick Plushie",
+          "Sausage Dog LED String Lights"
+        ],
+        "categories": [],
+        "logo_path": "gamechestshop-1787594063552.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:54:23.989+00:00"
+      },
+      {
+        "key": "gems_jewelry_1",
+        "name": "gems_jewelry",
+        "username": "gems_jewelry_1",
+        "items": [
+          "HIHIYO Fashion Bracelet"
+        ],
+        "categories": [],
+        "logo_path": "gems_jewelry_1-1787836375942.jpeg",
+        "import_issues": [
+          {
+            "type": "giveaway",
+            "createdAt": "2026-08-27T14:37:08.672Z",
+            "parameters": {
+              "item": "HIHIYO Fashion Bracelet Default",
+              "live": "‹ Safari",
+              "time": "02:37",
+              "buyer": "1",
+              "import": "giveaway",
+              "captured": "2026-08-27T10:36:23-04:00",
+              "countdown": "none"
+            }
+          }
+        ],
+        "last_giveaway_at": "2026-08-27T14:37:08.664+00:00"
+      },
+      {
+        "key": "gghobbycard",
+        "name": "GGHOBBY",
+        "username": "gghobbycard",
+        "items": [
+          "Pokemon Booster Pack"
+        ],
+        "categories": [],
+        "logo_path": "gghobbycard-1787594391498.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:59:52.385+00:00"
+      },
+      {
+        "key": "glamnetic",
+        "name": "Glamnetic",
+        "username": "glamnetic",
+        "items": [
+          "Nails"
+        ],
+        "categories": [],
+        "logo_path": "glamnetic.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T19:54:40.711+00:00"
+      },
+      {
+        "key": "grip&go",
+        "name": "Grip&Go",
+        "username": "gripgo002",
+        "items": [
+          "Shoes"
+        ],
+        "categories": [],
+        "logo_path": "grip-go-1787837316886.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:28:36.885+00:00"
+      },
+      {
+        "key": "gurunanda.official",
+        "name": "GuruNanda LLC",
+        "username": "gurunanda.official",
+        "items": [
+          "Whitening Strips",
+          "Toothbrush",
+          "GuruNanda Oxyburst Whitening Oral...",
+          "GuruNanda Sensitive Teeth Whitening…..",
+          "GuruNanda Whitening Tray 7 Count",
+          "GuruNanda Sensitive Teeth Whitening... Default",
+          "GuruNanda Teeth Whitening Dual Barr... Default"
+        ],
+        "categories": [],
+        "logo_path": "gurunandaofficial.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:18:21.649+00:00"
+      },
+      {
+        "key": "happyplantclub",
+        "name": "Happy Plant",
+        "username": "happyplantclub",
+        "items": [
+          "Plant"
+        ],
+        "categories": [],
+        "logo_path": "happyplantclub.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:13.004+00:00"
+      },
+      {
+        "key": "heydudeshop_us",
+        "name": "Heydudeshoesus",
+        "username": "heydudeshop_us",
+        "items": [
+          "Hat",
+          "HEYDUDE Classic Trucker - Comforta... Black/White, OSFA,2"
+        ],
+        "categories": [],
+        "logo_path": "heydudeshop_us.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:55:38.218+00:00"
+      },
+      {
+        "key": "homecenter006",
+        "name": "Home Center",
+        "username": "homecenter006",
+        "items": [
+          "Solid Blackout Thermal Grommet Curt... Ivory"
+        ],
+        "categories": [],
+        "logo_path": "homecenter006-1787789398357.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T00:09:58.356+00:00"
+      },
+      {
+        "key": "hsia_official",
+        "name": "Hsia-Bras",
+        "username": "hsia_official",
+        "items": [
+          "Tote Bag",
+          "Lingerie Organizer"
+        ],
+        "categories": [],
+        "logo_path": "hsia_official.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T04:06:33.482+00:00"
+      },
+      {
+        "key": "hsn",
+        "name": "HSN, Inc",
+        "username": "hsn",
+        "items": [
+          "Teacups",
+          "Tupperware",
+          "Curtis Stone 4-piece Tool Set",
+          "Curtis Stone 4-piece Nylon Tool Set Black",
+          "Curtis Stone 2-piece Griddle Tool Set Sunflowers"
+        ],
+        "categories": [],
+        "logo_path": "hsn.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T15:43:40.27+00:00"
+      },
+      {
+        "key": "hugsyhome",
+        "name": "HugsyHome",
+        "username": "hugsyhome1",
+        "items": [
+          "Blanket"
+        ],
+        "categories": [],
+        "logo_path": "hugsyhome-1787837317516.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:28:37.516+00:00"
+      },
+      {
+        "key": "hulkenbag",
+        "name": "Hulken",
+        "username": "hulkenbag",
+        "items": [
+          "Hat",
+          "Luggage Tag",
+          "Hulken"
+        ],
+        "categories": [],
+        "logo_path": "hulkenbag.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:15.359+00:00"
+      },
+      {
+        "key": "ibras.greenwood",
+        "name": "iBras",
+        "username": "ibras.greenwood",
+        "items": [],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "iceshakerbottle",
+        "name": "Ice Shaker",
+        "username": "iceshakerbottle",
+        "items": [],
+        "categories": [],
+        "logo_path": "iceshakerbottle-1787836376797.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:12:56.797+00:00"
+      },
+      {
+        "key": "idistroslabs",
+        "name": "iDistroSlabs",
+        "username": "idistroslabs",
+        "items": [
+          "NIHIL ZERO JPN BOOSTER PACK Default",
+          "GRADED POKEMON SLAB!! Default"
+        ],
+        "categories": [],
+        "logo_path": "idistroslabs-1787790476440.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:31:28.879+00:00"
+      },
+      {
+        "key": "inspiredpeachy",
+        "name": "Inspired Peachy",
+        "username": "inspiredpeachy",
+        "items": [
+          "Inspired Peachy Gift Set Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:22:46.76+00:00"
+      },
+      {
+        "key": "javvycoffee",
+        "name": "Javvy",
+        "username": "javvycoffee",
+        "items": [
+          "Javvy Blueberry Crumble Protein Iced... Single Pack"
+        ],
+        "categories": [],
+        "logo_path": "javvycoffee-1787836377189.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:13:49.002+00:00"
+      },
+      {
+        "key": "jennarose.87",
+        "name": "JennaRose.87",
+        "username": "jennarose.87",
+        "items": [],
+        "categories": [],
+        "logo_path": "jennarose-87-1787836377842.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:12:57.841+00:00"
+      },
+      {
+        "key": "jewelry_hihiyo",
+        "name": "jewelry_hihiyo",
+        "username": "jewelry_hihiyo",
+        "items": [],
+        "categories": [],
+        "logo_path": "jewelry_hihiyo-1787836378324.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:12:58.324+00:00"
+      },
+      {
+        "key": "joocar.us",
+        "name": "JOOCAR US",
+        "username": "joocar.us",
+        "items": [
+          "Ramen Blanket"
+        ],
+        "categories": [],
+        "logo_path": "joocarus.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T15:22:06.372+00:00"
+      },
+      {
+        "key": "jamesjustsurviving",
+        "name": "JustJames",
+        "username": "jamesjustsurviving",
+        "items": [
+          "Portland Leather Bag",
+          "Portland Leather Wallet",
+          "Ramen Blanket"
+        ],
+        "categories": [],
+        "logo_path": "jamesjustsurviving-1787595390584.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:16:31.048+00:00"
+      },
+      {
+        "key": "justjessyxo",
+        "name": "justjessyxo",
+        "username": "justjessyxo",
+        "items": [
+          "\"I Love Reading\" Book Shaped Brooch... Color, One-size"
+        ],
+        "categories": [],
+        "logo_path": "justjessyxo-1787851000001.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:51:53.564+00:00"
+      },
+      {
+        "key": "karmanepalcrafts",
+        "name": "KarmaNepalCrafts",
+        "username": "karmanepalcrafts",
+        "items": [
+          "Bandana"
+        ],
+        "categories": [],
+        "logo_path": "karmanepalcrafts.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:16.485+00:00"
+      },
+      {
+        "key": "kastkingusa",
+        "name": "KastKingUSA",
+        "username": "kastkingusa",
+        "items": [
+          "Fishing Line",
+          "KastKing Hat"
+        ],
+        "categories": [],
+        "logo_path": "kastkingusa-1787594453161.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-25T02:18:29.79+00:00"
+      },
+      {
+        "key": "kaxi.co",
+        "name": "KAXI CO",
+        "username": "kaxi.co",
+        "items": [
+          "Hairband",
+          "Scrunchie"
+        ],
+        "categories": [],
+        "logo_path": "kaxi-co-1787543649634.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T03:54:10.063+00:00"
+      },
+      {
+        "key": "its_kelly_mack",
+        "name": "Kelly",
+        "username": "its_kelly_mack",
+        "items": [
+          "Glamnetic Chrome Press On Nail Colle..."
+        ],
+        "categories": [],
+        "logo_path": "its_kelly_mack-1787836619677.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:16:59.677+00:00"
+      },
+      {
+        "key": "kimchichic",
+        "name": "KimChi Chic Beauty",
+        "username": "kimchichic",
+        "items": [
+          "KimChi Chic Beauty Y.U.M. Lip Liner -... 01 Tangelo"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:08:41.973+00:00"
+      },
+      {
+        "key": "kindpatches_us",
+        "name": "Kind Patches USA",
+        "username": "kindpatches_us",
+        "items": [
+          "Kind Patches, Stress Down Patches Ex... Default"
+        ],
+        "categories": [],
+        "logo_path": "kindpatches_us-1787836378965.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:12:58.965+00:00"
+      },
+      {
+        "key": "kirby.kosmetics",
+        "name": "Kirby kosmetics",
+        "username": "kirby.kosmetics",
+        "items": [],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "kitsch",
+        "name": "Kitsch",
+        "username": "kitsch",
+        "items": [
+          "Kitsch Hair Perfume Amber Shores",
+          "Kitsch Hair Perfume Oak & Amber",
+          "Kitsch Amber Shores Hair Perfume",
+          "Oak & Amber Hair Perfume Default"
+        ],
+        "categories": [],
+        "logo_path": "kitsch-1787543682845.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T15:23:41.441+00:00"
+      },
+      {
+        "key": "kodakphotoprinter",
         "name": "Kodak Photo Printer",
         "username": "kodakphotoprinter",
-        "items": ["Label Maker", "Labels"]
+        "items": [
+          "Label Maker",
+          "Labels",
+          "KODAK Label ERA M50 Sticker Label 1... Default"
+        ],
+        "categories": [],
+        "logo_path": "kodakphotoprinter.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T18:52:09.299+00:00"
       },
       {
+        "key": "kristinas_shop_finds",
+        "name": "Kristina",
+        "username": "kristinas_shop_finds",
+        "items": [
+          "100% Pure Titanium Cutting Board for... 26cm"
+        ],
+        "categories": [],
+        "logo_path": "kristinas_shop_finds-1787851000024.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T15:52:51.576+00:00"
+      },
+      {
+        "key": "kristyb.bags",
+        "name": "Kristy B 👜 PLG insider",
+        "username": "kristyb.bags",
+        "items": [],
+        "categories": [],
+        "logo_path": "kristyb-bags-1787836620782.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:17:00.782+00:00"
+      },
+      {
+        "key": "latopia",
         "name": "LaTopia",
-        "username": "",
-        "items": []
+        "username": "topiaaslive",
+        "items": [
+          "Box of Dumplings"
+        ],
+        "categories": [],
+        "logo_path": "latopia-1787543481793.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T03:51:22.739+00:00"
       },
       {
+        "key": "laura m...",
+        "name": "Laura Mercier",
+        "username": "lauramercier",
+        "items": [
+          "Laura Mercier Tinted Moisturizer Blus... Parasol"
+        ],
+        "categories": [],
+        "logo_path": "laura-m-1787837318148.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:28:38.147+00:00"
+      },
+      {
+        "key": "leafysideplants",
+        "name": "Leafy Side Plant Shop",
+        "username": "leafysideplants",
+        "items": [
+          "Monstera Albo Plant Pin"
+        ],
+        "categories": [],
+        "logo_path": "leafysideplants-1787543709486.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T03:55:10.181+00:00"
+      },
+      {
+        "key": "lemondropshop",
+        "name": "Lemon Drop Shop",
+        "username": "lemondropshop",
+        "items": [],
+        "categories": [],
+        "logo_path": "lemondropshop-1787851000023.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "lindsaychi",
+        "name": "LindsayChi",
+        "username": "lindsaychi",
+        "items": [
+          "Glamnetic Short Oval Press On Nail C.."
+        ],
+        "categories": [],
+        "logo_path": "lindsaychi-1787836379577.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:12:59.577+00:00"
+      },
+      {
+        "key": "linenmaj",
+        "name": "LinenMaj",
+        "username": "linenmajjj",
+        "items": [
+          "Blackout curtains"
+        ],
+        "categories": [],
+        "logo_path": "linenmaj-1787837318548.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:28:38.548+00:00"
+      },
+      {
+        "key": "linens & hutch",
+        "name": "Linens & Hutch",
+        "username": "linensandhutch",
+        "items": [
+          "100% Cotton Waffle Weave Bed BI... Full/Queen, Natural"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "liquidationdealzzz",
+        "name": "liquidationdealzzz",
+        "username": "liquidationdealzz",
+        "items": [
+          "Cozy blanket",
+          "Bamboo pillow"
+        ],
+        "categories": [],
+        "logo_path": "liquidationdealzzz-1787836621832.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:17:01.832+00:00"
+      },
+      {
+        "key": "lisamarinao",
+        "name": "Lisa M ❌",
+        "username": "lisamarina0",
+        "items": [
+          "Love & Glow Collection - CurvLife Ro... Chestnut Plaid Charm"
+        ],
+        "categories": [],
+        "logo_path": "lisamarinao-1787836679888.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:17:59.888+00:00"
+      },
+      {
+        "key": "lisizen.jewelry.us",
+        "name": "LisiZen Jewelry",
+        "username": "lisizen.jewelry.us",
+        "items": [
+          "Mystery Barring Bag"
+        ],
+        "categories": [],
+        "logo_path": "lisizen-jewelry-us-1787836433171.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:13:53.171+00:00"
+      },
+      {
+        "key": "lovehandle",
+        "name": "LoveHandle",
+        "username": "lovehandle",
+        "items": [
+          "Magnetic Phone Grip"
+        ],
+        "categories": [],
+        "logo_path": "lovehandle-1787605662231.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T21:07:50.2+00:00"
+      },
+      {
+        "key": "lurellacosmetics",
         "name": "Lurellacosmetics",
         "username": "lurellacosmetics",
-        "items": ["Eyeshadow Palette"]
+        "items": [
+          "Eyeshadow Palette",
+          "Matte Setting Mist 80 ml Default"
+        ],
+        "categories": [],
+        "logo_path": "lurellacosmetics.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:34:51.629+00:00"
       },
       {
+        "key": "luxxinails",
+        "name": "LUXXI NAILS",
+        "username": "luxxinails",
+        "items": [
+          "Nails",
+          "Instant Acrylic Press-On Nails | Everyt... Sunny Days"
+        ],
+        "categories": [],
+        "logo_path": "luxxinails-1787612514544.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T23:11:48.731+00:00"
+      },
+      {
+        "key": "moom.world",
+        "name": "m00m",
+        "username": "m00m.world",
+        "items": [
+          "mOOm Charm Pal Blind Box | OG-THIR... Default"
+        ],
+        "categories": [],
+        "logo_path": "moom-world-1787836757191.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:19:17.19+00:00"
+      },
+      {
+        "key": "mademliboutique_",
+        "name": "Mademli Boutique",
+        "username": "mademliboutique_",
+        "items": [],
+        "categories": [],
+        "logo_path": "mademliboutique_-1787836622363.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:17:02.363+00:00"
+      },
+      {
+        "key": "magicjohn_officialshop",
         "name": "MAGIC JOHN",
         "username": "magicjohn_officialshop",
-        "items": ["Cord"]
+        "items": [
+          "Cord"
+        ],
+        "categories": [],
+        "logo_path": "magicjohn_officialshop.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:19.657+00:00"
       },
       {
+        "key": "heyitsmamajen",
+        "name": "Mama Jen | BELIEVER | Mom to 8",
+        "username": "heyitsmamajen",
+        "items": [],
+        "categories": [],
+        "logo_path": "heyitsmamajen-1787836622776.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:17:02.776+00:00"
+      },
+      {
+        "key": "maryfortune",
+        "name": "MaryFortune",
+        "username": "maryfortune",
+        "items": [
+          "Patio Umbrella"
+        ],
+        "categories": [],
+        "logo_path": "maryfortune-1787543733040.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T03:55:33.619+00:00"
+      },
+      {
+        "key": "maskert.girl",
         "name": "MASKERT GIRL",
         "username": "maskert.girl",
-        "items": ["Shirt - Small"]
+        "items": [
+          "Shirt - Small"
+        ],
+        "categories": [],
+        "logo_path": "maskertgirl.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:21.018+00:00"
       },
       {
+        "key": "mavwicksfragrances",
+        "name": "Mavwicks Fragrances",
+        "username": "mavwicksfragrances",
+        "items": [
+          "Scented Vacuum Filters Volcanic"
+        ],
+        "categories": [],
+        "logo_path": "mavwicksfragrances-1787836433741.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:41:32.278+00:00"
+      },
+      {
+        "key": "dobs284",
+        "name": "Melissa • OneHappyRadish",
+        "username": "dobs284",
+        "items": [
+          "Blanket"
+        ],
+        "categories": [],
+        "logo_path": "dobs284-1787543579912.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T03:53:00.793+00:00"
+      },
+      {
+        "key": "meobubble",
+        "name": "Meobubble",
+        "username": "meobubble",
+        "items": [
+          "(LIVE GIVVY)Brilliant Crystal Squishy... Single Box (Orange)"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:22:42.196+00:00"
+      },
+      {
+        "key": "merach.us",
         "name": "MERACH",
         "username": "merach.us",
-        "items": ["Roller", "Blender"]
+        "items": [
+          "Roller",
+          "Blender"
+        ],
+        "categories": [],
+        "logo_path": "merachus.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:21.499+00:00"
       },
       {
+        "key": "merach.usa",
         "name": "Merach US",
         "username": "merach.usa",
-        "items": ["Roller", "Blender"]
+        "items": [
+          "Roller",
+          "Blender"
+        ],
+        "categories": [],
+        "logo_path": "merachusa.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:22.011+00:00"
       },
       {
+        "key": "messyparenting",
+        "name": "Messy Parenting",
+        "username": "messyparenting",
+        "items": [],
+        "categories": [],
+        "logo_path": "messyparenting-1787851000010.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "mhm_squishy",
+        "name": "MHM Squishy",
+        "username": "mhm_squishy",
+        "items": [
+          "Butter Cookie Squishy"
+        ],
+        "categories": [],
+        "logo_path": "mhm_squishy-1787543759214.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T03:55:59.564+00:00"
+      },
+      {
+        "key": "michebeauty",
+        "name": "MICHE Beauty",
+        "username": "michebeauty",
+        "items": [
+          "[MICHE] Bounce Styling Cream for De... Default",
+          "41 [MICHE] Sulfate-Free Moisturizing... Default"
+        ],
+        "categories": [],
+        "logo_path": "michebeauty-1787836434193.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T14:33:11.452+00:00"
+      },
+      {
+        "key": "michellechan",
+        "name": "MichelleChan",
+        "username": "youxin.chen_0212",
+        "items": [
+          "Cofier Lashes"
+        ],
+        "categories": [],
+        "logo_path": "michellechan-1787594231133.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:57:11.925+00:00"
+      },
+      {
+        "key": "miraclegro",
         "name": "Miracle Gro",
         "username": "miraclegro",
-        "items": ["Starter Bundle"]
+        "items": [
+          "Starter Bundle",
+          "Starter Bundle | Complete Indoor Plan... Default"
+        ],
+        "categories": [],
+        "logo_path": "miraclegro.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:15:52.056+00:00"
       },
       {
+        "key": "mixedliquidations",
+        "name": "Mixedliquidations",
+        "username": "houseofliquidationsmi",
+        "items": [
+          "Neck Headphone"
+        ],
+        "categories": [],
+        "logo_path": "mixedliquidations-1787594255399.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:57:35.785+00:00"
+      },
+      {
+        "key": "modern and chic",
+        "name": "modern and chic",
+        "username": "modernandchic",
+        "items": [
+          "Keychain",
+          "Women's Remi Crossbody Bag - Adjus... Cream"
+        ],
+        "categories": [],
+        "logo_path": "modern-and-chic-1787594275049.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T15:21:03.097+00:00"
+      },
+      {
+        "key": "moiracosmetics",
+        "name": "moiracosmetics",
+        "username": "moiracosmetics",
+        "items": [
+          "MOIRA | Glitter Primer | Eye-Safe Crea... Default"
+        ],
+        "categories": [],
+        "logo_path": "moiracosmetics-1787836434829.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:13:54.829+00:00"
+      },
+      {
+        "key": "moziwash",
         "name": "Mozi Wash",
         "username": "moziwash",
-        "items": ["Mozi Wash"]
+        "items": [
+          "Mozi Wash",
+          "Measuring Cup",
+          "Mozi Mist Linen Spray - 3.4 fl oz Bottle Vanilla Moon Mozi Mist"
+        ],
+        "categories": [],
+        "logo_path": "moziwash.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:40:37.904+00:00"
       },
       {
+        "key": "gomrpen",
         "name": "Mr. Pen",
         "username": "gomrpen",
-        "items": ["Pen Set", "Stationery Bundle", "Notebook"]
+        "items": [
+          "Pen Set",
+          "Stationery Bundle",
+          "Notebook",
+          "Mr. Pen Esther Loaded Bible Journalin... Loaded Bible Kit",
+          "Mr. Pen Esther Loaded Bible Journ... Loaded Bible Kit"
+        ],
+        "categories": [],
+        "logo_path": "gomrpen.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:53:39.553+00:00"
       },
       {
+        "key": "mybag_obsession",
+        "name": "My Bag Obsession",
+        "username": "mybag_obsession",
+        "items": [],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "myq",
+        "name": "myQ",
+        "username": "myq",
+        "items": [
+          "myQ Smart Indoor Camera",
+          "myQ Smart Outdoor Camera",
+          "myQ Smart Indoor Security Camera -... myQ Smart Indoor Camera Gen 2 - 2k Video"
+        ],
+        "categories": [],
+        "logo_path": "myq-1787543782076.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T23:06:26.47+00:00"
+      },
+      {
+        "key": "nailphoria_official",
         "name": "Nailphoria",
         "username": "nailphoria_official",
-        "items": ["Nails"]
+        "items": [
+          "Nails",
+          "NailPhoria HEARTBEAT TIP - Valentine... Heartbeat Tip, S"
+        ],
+        "categories": [],
+        "logo_path": "nailphoria_official.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T21:13:45.428+00:00"
       },
       {
+        "key": "nailvesta_official",
         "name": "NailVesta",
         "username": "nailvesta_official",
-        "items": ["Nails"]
+        "items": [
+          "Nails",
+          "NailVesta PEACHY SEASIDE - 100% H... Peachy Seaside, S, Multicolor",
+          "NailVesta LILAC ELEGANCE - 100% H... Lilac Elegance, M,Multicolor"
+        ],
+        "categories": [],
+        "logo_path": "nailvesta_official.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:32:24.886+00:00"
       },
       {
+        "key": "nakery be...",
+        "name": "Nakery Beauty",
+        "username": "nakerybeauty",
+        "items": [
+          "Nakery Lip Flip Shimmer Gloss - 15ml... Golden"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:40:59.03+00:00"
+      },
+      {
+        "key": "naturium",
+        "name": "Naturium",
+        "username": "naturium",
+        "items": [
+          "Naturium Multi-Peptide Moisturizer -... Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:18:16.538+00:00"
+      },
+      {
+        "key": "nerdynuts",
+        "name": "Nerdy Nuts Shop",
+        "username": "nerdynuts",
+        "items": [
+          "e per winner Dubai Cheesecake Peanut Butter Treat Default"
+        ],
+        "categories": [],
+        "logo_path": "nerdynuts-1787836435358.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:13:55.358+00:00"
+      },
+      {
+        "key": "ninetynine_dreams",
         "name": "NinetynineDreams",
         "username": "ninetynine_dreams",
-        "items": ["Eyelashes", "Eyelash Sample Box"]
+        "items": [
+          "Eyelashes",
+          "Eyelash Sample Box",
+          "Ninetynine Dreams Eyelash Curler | Pr... Curler"
+        ],
+        "categories": [],
+        "logo_path": "ninetynine_dreams.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:24:05.752+00:00"
       },
       {
+        "key": "ninjakitchen",
         "name": "Ninja Kitchen",
         "username": "ninjakitchen",
-        "items": ["Knife Set", "Travel Mug", "Blender"]
+        "items": [
+          "Knife Set",
+          "Travel Mug",
+          "Blender",
+          "Ninja Sip Perfect 12oz Travel Mug - D..",
+          "Ninja Foodi NeverDull Premium Chef K... Default"
+        ],
+        "categories": [],
+        "logo_path": "ninjakitchen.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T21:47:26.281+00:00"
       },
       {
+        "key": "notpolish_nail",
         "name": "Notpolishinc",
         "username": "notpolish_nail",
-        "items": ["Nail Polish Duo"]
+        "items": [
+          "Nail Polish Duo",
+          "NOTPOLISH MYSTERY TRIO"
+        ],
+        "categories": [],
+        "logo_path": "notpolish_nail.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T23:05:16.776+00:00"
       },
       {
+        "key": "shop.nova.and.co",
+        "name": "Nova&Co.",
+        "username": "shop.nova.and.co",
+        "items": [],
+        "categories": [],
+        "logo_path": "shopnovaandco-1787851000018.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "nox_jewels_sf",
         "name": "NOX JEWELS",
         "username": "nox_jewels_sf",
-        "items": ["Surprise Jewelry"]
+        "items": [
+          "Surprise Jewelry"
+        ],
+        "categories": [],
+        "logo_path": "nox_jewels_sf.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:27.134+00:00"
       },
       {
+        "key": "nycitysucculents",
+        "name": "NY City Succulents",
+        "username": "nycitysucculents",
+        "items": [
+          "GIVY Assorted 2 Inch Potted Indoor H... Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:16:16.537+00:00"
+      },
+      {
+        "key": "nykidos",
+        "name": "NYKidos",
+        "username": "nykidos",
+        "items": [
+          "Pokemon Illustration Box",
+          "First Partner Illustration Collection... Default"
+        ],
+        "categories": [],
+        "logo_path": "nykidos-1787837319088.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:52:40.797+00:00"
+      },
+      {
+        "key": "oeak_official",
         "name": "OEAK Apparel",
         "username": "oeak_official",
-        "items": ["OEAK Nipple Covers"]
+        "items": [
+          "OEAK Nipple Covers",
+          "OEAK Nipple Covers Reusable Silicon... light nude,Length 3 inch"
+        ],
+        "categories": [],
+        "logo_path": "oeak_official.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:32:54.715+00:00"
       },
       {
+        "key": "oeak_bras",
         "name": "OEAK-Bras",
         "username": "oeak_bras",
-        "items": []
+        "items": [],
+        "categories": [],
+        "logo_path": "oeak_bras.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:27.634+00:00"
       },
       {
+        "key": "ofracosmetics",
+        "name": "OFRA Cosmetics, LLCOF",
+        "username": "ofracosmetics",
+        "items": [
+          "Everyday Nudes Mini Lip Set Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T18:19:30.708+00:00"
+      },
+      {
+        "key": "ohclem",
+        "name": "Oh Clementine",
+        "username": "ohclem",
+        "items": [
+          "Crystal Star Stud Earrings Gold, Regular Post"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:01:22.707+00:00"
+      },
+      {
+        "key": "olay",
+        "name": "Olay Skin Care",
+        "username": "olay",
+        "items": [
+          "Olay Cleansing Melts with Vitamin C,... Default"
+        ],
+        "categories": [],
+        "logo_path": "olay-1787836436055.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:13:56.055+00:00"
+      },
+      {
+        "key": "oldnavy",
+        "name": "Old Navy",
+        "username": "oldnavy",
+        "items": [
+          "Old Navy Men's Crew Socks 4-Pack Black/Gray/White, One size, 2",
+          "Old Navy Women's Graphic Baseball... New York, One Size"
+        ],
+        "categories": [],
+        "logo_path": "oldnavy-1787836489955.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:14:49.955+00:00"
+      },
+      {
+        "key": "oliveyoung_us",
+        "name": "olive young",
+        "username": "oliveyoung_us",
+        "items": [
+          "[Wellage] Real Hyaluronic Blue 100 A... Default"
+        ],
+        "categories": [],
+        "logo_path": "oliveyoung_us-1787836490478.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:14:50.478+00:00"
+      },
+      {
+        "key": "ot.breaks",
         "name": "OTBREAKS",
         "username": "ot.breaks",
-        "items": ["Pokemon Booster Pack"]
+        "items": [
+          "Pokemon Booster Pack"
+        ],
+        "categories": [],
+        "logo_path": "otbreaks.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:28.765+00:00"
       },
       {
+        "key": "patc.",
+        "name": "Patc.",
+        "username": "",
+        "items": [
+          "Kind Patches, Stress Down Patches Ex... Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:28:51.56+00:00"
+      },
+      {
+        "key": "pavoi",
+        "name": "PAVOI",
+        "username": "pavoi",
+        "items": [
+          "Bracelet",
+          "Earrings",
+          "Necklace",
+          "PAVOI 14K Gold Plated Cross Pendant... Yellow Gold"
+        ],
+        "categories": [],
+        "logo_path": "pavoi-1787598094764.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:31:33.267+00:00"
+      },
+      {
+        "key": "dani.k.phoenix",
+        "name": "Phoenix",
+        "username": "dani.k.phoenix",
+        "items": [
+          "COLDEST 20oz Tumbler"
+        ],
+        "categories": [],
+        "logo_path": "dani-k-phoenix-1787594378165.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T17:59:38.572+00:00"
+      },
+      {
+        "key": "pioneer_nursery",
+        "name": "Pioneer Nursery",
+        "username": "pioneer_nursery",
+        "items": [
+          "Rare Gymnocalycium Mihanovichii Var... Default"
+        ],
+        "categories": [],
+        "logo_path": "pioneer_nursery-1787836491103.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:14:51.103+00:00"
+      },
+      {
+        "key": "pla.nails",
         "name": "PLA Nails",
         "username": "pla.nails",
-        "items": ["Nail Polish Duo"]
+        "items": [
+          "Nail Polish Duo",
+          "Meet Me On The Dance Floor - M219 - Gel Polish",
+          "MD Nails - Individual Gel Polishes | Na... Sappy But Sweet - M142"
+        ],
+        "categories": [],
+        "logo_path": "planails.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:27:49.407+00:00"
       },
       {
+        "key": "plantitashaircare",
+        "name": "Plantitas Haircare",
+        "username": "plantitashaircare",
+        "items": [
+          "e per winner Plantitas Milagros Intense Hair Mask Default"
+        ],
+        "categories": [],
+        "logo_path": "plantitashaircare-1787836491802.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:14:51.801+00:00"
+      },
+      {
+        "key": "@plug",
+        "name": "plug - shop tech",
+        "username": "plugbettertech",
+        "items": [
+          "USB-C Fast Charger Bundle - USB"
+        ],
+        "categories": [],
+        "logo_path": "plug-1787864336407.jpeg",
+        "import_issues": [
+          {
+            "type": "giveaway",
+            "createdAt": "2026-08-27T19:52:28.740Z",
+            "parameters": {
+              "item": "USB-C Fast Charger Bundle - USB... Default",
+              "live": "olud - s",
+              "time": "07:28",
+              "buyer": "0",
+              "import": "giveaway",
+              "captured": "2026-08-27T15:51:55-04:00",
+              "countdown": "none"
+            }
+          }
+        ],
+        "last_giveaway_at": "2026-08-27T19:52:28.735+00:00"
+      },
+      {
+        "key": "pokegram.net",
         "name": "PokeGram",
         "username": "pokegram.net",
-        "items": ["Pokemon Booster Pack"]
+        "items": [
+          "Pokemon Booster Pack",
+          "PoKeNO"
+        ],
+        "categories": [],
+        "logo_path": "pokegramnet.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T01:20:25.026+00:00"
       },
       {
+        "key": "pokespins",
+        "name": "POKESPINS",
+        "username": "pokespins",
+        "items": [],
+        "categories": [],
+        "logo_path": "pokespins-1787851000003.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "pourri",
+        "name": "Poo~Pourri",
+        "username": "pourri",
+        "items": [
+          "Pourri Pocket Spray - Pink Citron",
+          "Pourri Pocket Spray - Lavender Vanilla",
+          "Poo~Pourri Pocket Spray 1oz - Travel... Mandarin Mimosa",
+          "Poo~Pourri Pocket Spray 1oz - Travel... Lavender Vanilla"
+        ],
+        "categories": [],
+        "logo_path": "pourri-1787597975315.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:57:10.555+00:00"
+      },
+      {
+        "key": "popilush.studio",
+        "name": "Popilush studio",
+        "username": "popilush.studio",
+        "items": [
+          "Laundry Bag",
+          "Actual price:"
+        ],
+        "categories": [],
+        "logo_path": "popilush-studio-1787594490311.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T14:43:27.729+00:00"
+      },
+      {
+        "key": "portlandleather",
         "name": "PORTLAND LEATHER",
         "username": "portlandleather",
-        "items": ["Portland Leather Bag", "Portland Leather Wallet"]
+        "items": [
+          "Portland Leather Bag",
+          "Portland Leather Wallet"
+        ],
+        "categories": [],
+        "logo_path": "portlandleather.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:30.821+00:00"
       },
       {
+        "key": "prequelskin",
+        "name": "Prequel",
+        "username": "prequelskin",
+        "items": [
+          "Travel Size Half & Half Lightweight Mil... Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:10:02.514+00:00"
+      },
+      {
+        "key": "pretty package store",
+        "name": "Pretty Package Store",
+        "username": "prettypackagestore",
+        "items": [
+          "Packaging",
+          "Packaging Sampler",
+          "Pretty Package Store Designer Poly M... Original (36 Pack)"
+        ],
+        "categories": [],
+        "logo_path": "pretty-package-store-1787594542945.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T14:25:02.076+00:00"
+      },
+      {
+        "key": "primal_queen",
+        "name": "Primal Queen",
+        "username": "primal_queen",
+        "items": [
+          "Primal Queen Goddess Tumbler Default"
+        ],
+        "categories": [],
+        "logo_path": "primal_queen-1787836436448.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:13:56.448+00:00"
+      },
+      {
+        "key": "projectcloudofficial",
         "name": "Project Cloud",
         "username": "projectcloudofficial",
-        "items": ["Tote Bag"]
+        "items": [
+          "Tote Bag",
+          "Project Cloud Tote Bag | Spacious Can...",
+          "Project Cloud Tote Bag | Spacious Can... Default"
+        ],
+        "categories": [],
+        "logo_path": "projectcloudofficial.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T22:55:35.837+00:00"
       },
       {
+        "key": "prolashofficial",
+        "name": "ProLash",
+        "username": "prolashofficial",
+        "items": [
+          "Hyaluronic Acid Cucumber Caffeine H... Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:17:22.955+00:00"
+      },
+      {
+        "key": "promakenails",
         "name": "Promakenails",
         "username": "promakenails",
-        "items": ["Nails"]
+        "items": [
+          "Nails"
+        ],
+        "categories": [],
+        "logo_path": "promakenails.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T23:00:35.62+00:00"
       },
       {
+        "key": "publiquity",
+        "name": "Publiquity",
+        "username": "publiquity",
+        "items": [
+          "Butter Squishy Slow Rising Stress - N... Yellow Butter Stick 1pack"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:09:17.904+00:00"
+      },
+      {
+        "key": "pullingpokemon",
         "name": "PullingPoke",
         "username": "pullingpokemon",
-        "items": ["Pokemon Booster Pack"]
+        "items": [
+          "Pokemon Booster Pack",
+          "Pokemon Booster Box"
+        ],
+        "categories": [],
+        "logo_path": "pullingpokemon.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T23:06:51.278+00:00"
       },
       {
-        "name": "QVCBeauty",
-        "username": "qvcbeauty",
-        "items": ["Makeup"]
-      },
-      {
+        "key": "qvcfashion",
         "name": "QVC Fashion",
         "username": "qvcfashion",
-        "items": []
+        "items": [],
+        "categories": [],
+        "logo_path": "qvcfashion.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T19:30:33.498+00:00"
       },
       {
+        "key": "qvchome",
         "name": "QVC Home",
         "username": "qvchome",
-        "items": []
+        "items": [],
+        "categories": [],
+        "logo_path": "qvchome.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:35.464+00:00"
       },
       {
+        "key": "qvc",
         "name": "QVC, Inc",
         "username": "qvc",
-        "items": ["Apron"]
+        "items": [
+          "Apron",
+          "Tea cups",
+          "philosophy 8 oz. shower gel fresh crm cashm"
+        ],
+        "categories": [],
+        "logo_path": "qvc.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T17:27:07.562+00:00"
       },
       {
+        "key": "qvcbeauty",
+        "name": "QVCBeauty",
+        "username": "qvcbeauty",
+        "items": [
+          "Makeup",
+          "Philosophy shower gel"
+        ],
+        "categories": [],
+        "logo_path": "qvcbeauty.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-25T02:02:50.911+00:00"
+      },
+      {
+        "key": "qvcjewelry",
         "name": "QVCJewelry",
         "username": "qvcjewelry",
-        "items": ["Earrings"]
+        "items": [
+          "Earrings"
+        ],
+        "categories": [],
+        "logo_path": "qvcjewelry.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T20:52:26.786+00:00"
       },
       {
+        "key": "rags.clothing",
+        "name": "RAGS Apparel",
+        "username": "rags.clothing",
+        "items": [
+          "Adult Oversized Zip Jumpsuit - 'Black... XS",
+          "Women's Tank Romper - Charcoal Leo... MD"
+        ],
+        "categories": [],
+        "logo_path": "rags-clothing-1787836492220.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:14:52.22+00:00"
+      },
+      {
+        "key": "refreshed.tech",
+        "name": "RefreshedTech",
+        "username": "refreshed.tech",
+        "items": [],
+        "categories": [],
+        "logo_path": "refreshed-tech-1787836492969.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:14:52.969+00:00"
+      },
+      {
+        "key": "makeuprevolutionusa",
+        "name": "Revolution Beauty Lon...",
+        "username": "makeuprevolutionusa",
+        "items": [],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "ripnhitts",
         "name": "RIPPNHITS",
         "username": "ripnhitts",
-        "items": ["Pokemon Booster Pack"]
+        "items": [
+          "Pokemon Booster Pack"
+        ],
+        "categories": [],
+        "logo_path": "ripnhitts.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:36.76+00:00"
       },
       {
+        "key": "rosekind home",
+        "name": "ROSEKIND HOME",
+        "username": "rosekind_2",
+        "items": [
+          "Blanket"
+        ],
+        "categories": [],
+        "logo_path": "rosekind-home-1787836493332.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:14:53.332+00:00"
+      },
+      {
+        "key": "samsoniteusa",
+        "name": "Samsonite US",
+        "username": "samsoniteusa",
+        "items": [
+          "SAMSONITE Mobile Solution 2 Softsid... Black, 8.5\"",
+          "SAMSONITE Mobile Solution 2 Sof... Black,8.5\""
+        ],
+        "categories": [],
+        "logo_path": "samsoniteusa-1787836493834.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:43:36.304+00:00"
+      },
+      {
+        "key": "sand cloud",
+        "name": "Sand Cloud",
+        "username": "mysandcloud",
+        "items": [
+          "Hair Towel",
+          "Zipper Pouch"
+        ],
+        "categories": [],
+        "logo_path": "sand-cloud-1787864268090.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:15:35.847+00:00"
+      },
+      {
+        "key": "sarah gibbons",
+        "name": "SARAH GIBBONS",
+        "username": "sarahgibbons_",
+        "items": [
+          "Pet Sofa",
+          "PetPivot Mini Cat Plush Gift, Rando... Default",
+          "PetPivot Mini Cat Plush Gift, Random... Default",
+          "UFORU Wall Mounted Silicone Toil... one-piece",
+          "[backtoschool] Fluffy Cloud Pet So... Pet Mat, Beige, M(41*37*6\")"
+        ],
+        "categories": [],
+        "logo_path": "sarah-gibbons-1787595310418.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:31:16.243+00:00"
+      },
+      {
+        "key": "savethegirls",
+        "name": "SaveTheGirls",
+        "username": "savethegirls_stg",
+        "items": [
+          "Clip & Go Crossbody Strap",
+          "Clip & Go Crossbody Strap - Unique R... Red (Hardware: Gold)"
+        ],
+        "categories": [],
+        "logo_path": "savethegirls-1787595783880.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T19:39:56.186+00:00"
+      },
+      {
+        "key": "see the way i see",
+        "name": "SEE THE WAY I SEE",
+        "username": "SEE THE WAY I SEE",
+        "items": [
+          "Pancakes & Panic Attacks! T-Shirt S",
+          "Tired (But Still Trying) Hoodie Pink, XXL",
+          "Tired (But Still Trying) Hoodie Green, M"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T19:45:18.016+00:00"
+      },
+      {
+        "key": "sensefulhealing",
+        "name": "Senseful Healing",
+        "username": "sensefulhealing",
+        "items": [
+          "4-in Sage Incense Bundle, Dried Yerb... Default"
+        ],
+        "categories": [],
+        "logo_path": "sensefulhealing-1787851000017.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:22:56.985+00:00"
+      },
+      {
+        "key": "shannnfox",
+        "name": "shann 🦋",
+        "username": "shannnfox",
+        "items": [
+          "Beetles Natural Milky White Press On... Short Squoval, Natural Milky White"
+        ],
+        "categories": [],
+        "logo_path": "shannnfox-1787851000021.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:02:09.739+00:00"
+      },
+      {
+        "key": "shannahmarie77",
         "name": "🅢🅗🅐🅝🅝🅐🅗🦋😏",
         "username": "shannahmarie77",
-        "items": ["Nails"]
+        "items": [
+          "Nails"
+        ],
+        "categories": [],
+        "logo_path": "shannahmarie77.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:37.335+00:00"
       },
       {
+        "key": "shopbeautyandhustle",
+        "name": "Shannel",
+        "username": "shopbeautyandhustle",
+        "items": [
+          "Curtis Stone 2-pack"
+        ],
+        "categories": [],
+        "logo_path": "shopbeautyandhustle-1787595286068.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:14:46.498+00:00"
+      },
+      {
+        "key": "shapellxofficial",
         "name": "SHAPELLX",
         "username": "shapellxofficial",
-        "items": ["Lace Stockings"]
+        "items": [
+          "Lace Stockings"
+        ],
+        "categories": [],
+        "logo_path": "shapellxofficial.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:37.885+00:00"
       },
       {
+        "key": "shapermint",
+        "name": "Shapermint",
+        "username": "shapermint",
+        "items": [],
+        "categories": [],
+        "logo_path": "shapermint-1787543939298.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T03:58:59.697+00:00"
+      },
+      {
+        "key": "sharkbeauty",
         "name": "Shark BEAUTY",
         "username": "sharkbeauty",
-        "items": ["Makeup Bag"]
+        "items": [
+          "Makeup Bag",
+          "e per winner Nonslip Mat - HD100SANM Default"
+        ],
+        "categories": [],
+        "logo_path": "sharkbeauty.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T23:11:26.596+00:00"
       },
       {
+        "key": "sharkhome",
         "name": "Shark Home",
         "username": "sharkhome",
-        "items": ["Shark VACMOP"]
+        "items": [
+          "Shark VACMOP",
+          "Shark VACMOP Cordless Hard Flo... Clean Green",
+          "Shark VACMOP Cordless Hard Floor V... Clean Green"
+        ],
+        "categories": [],
+        "logo_path": "sharkhome.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:43:31.842+00:00"
       },
       {
+        "key": "shdwballtcg",
         "name": "ShdwBallTCG",
         "username": "shdwballtcg",
-        "items": ["Pokemon Booster Pack", "Pokemon Illustration Box"]
+        "items": [
+          "Pokemon Booster Pack",
+          "Pokemon Illustration Box",
+          "Pokémon TCG First Partner Illustration…..",
+          "Chaos Rising Booster Pack Default",
+          "Pokémon TCG First Partner Illustra... Blue"
+        ],
+        "categories": [],
+        "logo_path": "shdwballtcg.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T16:49:02.618+00:00"
       },
       {
-        "name": "South Texas Red",
+        "key": "simple modern",
+        "name": "Simple Modern",
+        "username": "simplemodern",
+        "items": [
+          "Simple Modern Tumbler"
+        ],
+        "categories": [],
+        "logo_path": "simple-modern-1787596195065.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T20:33:04.309+00:00"
+      },
+      {
+        "key": "snatched.body.es",
+        "name": "snatched.body.es",
+        "username": "snatched.body.es",
+        "items": [
+          "3-Pack Foam Board",
+          "Disposable Underwear",
+          "Tape Measure",
+          "FOAM"
+        ],
+        "categories": [],
+        "logo_path": "snatched-body-es-1787595254252.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T14:45:43.497+00:00"
+      },
+      {
+        "key": "madelisabeth",
+        "name": "South Texas Red 👩🏻‍🦰",
         "username": "madelisabeth",
-        "items": ["Nails"]
+        "items": [
+          "Nails",
+          "Glamnetic Siren's Cove Press On Nail..."
+        ],
+        "categories": [],
+        "logo_path": "madelisabeth.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T01:34:38.518+00:00"
       },
       {
+        "key": "steph",
+        "name": "Steph",
+        "username": "dealswithstephen",
+        "items": [
+          "Pillow Cases"
+        ],
+        "categories": [],
+        "logo_path": "steph-1787595179785.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:13:00.252+00:00"
+      },
+      {
+        "key": "stephen deals1",
+        "name": "Stephen Deals1",
+        "username": "stephendeals1906",
+        "items": [
+          "Blanket"
+        ],
+        "categories": [],
+        "logo_path": "stephen-deals1-1787837319466.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:28:39.465+00:00"
+      },
+      {
+        "key": "sterlingforever",
         "name": "Sterling Forever",
         "username": "sterlingforever",
-        "items": ["Random Jewelry", "Earrings", "Necklace"]
+        "items": [
+          "Random Jewelry",
+          "Earrings",
+          "Necklace",
+          "Watch Band Chain Bracelet Dainty Thin, Rose Gold, Medium - 7\""
+        ],
+        "categories": [],
+        "logo_path": "sterlingforever.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:31:58.518+00:00"
       },
       {
+        "key": "supremawholesaleoutlet",
         "name": "Suprema Deals",
         "username": "supremawholesaleoutlet",
-        "items": ["Floating Candles"]
+        "items": [
+          "Crochet Kit",
+          "Floating Candles",
+          "Gray Cardigan",
+          "Pizza Stone"
+        ],
+        "categories": [],
+        "logo_path": "supremawholesaleoutlet-1787595158552.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:12:39.057+00:00"
       },
       {
+        "key": "surfsidesucculents",
         "name": "Surfside Succulents",
         "username": "surfsidesucculents",
-        "items": ["Succulent"]
+        "items": [
+          "Succulent"
+        ],
+        "categories": [],
+        "logo_path": "surfsidesucculents.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:40.779+00:00"
       },
       {
+        "key": "brp2019",
         "name": "sxsguy",
         "username": "brp2019",
-        "items": ["Propane Torch"]
+        "items": [
+          "Propane Torch",
+          "ARTFLAMM Grill Torch Gun, Powerful..."
+        ],
+        "categories": [],
+        "logo_path": "brp2019.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T01:18:02.709+00:00"
       },
       {
+        "key": "t3micro",
+        "name": "T3 Micro",
+        "username": "t3micro",
+        "items": [
+          "POLISH & SHINE - Premium Vegan Bo… Black"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:19:28.532+00:00"
+      },
+      {
+        "key": "tabitha",
+        "name": "Tabitha Brinkman",
+        "username": "tabithabrinkman",
+        "items": [
+          "Tupperware"
+        ],
+        "categories": [],
+        "logo_path": "tabitha-1787595123253.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:12:03.78+00:00"
+      },
+      {
+        "key": "shoptaniri",
+        "name": "Taniri",
+        "username": "shoptaniri",
+        "items": [],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "tartecosmetics",
+        "name": "tarte cosmetics",
+        "username": "tartecosmetics",
+        "items": [
+          "Tarte Maracuja Juicy Lip Color"
+        ],
+        "categories": [],
+        "logo_path": "tartecosmetics-1787603855245.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T20:37:42.039+00:00"
+      },
+      {
+        "key": "tbell112",
+        "name": "TbellCardHouse",
+        "username": "tbell112",
+        "items": [
+          "Pokemon Slab"
+        ],
+        "categories": [],
+        "logo_path": "tbell112-1787595036053.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:10:36.443+00:00"
+      },
+      {
+        "key": "realrichgirltea",
+        "name": "Tearra Elexus",
+        "username": "realrichgirltea",
+        "items": [
+          "Jackery Explorer 240D Portable Powe..."
+        ],
+        "categories": [],
+        "logo_path": "realrichgirltea-1787836494213.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:14:54.213+00:00"
+      },
+      {
+        "key": "texastallowproducts",
+        "name": "Texas Tallow Products",
+        "username": "texastallowproducts",
+        "items": [
+          "Tallow Lip Balm Unscented 4 Pack Default"
+        ],
+        "categories": [],
+        "logo_path": "texastallowproducts-1787851000006.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T18:00:18.3+00:00"
+      },
+      {
+        "key": "thatangelavibe",
         "name": "𝓣𝓱𝓪𝓽𝓐𝓷𝓰𝓮𝓵𝓪𝓥𝓲𝓫𝓮",
         "username": "thatangelavibe",
-        "items": ["Nails"]
+        "items": [
+          "Nails"
+        ],
+        "categories": [],
+        "logo_path": "thatangelavibe.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:41.471+00:00"
       },
       {
+        "key": "the.clothing.vaul",
+        "name": "The Clothing Vault",
+        "username": "the.clothing.vaul",
+        "items": [],
+        "categories": [],
+        "logo_path": "theclothingvaul-1787851000016.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "the fragrance king",
+        "name": "The Fragrance King",
+        "username": "elitefragranceking",
+        "items": [
+          "LEG3ND RED DOP kit giftset",
+          "LEG3ND GREEN DOP kit giftset"
+        ],
+        "categories": [],
+        "logo_path": "the-fragrance-king-1787837319992.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:28:39.991+00:00"
+      },
+      {
+        "key": "makeuperaser",
         "name": "The Original MakeUp Eraser",
         "username": "makeuperaser",
-        "items": ["MakeUp Eraser"]
+        "items": [
+          "MakeUp Eraser",
+          "MakeUp Eraser Daily - Erase Makeup...",
+          "MakeUp Eraser Daily - Erase Makeup... Original Pink"
+        ],
+        "categories": [],
+        "logo_path": "makeuperaser.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T19:56:02.197+00:00"
       },
       {
+        "key": "thepopcornshop",
+        "name": "The Popcorn Shop",
+        "username": "thepopcornshop",
+        "items": [],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "thebeachwaver",
+        "name": "TheBeachwaver",
+        "username": "thebeachwaver",
+        "items": [
+          "Beachwaver X Prakti Default",
+          "Me & My Curls Creamy Curl Mousse Full Size (7oz)"
+        ],
+        "categories": [],
+        "logo_path": "thebeachwaver-1787836494952.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:40:19.918+00:00"
+      },
+      {
+        "key": "thehypeboutique.shop",
+        "name": "TheHypeBoutique",
+        "username": "thehypeboutique.shop",
+        "items": [],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "tickledpinque",
+        "name": "Tickled Pinque Cosmetics",
+        "username": "tickledpinque",
+        "items": [],
+        "categories": [],
+        "logo_path": "tickledpinque-1787836533041.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:15:33.04+00:00"
+      },
+      {
+        "key": "timeoffsports6",
+        "name": "TimeOFF Sports",
+        "username": "timeoffsports6",
+        "items": [
+          "Socks"
+        ],
+        "categories": [],
+        "logo_path": "timeoffsports6-1787594880953.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:08:01.393+00:00"
+      },
+      {
+        "key": "prestonandtina7",
         "name": "Tina Beauty Babe",
         "username": "prestonandtina7",
-        "items": ["Nails"]
+        "items": [
+          "Nails",
+          "Glamnetic Love Notes Press-On Nail С... Sent with Love",
+          "Glamnetic Velvet & Glazed Press-On…. Fairy Dust",
+          "Glamnetic Pastel Solids Press-On Nail... Pastel Yellow"
+        ],
+        "categories": [],
+        "logo_path": "prestonandtina7.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T22:49:25.543+00:00"
       },
       {
+        "key": "tinabougiebestie",
+        "name": "tinabougiebestie",
+        "username": "tinabougiebestie",
+        "items": [
+          "BUXOM Full-on Plumping Lip Oil",
+          "BUXOM Full-on Plumping Lip Balm"
+        ],
+        "categories": [],
+        "logo_path": "tinabougiebestie-1787601379730.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T20:11:53.801+00:00"
+      },
+      {
+        "key": "toms",
         "name": "TOMS",
         "username": "toms",
-        "items": ["Espadrilles"]
+        "items": [
+          "Espadrilles"
+        ],
+        "categories": [],
+        "logo_path": "toms.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T19:43:39.048+00:00"
       },
       {
+        "key": "tonies.us",
         "name": "tonies US",
         "username": "tonies.us",
-        "items": ["Tonie"]
+        "items": [
+          "Tonie"
+        ],
+        "categories": [],
+        "logo_path": "toniesus.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:42.472+00:00"
       },
       {
+        "key": "touchland",
+        "name": "touchland",
+        "username": "touchland",
+        "items": [
+          "Touchland Mist Case",
+          "Touchland Mist Case for Power Hand...",
+          "Touchland Mist Case for Power Hand... Bubblegum Pink",
+          "Touchland Mist Case for Power Hand... Purple Haze",
+          "Touchland Mist Case for Power Hand... Icy White",
+          "Touchland Mist Case for Power Hand... Frosted Sparkle",
+          "Touchland Mist Case for Power Hand... Jet Black"
+        ],
+        "categories": [],
+        "logo_path": "touchland-1787612410478.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:38:44.616+00:00"
+      },
+      {
+        "key": "tradersshop",
+        "name": "TradersShop",
+        "username": "traders_shop",
+        "items": [
+          "Pokemon Booster Pack",
+          "FREE BOOSTER PACK (GIVEAWAY ON... 1X Free Booster Pack (GIVEAWAY ONLY)"
+        ],
+        "categories": [],
+        "logo_path": "tradersshop-1787594851336.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:08:37.384+00:00"
+      },
+      {
+        "key": "tushbabyshop",
+        "name": "tushbaby",
+        "username": "tushbabyshop",
+        "items": [],
+        "categories": [],
+        "logo_path": "tushbabyshop-1787836533708.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:15:33.708+00:00"
+      },
+      {
+        "key": "tymobeauty_official",
         "name": "TYMO BEAUTY US",
         "username": "tymobeauty_official",
-        "items": ["Hair Clips"]
+        "items": [
+          "Hair Clips",
+          "(Live Only) TYMO Styling Hair Clips...",
+          "TYMO Plastic Hair Claws, Pink 2-Pack... Default"
+        ],
+        "categories": [],
+        "logo_path": "tymobeauty_official.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-26T23:00:18.682+00:00"
       },
       {
+        "key": "unicehairwig",
+        "name": "UNICE",
+        "username": "unicehairwig",
+        "items": [],
+        "categories": [],
+        "logo_path": "unicehairwig-1787851000011.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "yun.meng8",
+        "name": "United scents",
+        "username": "yun.meng8",
+        "items": [
+          "Random"
+        ],
+        "categories": [],
+        "logo_path": "yun-meng8-1787836534356.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:15:34.356+00:00"
+      },
+      {
+        "key": "vaquerasoutfitters",
+        "name": "Vaqueras Outfitters",
+        "username": "vaquerasoutfitters",
+        "items": [
+          "Wrangler Credit Card Holder for Wom... Beige, 4.2 × 3.2 × 0.2 inch"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:17:29.078+00:00"
+      },
+      {
+        "key": "vaulted loop",
+        "name": "Vaulted Loot",
+        "username": "vaultedloot",
+        "items": [
+          "Pokemon Booster Pack"
+        ],
+        "categories": [],
+        "logo_path": "vaulted-loop-1787594911502.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:08:32.037+00:00"
+      },
+      {
+        "key": "vestique",
+        "name": "vestique",
+        "username": "vestique",
+        "items": [],
+        "categories": [],
+        "logo_path": "vestique-1787851000022.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "vikingcarcare",
+        "name": "VIKING Car Care",
+        "username": "vikingcarcare",
+        "items": [
+          "VIKING Wheel Cleaner Mitts for Ca... Default",
+          "VIKING Tire Shine Applicator Brush... Default",
+          "VIKING V  Premium Microfiber To... Default",
+          "VIKING Microfiber Towel, Premium... Default",
+          "VIKING Professional Foam Cannon... Default",
+          "VIKING Drill Detail Brush Set, Profe... Default"
+        ],
+        "categories": [],
+        "logo_path": "vikingcarcare-1787851000008.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T18:11:07.262+00:00"
+      },
+      {
+        "key": "watercolors_tressahair",
+        "name": "Watercolors.tressahair",
+        "username": "watercolors_tressahair",
+        "items": [
+          "Color-Depositing Silver Watercolor Me... Default"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:19:09.541+00:00"
+      },
+      {
+        "key": "wax_n_packs",
+        "name": "WaxNPacks LLC",
+        "username": "wax_n_packs",
+        "items": [],
+        "categories": [],
+        "logo_path": "wax_n_packs-1787836534798.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:15:34.797+00:00"
+      },
+      {
+        "key": "westernbesties",
+        "name": "Western Babes",
+        "username": "westernbesties",
+        "items": [],
+        "categories": [],
+        "logo_path": "westernbesties-1787851000009.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": null
+      },
+      {
+        "key": "westernhandbag",
+        "name": "Western Cowgirl",
+        "username": "westernhandbag",
+        "items": [
+          "Women's Metal Hair Claws Set - Class... Default"
+        ],
+        "categories": [],
+        "logo_path": "westernhandbag-1787836535435.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T13:15:35.435+00:00"
+      },
+      {
+        "key": "wonderskin",
+        "name": "Wonderskin",
+        "username": "wonderskin",
+        "items": [
+          "360 Contour Lip Liner Cocoa"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T21:07:59.135+00:00"
+      },
+      {
+        "key": "wookbooksofficial",
+        "name": "Wook Books Coloring",
+        "username": "wookbooksofficial",
+        "items": [
+          "Coloring Book + Ohuhu Markers",
+          "Coloring Book",
+          "Mystery coloring book",
+          "Mystery Mystery Mystery Mystery  Mystery"
+        ],
+        "categories": [],
+        "logo_path": "wookbooksofficial-1787593132511.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-27T20:05:44.14+00:00"
+      },
+      {
+        "key": "yolie72675",
+        "name": "Yolie w/everything's crafty",
+        "username": "yolie72675",
+        "items": [
+          "Nails"
+        ],
+        "categories": [],
+        "logo_path": "yolie72675-1787595005986.png",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T18:10:06.473+00:00"
+      },
+      {
+        "key": "yurfriendemily",
+        "name": "YurFriendEmily",
+        "username": "yurfriendemily",
+        "items": [
+          "Nails"
+        ],
+        "categories": [],
+        "logo_path": "yurfriendemily-1787544098889.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-24T04:10:56.426+00:00"
+      },
+      {
+        "key": "yvaexpressions",
         "name": "Yva Expressions",
         "username": "yvaexpressions",
-        "items": ["Eyelashes", "Eyeshadow"]
+        "items": [
+          "Eyelashes",
+          "Eyeshadow"
+        ],
+        "categories": [],
+        "logo_path": "yvaexpressions.jpeg",
+        "import_issues": [],
+        "last_giveaway_at": "2026-08-23T22:16:43.777+00:00"
       }
     ]
   </script>
@@ -5082,6 +8441,25 @@
     ).sort((a, b) => a.name.localeCompare(b.name, undefined, {
       sensitivity: "base"
     }));
+    const STARTER_LIVE_CATEGORIES = [
+      "All Star", "Nails", "Boo Faves", "Jes Faves", "Mom Faves",
+      "Pokemon Cards", "Clothing", "Beauty", "Stationery", "Home Goods",
+      "Pet", "Hair", "Cosmetics", "Tech", "Kitchen", "Skincare", "Food",
+      "Handbags & Wallets", "Plants", "Official Company", "Car", "Jewelry", "Kids"
+    ];
+    const selectedQuickLiveCategories = new Set();
+
+    function normalizeLiveCategories(categories) {
+      const seen = new Set();
+      return (Array.isArray(categories) ? categories : [])
+        .map(category => String(category || "").trim())
+        .filter(category => {
+          const key = category.toLowerCase();
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
 
     function replaceLiveLibrary(lives) {
       const normalizedLives = lives
@@ -5095,6 +8473,7 @@
             name,
             username,
             items: Array.isArray(live.items) ? live.items : [],
+            categories: normalizeLiveCategories(live.categories),
             logoPath: String(live.logo_path ?? live.logoPath ?? "").trim(),
             importIssues: Array.isArray(live.import_issues ?? live.importIssues)
               ? [...(live.import_issues ?? live.importIssues)]
@@ -6407,7 +9786,8 @@
         storedKey = "",
         logoPath = "",
         importIssues = [],
-        lastGiveawayAt = null
+        lastGiveawayAt = null,
+        categories = []
       ) => {
         const cleanName = String(name || "").trim();
         const cleanUsername = String(username || "").trim();
@@ -6427,6 +9807,7 @@
           name: cleanName || cleanUsername,
           username: cleanUsername,
           items: [],
+          categories: normalizeLiveCategories(categories),
           isActive: activeQuickLiveKeys.has(key),
           logoKey: cleanUsername,
           logoPath: String(logoPath || "").trim(),
@@ -6437,6 +9818,11 @@
 
         existing.isActive = activeQuickLiveKeys.has(key);
         existing.logoPath ||= String(logoPath || "").trim();
+        normalizeLiveCategories(categories).forEach(category => {
+          if (!existing.categories.some(saved => saved.toLowerCase() === category.toLowerCase())) {
+            existing.categories.push(category);
+          }
+        });
         if (Array.isArray(importIssues) && importIssues.length > existing.importIssues.length) {
           existing.importIssues = [...importIssues];
         }
@@ -6469,7 +9855,8 @@
           live.key,
           live.logoPath,
           live.importIssues,
-          live.lastGiveawayAt
+          live.lastGiveawayAt,
+          live.categories
         );
       });
 
@@ -6679,22 +10066,89 @@
     }
 
 
+    function openQuickLive(live) {
+      const cleanUsername = String(live?.username || "")
+        .trim()
+        .replace(/^@/, "");
+
+      if (!cleanUsername) {
+        return;
+      }
+
+      const liveUrl =
+        `https://www.tiktok.com/@${encodeURIComponent(cleanUsername)}/live`;
+
+      if (window.matchMedia("(max-width: 760px)").matches) {
+        window.location.assign(liveUrl);
+      } else {
+        window.open(liveUrl, "_blank", "noopener,noreferrer");
+      }
+    }
+
+
+    function getQuickLiveCategoryOptions(lives) {
+      const categories = normalizeLiveCategories([
+        ...STARTER_LIVE_CATEGORIES,
+        ...lives.flatMap(live => live.categories || [])
+      ]);
+      return categories.sort((left, right) => {
+        if (left.toLowerCase() === "all star") return -1;
+        if (right.toLowerCase() === "all star") return 1;
+        return left.localeCompare(right, undefined, { sensitivity: "base" });
+      });
+    }
+
+
+    function renderQuickLiveCategoryFilters(lives) {
+      const holder = document.getElementById("quickLivesCategoryFilters");
+      const filterButton = document.getElementById("quickLivesFilterToggle");
+      if (!holder) return;
+      holder.replaceChildren();
+
+      const addFilter = (label, value, special = false) => {
+        const selected = selectedQuickLiveCategories.has(value);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `quick-lives-category-filter${special ? " all-star" : ""}${selected ? " selected" : ""}`;
+        button.textContent = special ? `★ ${label}` : label;
+        button.setAttribute("aria-pressed", String(selected));
+        button.addEventListener("click", () => {
+          if (selectedQuickLiveCategories.has(value)) {
+            selectedQuickLiveCategories.delete(value);
+          } else {
+            selectedQuickLiveCategories.add(value);
+          }
+          renderQuickLives();
+        });
+        holder.append(button);
+      };
+
+      const categories = getQuickLiveCategoryOptions(lives);
+      const allStar = categories.find(category => category.toLowerCase() === "all star");
+      if (allStar) addFilter(allStar, allStar.toLowerCase(), true);
+      categories
+        .filter(category => category.toLowerCase() !== "all star")
+        .forEach(category => addFilter(category, category.toLowerCase()));
+
+      filterButton?.classList.toggle(
+        "has-active-filter",
+        selectedQuickLiveCategories.size > 0 ||
+          Boolean(document.getElementById("quickLivesSearch")?.value.trim())
+      );
+    }
+
+
     function renderQuickLives() {
       const list =
         document.getElementById("quickLivesList");
       const resetButton =
         document.getElementById("resetQuickLivesButton");
+      const showAllButton =
+        document.getElementById("quickLivesShowAll");
+      const filterButton =
+        document.getElementById("quickLivesFilterToggle");
 
       if (!list) {
-        return;
-      }
-
-      const panel = document.getElementById("quickLivesPanel");
-      const mobileCollapsed = window.matchMedia("(max-width: 760px)").matches &&
-        panel.classList.contains("mobile-collapsed");
-
-      if (mobileCollapsed) {
-        list.dataset.needsRender = "true";
         return;
       }
 
@@ -6708,22 +10162,44 @@
 
       renderLiveNameSuggestions();
 
+      const isMobile = window.matchMedia("(max-width: 760px)").matches;
       const lives = getQuickLives();
+      renderQuickLiveCategoryFilters(lives);
       const query = document
         .getElementById("quickLivesSearch")
         .value
         .trim()
         .toLowerCase();
-      const filteredLives = query
-        ? lives.filter(live =>
-            `${live.name} ${live.username}`.toLowerCase().includes(query)
-          )
+      const navigableLives = isMobile
+        ? lives.filter(live => String(live.username || "").trim())
         : lives;
+      const filteredLives = navigableLives.filter(live => {
+        const matchesSearch = !query ||
+          `${live.name} ${live.username}`.toLowerCase().includes(query);
+        const matchesCategory = selectedQuickLiveCategories.size === 0 ||
+          (live.categories || []).some(category =>
+            selectedQuickLiveCategories.has(category.toLowerCase())
+          );
+        return matchesSearch && matchesCategory;
+      });
+
+      if (showAllButton) {
+        showAllButton.hidden = !isMobile || navigableLives.length === 0;
+      }
+      if (filterButton) {
+        filterButton.hidden = !isMobile || navigableLives.length === 0;
+      }
 
       if (filteredLives.length === 0) {
         list.innerHTML = `
           <div class="quick-lives-empty">
-            ${query ? "No matching lives found." : "Add a few giveaways and your most-used live names will show up here."}
+            ${query
+              ? "No matching lives found."
+              : selectedQuickLiveCategories.size > 0
+                ? "No lives are saved in this category yet."
+              : isMobile
+                ? "No saved live links yet."
+                : "Saved lives will show up here."}
           </div>
         `;
         return;
@@ -6735,10 +10211,42 @@
         const row = document.createElement("div");
         row.className = "quick-live-row";
 
+        if (isMobile) {
+          const anchor = document.createElement("a");
+          anchor.className =
+            `quick-live-btn quick-live-mobile-nav${live.isActive ? " active" : ""}`;
+          anchor.innerHTML = `
+            <span class="quick-live-mobile-avatar">
+              <span class="quick-live-mobile-logo-fallback"></span>
+              <img class="quick-live-mobile-logo" alt="" />
+              <span class="quick-live-mobile-badge">LIVE</span>
+            </span>
+            <span class="quick-live-mobile-name"></span>
+          `;
+
+          const logoFallback = anchor.querySelector(
+            ".quick-live-mobile-logo-fallback"
+          );
+          const logo = anchor.querySelector(".quick-live-mobile-logo");
+          logoFallback.textContent = getLiveInitials(live.name);
+          loadVisibleQuickLiveLogo(
+            logo,
+            logoFallback,
+            live.logoKey,
+            live.logoPath
+          );
+          anchor.querySelector(".quick-live-mobile-name").textContent =
+            live.name;
+          configureTikTokLiveAnchor(anchor, live.username, live.name);
+          row.appendChild(anchor);
+          list.appendChild(row);
+          return;
+        }
+
         const button = document.createElement("div");
 
         button.className = `quick-live-btn${live.isActive ? " active" : ""}`;
-        button.setAttribute("role", "button");
+        button.setAttribute("role", "link");
         button.setAttribute("tabindex", "0");
         button.innerHTML = `
           <span class="quick-live-logo-fallback"></span>
@@ -6758,11 +10266,11 @@
         button.querySelector(".quick-live-status-tag").textContent = live.isActive
           ? "LIVE"
           : "OFFLINE";
-        button.title = `Fill the form with ${live.name}`;
+        button.title = `Open ${live.name} on TikTok LIVE`;
 
         button.addEventListener(
           "click",
-          () => fillQuickLive(live)
+          () => openQuickLive(live)
         );
 
         button.addEventListener(
@@ -6774,7 +10282,7 @@
 
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
-              fillQuickLive(live);
+              openQuickLive(live);
             }
           }
         );
@@ -6825,6 +10333,63 @@
     }
 
 
+    function toggleAllMobileQuickLives() {
+      const panel = document.getElementById("quickLivesPanel");
+      const button = document.getElementById("quickLivesShowAll");
+      const search = document.getElementById("quickLivesSearch");
+      const filterButton = document.getElementById("quickLivesFilterToggle");
+      const expanded = panel.classList.toggle("mobile-show-all");
+
+      button.setAttribute("aria-expanded", String(expanded));
+      button.textContent = expanded ? "Show less" : "Show all";
+
+      if (!expanded && search.value) {
+        search.value = "";
+        clearTimeout(quickLivesSearchClearTimer);
+        quickLivesSearchClearTimer = null;
+        renderQuickLives();
+      }
+
+      if (!expanded && panel.classList.contains("mobile-filter-open")) {
+        panel.classList.remove("mobile-filter-open");
+        filterButton.setAttribute("aria-expanded", "false");
+      }
+    }
+
+
+    function toggleMobileQuickLivesFilter() {
+      const panel = document.getElementById("quickLivesPanel");
+      const button = document.getElementById("quickLivesFilterToggle");
+      const search = document.getElementById("quickLivesSearch");
+      const open = panel.classList.toggle("mobile-filter-open");
+
+      button.setAttribute("aria-expanded", String(open));
+
+      if (open) {
+        requestAnimationFrame(() => search.focus());
+        return;
+      }
+
+      if (search.value) {
+        search.value = "";
+        clearTimeout(quickLivesSearchClearTimer);
+        quickLivesSearchClearTimer = null;
+        renderQuickLives();
+      }
+    }
+
+
+    function clearQuickLiveFilters() {
+      const search = document.getElementById("quickLivesSearch");
+      selectedQuickLiveCategories.clear();
+      search.value = "";
+      clearTimeout(quickLivesSearchClearTimer);
+      quickLivesSearchClearTimer = null;
+      renderQuickLives();
+      search.focus();
+    }
+
+
     function toggleMobileQuickLives() {
       const panel = document.getElementById("quickLivesPanel");
       const toggle = document.getElementById("quickLivesMobileToggle");
@@ -6857,12 +10422,7 @@
         anchor.insertAdjacentElement("afterend", panel);
       }
 
-      if (mobile && panel.classList.contains("mobile-collapsed")) {
-        quickLiveLogoObserver?.disconnect();
-        quickLiveLogoObserver = null;
-        list.replaceChildren();
-        list.dataset.needsRender = "true";
-      } else if (list.dataset.needsRender === "true") {
+      if (list.dataset.needsRender === "true") {
         renderQuickLives();
       }
     }
@@ -7458,6 +11018,7 @@
         name,
         username,
         items,
+        categories: currentLive?.categories || [],
         logoPath,
         importIssues,
         lastGiveawayAt: currentLive?.lastGiveawayAt || null
@@ -7469,6 +11030,7 @@
           name,
           username,
           items,
+          categories: currentLive?.categories || [],
           logoPath,
           importIssues,
           lastGiveawayAt: currentLive?.lastGiveawayAt || null
@@ -7901,6 +11463,7 @@
         name: name || username,
         username,
         items: Array.isArray(live.items) ? [...new Set(live.items)] : [],
+        categories: normalizeLiveCategories(live.categories),
         logo_path: String(live.logo_path ?? live.logoPath ?? "").trim(),
         import_issues: Array.isArray(live.import_issues ?? live.importIssues)
           ? [...(live.import_issues ?? live.importIssues)]
@@ -7914,7 +11477,7 @@
     async function loadSharedLiveLibrary() {
       const { data, error } = await sharedDatabase
         .from("lives")
-        .select("key, name, username, items, logo_path, import_issues, last_giveaway_at")
+        .select("key, name, username, items, categories, logo_path, import_issues, last_giveaway_at")
         .order("name");
 
       if (error) {
@@ -9534,7 +13097,10 @@
     initializeImportedFormPreview();
     positionQuickLivesPanel();
     const quickLivesMobileQuery = window.matchMedia("(max-width: 760px)");
-    const handleQuickLivesLayoutChange = () => positionQuickLivesPanel();
+    const handleQuickLivesLayoutChange = () => {
+      positionQuickLivesPanel();
+      renderQuickLives();
+    };
 
     if (typeof quickLivesMobileQuery.addEventListener === "function") {
       quickLivesMobileQuery.addEventListener("change", handleQuickLivesLayoutChange);
