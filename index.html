@@ -1215,6 +1215,10 @@
       width: 50px;
     }
 
+    .joined-field {
+      width: 54px;
+    }
+
     .buyer-checkbox-holder {
       height: 48px;
       display: flex;
@@ -2216,15 +2220,16 @@
       width: min(1200px, calc(100% - 32px));
     }
 
-    .one-line-form {
-      grid-template-columns:
-        minmax(0, 24fr)
-        minmax(0, 30fr)
-        minmax(0, 9fr)
-        minmax(0, 9fr)
-        minmax(0, 13fr)
-        minmax(0, 7fr)
-        minmax(0, 8fr);
+      .one-line-form {
+        grid-template-columns:
+        minmax(0, 22fr)
+        minmax(0, 28fr)
+        minmax(0, 8fr)
+        minmax(0, 8fr)
+        minmax(0, 12fr)
+        minmax(0, 6fr)
+        minmax(0, 6fr)
+        minmax(0, 10fr);
       gap: 6px;
     }
 
@@ -2597,6 +2602,7 @@
     }
 
     .favorite-btn,
+    .joined-menu-btn,
     .edit-btn {
       width: 31px;
       height: 31px;
@@ -2625,6 +2631,13 @@
       color: #6e5bb8;
       box-shadow: 0 3px 9px rgba(110, 91, 184, 0.18);
       transform: translateY(-1px);
+    }
+
+    .joined-menu-btn:hover,
+    .joined-menu-btn.active {
+      background: #e2f4e8;
+      color: #34704a;
+      box-shadow: 0 3px 9px rgba(52, 112, 74, 0.16);
     }
 
     .edit-btn:hover {
@@ -3341,11 +3354,12 @@
       }
 
       .countdown-field {
-        grid-column: span 4;
+        grid-column: span 3;
         width: auto;
       }
 
-      .buyer-field {
+      .buyer-field,
+      .joined-field {
         grid-column: span 1;
         width: auto;
       }
@@ -3425,10 +3439,11 @@
       }
 
       .countdown-field {
-        grid-column: span 4;
+        grid-column: span 3;
       }
 
       .buyer-field,
+      .joined-field,
       .add-button {
         grid-column: span 1;
       }
@@ -3962,6 +3977,7 @@
       .time-field,
       .countdown-field,
       .buyer-field,
+      .joined-field,
       .add-button {
         grid-column: 1 / -1;
         width: 100%;
@@ -4625,6 +4641,39 @@
       }
     }
 
+    @media (max-width: 760px) and (min-width: 561px) {
+      .one-line-form { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+      .live-field { grid-column: span 4; }
+      .item-field { grid-column: span 4; }
+      .time-field { grid-column: span 2; }
+      .countdown-field { grid-column: span 2; }
+      .buyer-field,
+      .joined-field { grid-column: span 1; width: auto; }
+      .add-button { grid-column: span 2; width: 100%; }
+    }
+
+    @media (max-width: 560px) {
+      .one-line-form { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .live-field,
+      .item-field { grid-column: 1 / -1; }
+      .time-field { grid-column: span 3; }
+      .countdown-field { grid-column: span 3; }
+      .buyer-field,
+      .joined-field,
+      .add-button { grid-column: span 1; width: auto; }
+      .add-button { width: 100%; }
+    }
+
+    @media (max-width: 340px) {
+      .one-line-form { grid-template-columns: minmax(0, 1fr); }
+      .live-field,
+      .item-field,
+      .time-field,
+      .countdown-field,
+      .buyer-field,
+      .joined-field,
+      .add-button { grid-column: 1; width: 100%; }
+    }
   </style>
 </head>
 
@@ -5315,6 +5364,20 @@
             <input
               id="isBuyerGiveaway"
               type="checkbox"
+            />
+          </div>
+        </div>
+
+        <div class="field joined-field">
+          <label for="isJoinedGiveaway">
+            Joined
+          </label>
+
+          <div class="buyer-checkbox-holder">
+            <input
+              id="isJoinedGiveaway"
+              type="checkbox"
+              checked
             />
           </div>
         </div>
@@ -9715,6 +9778,7 @@
       const validCountdown = [...countdownSelect.options]
         .some(option => option.value === countdownValue);
       countdownSelect.value = validCountdown ? countdownValue : "none";
+      updateJoinedFormDefault();
 
       if (!validCountdown) {
         errors.push(`Countdown value “${countdownValue}” is not supported; it was set to None.`);
@@ -12654,6 +12718,10 @@
         document.getElementById(
           "isBuyerGiveaway"
         ).checked;
+      const isJoinedGiveaway =
+        document.getElementById(
+          "isJoinedGiveaway"
+        ).checked;
 
       if (!liveName) {
         alert("Enter the live name.");
@@ -12744,6 +12812,7 @@
           cancelEdit();
           return;
         }
+        const participation = getGiveawayParticipation(giveaway.id);
 
         const endTime =
           editingTimeChanged
@@ -12767,11 +12836,20 @@
           });
         }
 
-        if (!useCountdown) {
-          clearGiveawayParticipation(giveaway.id);
-        } else if (editingCountdownChanged) {
+        if (isJoinedGiveaway) {
           setGiveawayParticipation(giveaway.id, {
             countdownEndTime: null,
+            joined: true,
+            joinedAt: participation?.joinedAt || Date.now(),
+            couldntJoin: false
+          });
+        } else if (!useCountdown) {
+          clearGiveawayParticipation(giveaway.id);
+        } else {
+          setGiveawayParticipation(giveaway.id, {
+            countdownEndTime: editingCountdownChanged
+              ? null
+              : (participation?.countdownEndTime || null),
             joined: false,
             joinedAt: null,
             couldntJoin: false
@@ -12798,6 +12876,14 @@
         };
 
         giveaways.push(giveaway);
+        if (isJoinedGiveaway) {
+          setGiveawayParticipation(giveaway.id, {
+            countdownEndTime: null,
+            joined: true,
+            joinedAt: now,
+            couldntJoin: false
+          });
+        }
         clearCompletedGiveawayImportParameters();
 
         const sharedLive = matchedQuickLive || {
@@ -12859,6 +12945,17 @@
       }
     }
 
+    function updateJoinedFormDefault() {
+      if (editingGiveawayId !== null) return;
+
+      const hasCountdown =
+        document.getElementById("countdownMinutes").value !== "none";
+      const isBuyer =
+        document.getElementById("isBuyerGiveaway").checked;
+      document.getElementById("isJoinedGiveaway").checked =
+        !hasCountdown && !isBuyer;
+    }
+
     function clearForm() {
       editingGiveawayId = null;
       editingOriginalTiming = null;
@@ -12886,6 +12983,7 @@
       document.getElementById("importErrorMessages").replaceChildren();
       document.getElementById("countdownMinutes").value = "none";
       document.getElementById("isBuyerGiveaway").checked = false;
+      document.getElementById("isJoinedGiveaway").checked = true;
 
       document.getElementById("formTitle").textContent = "Add Giveaway";
       document.getElementById("addButton").textContent = "Add";
@@ -12931,6 +13029,8 @@
           : "none";
       document.getElementById("isBuyerGiveaway").checked =
         giveaway.isBuyerGiveaway;
+      document.getElementById("isJoinedGiveaway").checked =
+        participation?.joined === true;
 
       document.getElementById("formTitle").textContent = "Edit Giveaway";
       document.getElementById("addButton").textContent = "Save";
@@ -13030,6 +13130,7 @@
 
       document.getElementById("isBuyerGiveaway").checked =
         entry.isBuyerGiveaway ?? false;
+      updateJoinedFormDefault();
 
       duplicatedFavoritePending =
         entry.isFavorite ?? false;
@@ -13136,6 +13237,22 @@
         couldntJoin: false
       });
       render();
+    }
+
+    function toggleJoined(id) {
+      const participation = getGiveawayParticipation(id);
+
+      if (participation?.joined) {
+        setGiveawayParticipation(id, {
+          joined: false,
+          joinedAt: null,
+          couldntJoin: false
+        });
+        render();
+        return;
+      }
+
+      markJoined(id);
     }
 
     function startCountdown(id) {
@@ -13699,6 +13816,16 @@
 
               <div class="entry-action-buttons">
                 <button
+                  class="joined-menu-btn ${localJoined ? 'active' : ''}"
+                  onclick="closeGiveawayActions(); toggleJoined('${giveaway.id}')"
+                  title="${localJoined ? 'Unmark joined' : 'Mark as joined'}"
+                  aria-label="${localJoined ? 'Unmark giveaway as joined' : 'Mark giveaway as joined'}"
+                  aria-pressed="${localJoined}"
+                >
+                  ✓
+                </button>
+
+                <button
                   class="favorite-btn ${giveaway.isFavorite ? 'active' : ''}"
                   onclick="toggleFavorite('${giveaway.id}')"
                   title="${giveaway.isFavorite ? 'Remove favorite' : 'Favorite'}"
@@ -14154,8 +14281,14 @@
       .addEventListener("change", () => {
         if (editingGiveawayId !== null) {
           editingCountdownChanged = true;
+        } else {
+          updateJoinedFormDefault();
         }
       });
+
+    document
+      .getElementById("isBuyerGiveaway")
+      .addEventListener("change", updateJoinedFormDefault);
 
     applySettingsToUI();
     initializeImportedFormPreview();
