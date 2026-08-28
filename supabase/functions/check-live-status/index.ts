@@ -132,16 +132,29 @@ async function runChecks(request: Request) {
   const checkByKey = new Map((checks || []).map((check: Check) => [check.live_key, check]));
   const activeKeys = new Set<string>(Array.isArray(state?.active_live_keys) ? state.active_live_keys : []);
   const candidates = (lives || []) as Live[];
-  candidates.sort((left, right) => {
-    const leftActive = activeKeys.has(left.key) ? 1 : 0;
-    const rightActive = activeKeys.has(right.key) ? 1 : 0;
-    if (leftActive !== rightActive) return rightActive - leftActive;
+  const sortByOldestCheck = (left: Live, right: Live) => {
     const leftChecked = Date.parse(checkByKey.get(left.key)?.last_checked_at || "") || 0;
     const rightChecked = Date.parse(checkByKey.get(right.key)?.last_checked_at || "") || 0;
     return leftChecked - rightChecked;
-  });
+  };
+  const activeCandidates = candidates
+    .filter(live => activeKeys.has(live.key))
+    .sort(sortByOldestCheck);
+  const inactiveCandidates = candidates
+    .filter(live => !activeKeys.has(live.key))
+    .sort(sortByOldestCheck);
 
-  const batch = candidates.slice(0, 40);
+  const activeSlots = Math.min(15, activeCandidates.length);
+  const batch = [
+    ...activeCandidates.slice(0, activeSlots),
+    ...inactiveCandidates.slice(0, 40 - activeSlots),
+  ];
+  if (batch.length < 40) {
+    batch.push(...activeCandidates.slice(
+      activeSlots,
+      activeSlots + (40 - batch.length),
+    ));
+  }
   const results: Array<{ live: Live; result: { status: Status; error: string | null } }> = [];
   for (let index = 0; index < batch.length; index += 10) {
     const group = batch.slice(index, index + 10);
