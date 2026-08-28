@@ -105,6 +105,10 @@
       display: none;
     }
 
+    .quick-lives-controls {
+      display: none;
+    }
+
     .quick-lives-filter-toggle {
       display: none;
     }
@@ -4111,11 +4115,18 @@
         min-width: 0;
       }
 
-      .quick-lives-show-all {
+      .quick-lives-controls {
         position: absolute;
         top: 0;
         right: 3px;
-        z-index: 2;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+
+      .quick-lives-show-all {
+        position: static;
         display: inline-flex;
         align-items: center;
         height: 24px;
@@ -4139,10 +4150,7 @@
       }
 
       .quick-lives-filter-toggle {
-        position: absolute;
-        top: 0;
-        right: 55px;
-        z-index: 3;
+        position: static;
         display: grid;
         place-items: center;
         width: 26px;
@@ -4155,10 +4163,7 @@
       }
 
       .quick-lives-settings-toggle {
-        position: absolute;
-        top: 0;
-        right: 78px;
-        z-index: 3;
+        position: static;
         display: grid;
         place-items: center;
         width: 26px;
@@ -4174,19 +4179,8 @@
 
       .quick-lives-settings-menu {
         top: 28px;
-        right: 55px;
-      }
-
-      .quick-lives-panel.mobile-show-all .quick-lives-settings-toggle {
-        right: 91px;
-      }
-
-      .quick-lives-panel.mobile-show-all .quick-lives-settings-menu {
-        right: 68px;
-      }
-
-      .quick-lives-panel.mobile-show-all .quick-lives-filter-toggle {
-        right: 68px;
+        right: auto;
+        left: 0;
       }
 
       .quick-lives-filter-toggle:hover {
@@ -4499,10 +4493,18 @@
         padding-top: 30px;
       }
 
-      .quick-lives-settings-toggle {
+      .quick-lives-controls {
         position: absolute;
         top: -2px;
-        right: 34px;
+        right: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .quick-lives-settings-toggle {
+        position: static;
         display: grid;
         place-items: center;
         width: 28px;
@@ -4521,13 +4523,12 @@
 
       .quick-lives-settings-menu {
         top: 30px;
-        right: 34px;
+        right: auto;
+        left: 0;
       }
 
       .quick-lives-filter-toggle {
-        position: absolute;
-        top: -2px;
-        right: 0;
+        position: static;
         display: grid;
         place-items: center;
         width: 28px;
@@ -4817,16 +4818,7 @@
           </button>
         </div>
         <div id="quickLivesContent" class="quick-lives-content">
-          <button
-            id="quickLivesShowAll"
-            class="quick-lives-show-all"
-            type="button"
-            aria-expanded="false"
-            aria-controls="quickLivesList"
-            onclick="toggleAllMobileQuickLives()"
-          >
-            Show all
-          </button>
+          <div class="quick-lives-controls">
           <button
             id="quickLivesSettingsToggle"
             class="quick-lives-settings-toggle"
@@ -4863,6 +4855,17 @@
               <path d="M4 6h16M7 12h10M10 18h4"></path>
             </svg>
           </button>
+          <button
+            id="quickLivesShowAll"
+            class="quick-lives-show-all"
+            type="button"
+            aria-expanded="false"
+            aria-controls="quickLivesList"
+            onclick="toggleAllMobileQuickLives()"
+          >
+            Show all
+          </button>
+          </div>
           <p class="quick-lives-subtitle">
             Open a live on TikTok. Active lives appear first.
           </p>
