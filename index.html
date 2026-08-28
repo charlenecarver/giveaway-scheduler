@@ -12563,31 +12563,6 @@
       );
 
       if (duplicateGiveaway) {
-        const duplicateCard = [...document.querySelectorAll(".giveaway")]
-          .find(card =>
-            card.dataset.giveawayId === String(duplicateGiveaway.id)
-          );
-        const remainingSeconds = Math.max(
-          0,
-          Math.ceil((Number(duplicateGiveaway.endTime) - now) / 1000)
-        );
-        const remaining =
-          `${Math.floor(remainingSeconds / 60)}:` +
-          `${String(remainingSeconds % 60).padStart(2, "0")}`;
-        if (duplicateCard) {
-          const replaceExisting = confirm(
-            `${duplicateGiveaway.liveName} still has “${duplicateGiveaway.itemName}” ` +
-            `listed with ${remaining} remaining.\n\n` +
-            "Press OK to end that entry and add this giveaway, or Cancel to keep it."
-          );
-          if (!replaceExisting) return;
-        } else {
-          console.warn(
-            "Replacing an active giveaway record that was not visible in the list:",
-            duplicateGiveaway.id
-          );
-        }
-
         giveaways = giveaways.filter(giveaway =>
           String(giveaway.id) !== String(duplicateGiveaway.id)
         );
