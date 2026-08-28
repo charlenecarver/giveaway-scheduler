@@ -9360,11 +9360,21 @@
     }
 
     function clearCompletedGiveawayImportParameters() {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get("import") !== "giveaway") return;
-      ["import", "live", "item", "time", "buyer", "countdown", "captured"]
-        .forEach(parameter => url.searchParams.delete(parameter));
-      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.get("import") !== "giveaway") return;
+        ["import", "live", "item", "time", "buyer", "countdown", "captured"]
+          .forEach(parameter => url.searchParams.delete(parameter));
+        window.history.replaceState(
+          {},
+          "",
+          `${url.pathname}${url.search}${url.hash}`
+        );
+      } catch (error) {
+        // URL cleanup is cosmetic and must never prevent a giveaway from saving,
+        // particularly in iOS standalone mode.
+        console.warn("Could not clear giveaway import parameters:", error);
+      }
     }
 
     function getImportedLiveSimilarity(left, right) {
@@ -9988,12 +9998,23 @@
     }
 
     async function initializePushNotifications() {
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      if (!("serviceWorker" in navigator)) {
         setPushStatus("Push is not supported in this browser.");
         return;
       }
       try {
-        pushRegistration = await navigator.serviceWorker.register("service-worker.js");
+        pushRegistration = await navigator.serviceWorker.register(
+          "service-worker.js?v=70"
+        );
+        pushRegistration.update().catch(error => {
+          console.warn("Could not check for an app update:", error);
+        });
+
+        if (!("PushManager" in window)) {
+          setPushStatus("Push is not supported in this browser.");
+          return;
+        }
+
         pushSubscription = await pushRegistration.pushManager.getSubscription();
         if (pushSubscription) {
           setPushStatus("Enabled on this device.", true);
@@ -10022,7 +10043,9 @@
       const button = document.getElementById("pushNotificationButton");
       button.disabled = true;
       try {
-        pushRegistration ||= await navigator.serviceWorker.register("service-worker.js");
+        pushRegistration ||= await navigator.serviceWorker.register(
+          "service-worker.js?v=70"
+        );
         pushSubscription ||= await pushRegistration.pushManager.getSubscription();
         if (pushSubscription) {
           const endpoint = pushSubscription.endpoint;
