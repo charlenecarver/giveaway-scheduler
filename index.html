@@ -13054,8 +13054,10 @@
         setGiveawayParticipation(id, {
           countdownEndTime: null,
           joined: false,
-          couldntJoin: true
+          joinedAt: null,
+          couldntJoin: false
         });
+        giveaway._joinReadyRendered = true;
       } else {
         setGiveawayParticipation(id, {
           countdownEndTime: now + countdownDuration,
@@ -13201,8 +13203,8 @@
           structuralChange = true;
         }
 
-        if (tooLateToStart && !giveaway._couldntJoinRendered) {
-          giveaway._couldntJoinRendered = true;
+        if (tooLateToStart && !giveaway._joinReadyRendered) {
+          giveaway._joinReadyRendered = true;
           structuralChange = true;
         }
       });
@@ -13286,18 +13288,7 @@
           const isDisqualified = giveaway => {
             const participation =
               getGiveawayParticipation(giveaway.id);
-            const countdownDuration =
-              (giveaway.countdownMinutes || 0) * 60 * 1000;
-
-            return (
-              participation?.couldntJoin === true ||
-              (
-                giveaway.useCountdown &&
-                !participation?.joined &&
-                !participation?.countdownEndTime &&
-                giveaway.endTime - now < countdownDuration
-              )
-            );
+            return participation?.couldntJoin === true;
           };
 
           const aDisqualified = isDisqualified(a);
@@ -13348,14 +13339,13 @@
             participation?.joined === true;
           const countdownDuration =
             (giveaway.countdownMinutes || 0) * 60 * 1000;
-          const couldntJoin =
-            participation?.couldntJoin === true ||
-            (
-              giveaway.useCountdown &&
-              !localJoined &&
-              !localCountdownEndTime &&
-              remaining < countdownDuration
-            );
+          const couldntJoin = participation?.couldntJoin === true;
+          const tooLateToStart =
+            giveaway.useCountdown &&
+            !localJoined &&
+            !couldntJoin &&
+            !localCountdownEndTime &&
+            remaining < countdownDuration;
 
           const countdownRemaining =
             localCountdownEndTime
@@ -13368,8 +13358,10 @@
             !couldntJoin &&
             localCountdownEndTime &&
             countdownRemaining <= 0;
+          const joinDecisionReady =
+            countdownReady || tooLateToStart;
 
-          giveaway._joinReadyRendered = countdownReady;
+          giveaway._joinReadyRendered = joinDecisionReady;
           giveaway._couldntJoinRendered = couldntJoin;
 
           const card =
@@ -13394,7 +13386,7 @@
           }
 
           if (
-            countdownReady &&
+            joinDecisionReady &&
             giveaway.doneSince === null
           ) {
             card.classList.add("join-ready");
@@ -13515,7 +13507,7 @@
 
                   </div>
                 `;
-              } else {
+              } else if (!tooLateToStart) {
                 timerHTML += `
                   <div class="timer-block countdown-timer-block countdown-pending">
                     <button
@@ -13532,7 +13524,7 @@
                 `;
               }
 
-              if (countdownReady) {
+              if (joinDecisionReady) {
                 timerHTML += `
                   <div class="join-actions">
 
