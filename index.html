@@ -11918,11 +11918,24 @@
       );
 
       if (duplicateGiveaway) {
-        alert(
-          `${duplicateGiveaway.liveName} already has a giveaway going. ` +
-          "A live can only have one giveaway at a time."
+        const remainingSeconds = Math.max(
+          0,
+          Math.ceil((Number(duplicateGiveaway.endTime) - now) / 1000)
         );
-        return;
+        const remaining =
+          `${Math.floor(remainingSeconds / 60)}:` +
+          `${String(remainingSeconds % 60).padStart(2, "0")}`;
+        const replaceExisting = confirm(
+          `${duplicateGiveaway.liveName} still has “${duplicateGiveaway.itemName}” ` +
+          `listed with ${remaining} remaining.\n\n` +
+          "If that giveaway is no longer running, press OK to replace it with this one."
+        );
+        if (!replaceExisting) return;
+
+        giveaways = giveaways.filter(giveaway =>
+          String(giveaway.id) !== String(duplicateGiveaway.id)
+        );
+        clearGiveawayParticipation(duplicateGiveaway.id);
       }
 
       const liveKey = liveName.toLowerCase();
