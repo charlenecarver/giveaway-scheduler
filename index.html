@@ -4045,7 +4045,7 @@
 
       .live-detection-toggle {
         position: absolute;
-        top: -3px;
+        top: 2px;
         right: 84px;
         z-index: 3;
         display: inline-flex;
@@ -4104,7 +4104,7 @@
         gap: 12px;
         width: 100%;
         max-height: none;
-        padding: 22px 2px 3px;
+        padding: 30px 2px 3px;
         overflow-x: auto;
         overflow-y: hidden;
         overscroll-behavior-x: contain;
@@ -4228,7 +4228,7 @@
         flex-wrap: wrap;
         height: auto;
         max-height: none;
-        padding-top: 22px;
+        padding-top: 30px;
         overflow-x: visible;
         overflow-y: visible;
         overscroll-behavior: auto;
@@ -10025,7 +10025,18 @@
             return a.isActive ? -1 : 1;
           }
 
-          return a.name.localeCompare(b.name);
+          if (a.isActive && b.isActive) {
+            const aGiveawayTime = Date.parse(a.lastGiveawayAt || "") || 0;
+            const bGiveawayTime = Date.parse(b.lastGiveawayAt || "") || 0;
+
+            if (aGiveawayTime !== bGiveawayTime) {
+              return bGiveawayTime - aGiveawayTime;
+            }
+          }
+
+          return a.name.localeCompare(b.name, undefined, {
+            sensitivity: "base"
+          });
         });
     }
 
