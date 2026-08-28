@@ -27,9 +27,6 @@ function detectStatus(response: Response, html: string, username: string): Statu
   const finalPath = new URL(response.url).pathname.replace(/\/+$/, "");
   const normalizedUsername = username.replace(/^@/, "").toLowerCase();
   const redirectedToProfile = finalPath.toLowerCase() === `/@${normalizedUsername}`;
-  const explicitLive =
-    /"status"\s*:\s*2/.test(html) &&
-    /"(?:roomId|room_id|roomID)"\s*:\s*"?[1-9]\d*/.test(html);
   const explicitOffline = [
     "live has ended",
     "this live has ended",
@@ -38,8 +35,41 @@ function detectStatus(response: Response, html: string, username: string): Statu
     "is not live right now",
   ].some(marker => text.includes(marker));
 
-  if (response.ok && explicitLive) return "live";
-  if (response.ok && (explicitOffline || redirectedToProfile)) return "offline";
+  if (!response.ok) return "unknown";
+
+  const sigiMatch = html.match(
+    /<script[^>]*id=["']SIGI_STATE["'][^>]*>([\s\S]*?)<\/script>/i,
+  );
+  if (sigiMatch) {
+    try {
+      const state = JSON.parse(sigiMatch[1]);
+      const liveRoom = state?.LiveRoom;
+      const info = liveRoom?.liveRoomUserInfo;
+      const account = info?.user;
+      const accountUsername = String(account?.uniqueId || "").toLowerCase();
+      const roomId = String(account?.roomId || "");
+
+      if (
+        accountUsername === normalizedUsername &&
+        /^[1-9]\d+$/.test(roomId) &&
+        Number(account?.status) === 2 &&
+        Number(info?.liveRoom?.status) === 2
+      ) {
+        return "live";
+      }
+
+      if (
+        liveRoom &&
+        (!info || Object.keys(info).length === 0 || accountUsername === normalizedUsername)
+      ) {
+        return "offline";
+      }
+    } catch {
+      return "unknown";
+    }
+  }
+
+  if (explicitOffline || redirectedToProfile) return "offline";
   return "unknown";
 }
 
@@ -55,7 +85,7 @@ async function checkTikTokLive(username: string) {
         headers: {
           "Accept": "text/html,application/xhtml+xml",
           "Accept-Language": "en-US,en;q=0.9",
-          "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
         },
       },
     );
