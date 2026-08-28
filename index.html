@@ -640,25 +640,6 @@
       font-weight: 800;
     }
 
-    .quick-live-status-tag {
-      position: absolute;
-      top: 7px;
-      right: 8px;
-      border: 1px solid transparent;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: #e5e7eb;
-      color: #777e88;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-    }
-
-    .quick-live-btn.active .quick-live-status-tag {
-      background: #4b9d6c;
-      color: white;
-    }
-
     .quick-live-btn-name,
     .quick-live-btn-username {
       display: block;
@@ -3482,12 +3463,6 @@
       color: #345e40;
     }
 
-    .quick-live-btn.active .quick-live-status-tag {
-      background: #68aa7a;
-      color: white;
-      box-shadow: 0 2px 6px rgba(64, 126, 81, 0.18);
-    }
-
     .autocomplete-live-badge {
       background: var(--givvy-sage-pale);
       color: var(--givvy-sage-dark);
@@ -4629,7 +4604,7 @@
             </svg>
           </button>
           <p class="quick-lives-subtitle">
-            Open a live on TikTok. Active lives appear first; use the status tag to mark a live on or off.
+            Open a live on TikTok. Active lives appear first.
           </p>
 
           <div id="quickLivesFilterMenu" class="quick-lives-filter-menu">
@@ -10243,8 +10218,6 @@
     function renderQuickLives() {
       const list =
         document.getElementById("quickLivesList");
-      const resetButton =
-        document.getElementById("resetQuickLivesButton");
       const showAllButton =
         document.getElementById("quickLivesShowAll");
       const filterButton =
@@ -10252,10 +10225,6 @@
 
       if (!list) {
         return;
-      }
-
-      if (resetButton) {
-        resetButton.disabled = activeQuickLiveKeys.size === 0;
       }
 
       renderLiveNameSuggestions();
@@ -10376,7 +10345,6 @@
           <img class="quick-live-logo" alt="" />
           <span class="quick-live-btn-name"></span>
           <span class="quick-live-btn-username"></span>
-          <span class="quick-live-status-tag"></span>
         `;
         const logoFallback = button.querySelector(".quick-live-logo-fallback");
         const logo = button.querySelector(".quick-live-logo");
@@ -10386,9 +10354,6 @@
 
         button.querySelector(".quick-live-btn-name").textContent = live.name;
         button.querySelector(".quick-live-btn-username").textContent = live.username;
-        button.querySelector(".quick-live-status-tag").textContent = live.isActive
-          ? "LIVE"
-          : "OFFLINE";
         button.title = `Open ${live.name} on TikTok LIVE`;
 
         button.addEventListener(
