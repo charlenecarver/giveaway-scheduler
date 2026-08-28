@@ -120,6 +120,10 @@
       display: none;
     }
 
+    .quick-lives-filter-close {
+      display: none;
+    }
+
     .quick-lives-show-all[hidden],
     .quick-lives-filter-toggle[hidden] {
       display: none !important;
@@ -4156,6 +4160,20 @@
         font-size: 16px !important;
       }
 
+      .quick-lives-panel.mobile-filter-open .quick-lives-filter-close {
+        display: block;
+        margin: 0 0 7px auto;
+        padding: 2px;
+        border: 0;
+        background: transparent;
+        color: #75687e;
+        box-shadow: none;
+        font-size: 10px;
+        font-weight: 850;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
       .quick-lives-category-filters {
         display: flex;
         flex-wrap: wrap;
@@ -4348,6 +4366,32 @@
         white-space: nowrap;
       }
 
+      .quick-live-mobile-status {
+        display: none;
+      }
+
+      .quick-lives-panel.mobile-show-all .quick-live-mobile-status {
+        display: block;
+        width: 62px;
+        min-height: 22px;
+        margin: 1px auto 0;
+        padding: 2px 5px;
+        border: 1px solid #d9d2df;
+        border-radius: 999px;
+        background: #f5f2f6;
+        color: #746a78;
+        box-shadow: none;
+        font-size: 8px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .quick-lives-panel.mobile-show-all .quick-live-mobile-status.active {
+        border-color: #ff6a8e;
+        background: #ffe2e9;
+        color: #b32950;
+      }
+
       .quick-lives-empty {
         flex: 0 0 auto;
         width: 100%;
@@ -4357,6 +4401,45 @@
     }
 
     @media (min-width: 761px) {
+      .quick-lives-filter-toggle {
+        display: grid;
+        place-items: center;
+        align-self: flex-end;
+        width: 28px;
+        height: 26px;
+        margin: -2px 0 4px;
+        padding: 4px;
+        border: 1px solid #ddd3e3;
+        border-radius: 8px;
+        background: #f7f2f9;
+        color: #66566f;
+        box-shadow: none;
+      }
+
+      .quick-lives-filter-toggle svg {
+        width: 15px;
+        height: 15px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      .quick-lives-filter-toggle.has-active-filter {
+        border-color: #9879aa;
+        background: #eadef1;
+        color: #4e3d59;
+      }
+
+      .quick-lives-filter-menu {
+        display: none;
+      }
+
+      .quick-lives-panel.desktop-filter-open .quick-lives-filter-menu {
+        display: block;
+      }
+
       .quick-lives-category-filters {
         display: flex;
         flex-wrap: wrap;
@@ -4600,6 +4683,13 @@
           </p>
 
           <div id="quickLivesFilterMenu" class="quick-lives-filter-menu">
+            <button
+              class="quick-lives-filter-close"
+              type="button"
+              onclick="toggleMobileQuickLivesFilter()"
+            >
+              Hide filters
+            </button>
             <input
               id="quickLivesSearch"
               class="quick-lives-search"
@@ -10245,7 +10335,7 @@
         showAllButton.hidden = !isMobile || navigableLives.length === 0;
       }
       if (filterButton) {
-        filterButton.hidden = !isMobile || navigableLives.length === 0;
+        filterButton.hidden = navigableLives.length === 0;
       }
 
       const renderSignature = JSON.stringify({
@@ -10321,7 +10411,20 @@
           anchor.querySelector(".quick-live-mobile-name").textContent =
             live.name;
           configureTikTokLiveAnchor(anchor, live.username, live.name);
-          row.appendChild(anchor);
+          const statusButton = document.createElement("button");
+          statusButton.type = "button";
+          statusButton.className = `quick-live-mobile-status${live.isActive ? " active" : ""}`;
+          statusButton.textContent = live.isActive ? "LIVE" : "OFF";
+          statusButton.setAttribute(
+            "aria-label",
+            `${live.isActive ? "Mark" : "Set"} ${live.name} ${live.isActive ? "offline" : "live"}`
+          );
+          statusButton.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleQuickLiveStatus(live.key);
+          });
+          row.append(anchor, statusButton);
           list.appendChild(row);
           return;
         }
@@ -10444,7 +10547,9 @@
       const panel = document.getElementById("quickLivesPanel");
       const button = document.getElementById("quickLivesFilterToggle");
       const search = document.getElementById("quickLivesSearch");
-      const open = panel.classList.toggle("mobile-filter-open");
+      const mobile = window.matchMedia("(max-width: 760px)").matches;
+      const openClass = mobile ? "mobile-filter-open" : "desktop-filter-open";
+      const open = panel.classList.toggle(openClass);
 
       button.setAttribute("aria-expanded", String(open));
 

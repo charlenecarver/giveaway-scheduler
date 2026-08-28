@@ -20,9 +20,15 @@
 
     * { box-sizing: border-box; }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
+    html {
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     body {
@@ -40,12 +46,12 @@
 
     .page {
       width: min(1800px, calc(100% - 32px));
-      height: 100dvh;
+      min-height: 100dvh;
       margin: 0 auto;
       padding: 24px 0 48px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: visible;
     }
 
     header {
@@ -150,14 +156,18 @@
     .status.success { color: #357151; }
 
     .grid-shell {
-      flex: 1 1 auto;
-      min-height: 0;
+      flex: 0 0 auto;
+      width: 100%;
+      height: calc(100dvh - 220px);
+      min-height: 320px;
       overflow: auto;
       border: 1px solid var(--border);
       border-radius: 17px;
       background: var(--panel);
       box-shadow: var(--shadow);
       overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      -webkit-overflow-scrolling: touch;
     }
 
     table { width: 100%; min-width: 1575px; border-collapse: separate; border-spacing: 0; }
@@ -383,6 +393,7 @@
     .quick-category-controls { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
     .quick-category-controls label { font-size: 12px; font-weight: 850; }
     .quick-category-select { width: min(300px, 100%); height: 40px; padding: 7px 10px; border: 1px solid #d9cce1; border-radius: 10px; background: white; color: var(--ink); font-weight: 750; }
+    .quick-category-new-input { width: min(190px, 100%); height: 40px; }
     .quick-category-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
@@ -507,7 +518,8 @@
       <div class="quick-category-controls">
         <label for="quickCategorySelect">Category</label>
         <select id="quickCategorySelect" class="quick-category-select"></select>
-        <button class="button button-secondary" type="button" onclick="addQuickCategory()">New Category</button>
+        <input id="quickCategoryNewInput" class="search quick-category-new-input" type="text" placeholder="New category" aria-label="New category name" />
+        <button class="button button-secondary" type="button" onclick="addQuickCategory()">Add</button>
         <button class="button button-secondary" type="button" onclick="renameQuickCategory()" aria-label="Rename selected category">Rename</button>
         <button class="button button-danger" type="button" onclick="deleteQuickCategory()" aria-label="Delete selected category">Delete</button>
       </div>
@@ -637,8 +649,9 @@
       renderQuickCategoryGrid();
     }
 
-    function addQuickCategory() {
-      const name = window.prompt("New category name:")?.trim();
+    async function addQuickCategory() {
+      const input = document.getElementById("quickCategoryNewInput");
+      const name = input.value.trim();
       if (!name) return;
       if (getCategoryOptions().some(category => category.toLowerCase() === name.toLowerCase())) {
         window.alert(`A category named “${name}” already exists.`);
@@ -649,9 +662,10 @@
       populateQuickCategorySelect();
       document.getElementById("quickCategorySelect").value = name;
       renderQuickCategoryGrid();
+      if (await saveQuickCategories()) input.value = "";
     }
 
-    function deleteQuickCategory() {
+    async function deleteQuickCategory() {
       const select = document.getElementById("quickCategorySelect");
       const current = select.value;
       if (!current || !window.confirm(`Delete “${current}” from the category list and every live?`)) return;
@@ -670,6 +684,7 @@
       });
       populateQuickCategorySelect();
       renderQuickCategoryGrid();
+      await saveQuickCategories();
     }
 
     function populateQuickCategorySelect() {
@@ -1673,6 +1688,12 @@
     document.getElementById("addButton").addEventListener("click", addLive);
     document.getElementById("quickCategoriesButton").addEventListener("click", openQuickCategories);
     document.getElementById("quickCategorySelect").addEventListener("change", renderQuickCategoryGrid);
+    document.getElementById("quickCategoryNewInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addQuickCategory();
+      }
+    });
     document.getElementById("quickCategoryBackdrop").addEventListener("click", event => {
       if (event.target === event.currentTarget) closeQuickCategories();
     });
