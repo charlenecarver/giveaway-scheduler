@@ -649,24 +649,14 @@
       border-radius: 999px;
       background: #e5e7eb;
       color: #777e88;
-      cursor: pointer;
       font-size: 9px;
       font-weight: 800;
       letter-spacing: 0.04em;
     }
 
-    .quick-live-status-tag:hover {
-      background: #d5d8dd;
-      color: #454a52;
-    }
-
     .quick-live-btn.active .quick-live-status-tag {
       background: #4b9d6c;
       color: white;
-    }
-
-    .quick-live-btn.active .quick-live-status-tag:hover {
-      background: #378255;
     }
 
     .quick-live-btn-name,
@@ -3498,10 +3488,6 @@
       box-shadow: 0 2px 6px rgba(64, 126, 81, 0.18);
     }
 
-    .quick-live-btn.active .quick-live-status-tag:hover {
-      background: #559765;
-    }
-
     .autocomplete-live-badge {
       background: var(--givvy-sage-pale);
       color: var(--givvy-sage-dark);
@@ -4366,32 +4352,6 @@
         white-space: nowrap;
       }
 
-      .quick-live-mobile-status {
-        display: none;
-      }
-
-      .quick-lives-panel.mobile-show-all .quick-live-mobile-status {
-        display: block;
-        width: 62px;
-        min-height: 22px;
-        margin: 1px auto 0;
-        padding: 2px 5px;
-        border: 1px solid #d9d2df;
-        border-radius: 999px;
-        background: #f5f2f6;
-        color: #746a78;
-        box-shadow: none;
-        font-size: 8px;
-        font-weight: 900;
-        line-height: 1;
-      }
-
-      .quick-lives-panel.mobile-show-all .quick-live-mobile-status.active {
-        border-color: #ff6a8e;
-        background: #ffe2e9;
-        color: #b32950;
-      }
-
       .quick-lives-empty {
         flex: 0 0 auto;
         width: 100%;
@@ -4633,16 +4593,6 @@
       <aside id="quickLivesPanel" class="quick-lives-panel">
         <div class="quick-lives-header">
           <h2 class="quick-lives-title">Quick Lives</h2>
-          <div class="quick-lives-header-actions">
-            <button
-              id="resetQuickLivesButton"
-              class="quick-lives-reset"
-              type="button"
-              onclick="resetQuickLiveStatuses()"
-            >
-              All off
-            </button>
-          </div>
           <button
             id="quickLivesMobileToggle"
             class="quick-lives-mobile-toggle"
@@ -10411,20 +10361,7 @@
           anchor.querySelector(".quick-live-mobile-name").textContent =
             live.name;
           configureTikTokLiveAnchor(anchor, live.username, live.name);
-          const statusButton = document.createElement("button");
-          statusButton.type = "button";
-          statusButton.className = `quick-live-mobile-status${live.isActive ? " active" : ""}`;
-          statusButton.textContent = live.isActive ? "LIVE" : "OFF";
-          statusButton.setAttribute(
-            "aria-label",
-            `${live.isActive ? "Mark" : "Set"} ${live.name} ${live.isActive ? "offline" : "live"}`
-          );
-          statusButton.addEventListener("click", event => {
-            event.preventDefault();
-            event.stopPropagation();
-            toggleQuickLiveStatus(live.key);
-          });
-          row.append(anchor, statusButton);
+          row.append(anchor);
           list.appendChild(row);
           return;
         }
@@ -10439,7 +10376,7 @@
           <img class="quick-live-logo" alt="" />
           <span class="quick-live-btn-name"></span>
           <span class="quick-live-btn-username"></span>
-          <button type="button" class="quick-live-status-tag"></button>
+          <span class="quick-live-status-tag"></span>
         `;
         const logoFallback = button.querySelector(".quick-live-logo-fallback");
         const logo = button.querySelector(".quick-live-logo");
@@ -10474,27 +10411,6 @@
         );
 
         row.appendChild(button);
-
-        const statusTag = button.querySelector(".quick-live-status-tag");
-        statusTag.textContent = live.isActive
-          ? "LIVE"
-          : "OFFLINE";
-        statusTag.title = live.isActive
-          ? `Mark ${live.name} as offline`
-          : `Mark ${live.name} as live`;
-        statusTag.setAttribute(
-          "aria-label",
-          live.isActive
-            ? `Mark ${live.name} as offline`
-            : `Mark ${live.name} as live`
-        );
-        statusTag.addEventListener(
-          "click",
-          event => {
-            event.stopPropagation();
-            toggleQuickLiveStatus(live.key);
-          }
-        );
 
         const editButton = document.createElement("button");
         editButton.type = "button";
@@ -10634,57 +10550,6 @@
     }
 
 
-    function toggleQuickLiveStatus(username) {
-      const key = String(username || "").trim().toLowerCase();
-
-      if (!key) {
-        return;
-      }
-
-      if (activeQuickLiveKeys.has(key)) {
-        activeQuickLiveKeys.delete(key);
-        delete activeQuickLiveActivity[key];
-      } else {
-        activeQuickLiveKeys.add(key);
-        activeQuickLiveActivity[key] = Date.now();
-      }
-
-      localStorage.setItem(
-        "activeQuickLives",
-        JSON.stringify([...activeQuickLiveKeys])
-      );
-      localStorage.setItem(
-        "activeQuickLiveActivity",
-        JSON.stringify(activeQuickLiveActivity)
-      );
-      saveManualLiveOverride(key, activeQuickLiveKeys.has(key));
-      saveSharedLiveStatuses();
-      renderQuickLives();
-    }
-
-
-    async function saveManualLiveOverride(key, isLive) {
-      if (!sharedDatabase || !key) {
-        return;
-      }
-
-      const { error } = await sharedDatabase
-        .from("live_status_checks")
-        .upsert({
-          live_key: key,
-          manual_override: Boolean(isLive),
-          manual_override_until: new Date(
-            Date.now() + ACTIVE_LIVE_TIMEOUT_MS
-          ).toISOString(),
-          updated_at: new Date().toISOString()
-        }, { onConflict: "live_key" });
-
-      if (error) {
-        console.error("Could not save manual live-status override:", error);
-      }
-    }
-
-
     function expireInactiveQuickLives() {
       const now = Date.now();
       let statusesChanged = false;
@@ -10729,16 +10594,6 @@
         saveSharedLiveStatuses();
         renderQuickLives();
       }
-    }
-
-
-    function resetQuickLiveStatuses() {
-      activeQuickLiveKeys.clear();
-      activeQuickLiveActivity = {};
-      localStorage.setItem("activeQuickLives", "[]");
-      localStorage.setItem("activeQuickLiveActivity", "{}");
-      saveSharedLiveStatuses();
-      renderQuickLives();
     }
 
 

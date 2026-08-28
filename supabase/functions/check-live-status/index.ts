@@ -15,8 +15,6 @@ type Check = {
   consecutive_live: number;
   consecutive_offline: number;
   last_checked_at: string | null;
-  manual_override: boolean | null;
-  manual_override_until: string | null;
 };
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
@@ -85,7 +83,6 @@ async function runChecks(request: Request) {
   if (checksError) throw checksError;
   if (stateError) throw stateError;
 
-  const now = Date.now();
   const checkByKey = new Map((checks || []).map((check: Check) => [check.live_key, check]));
   const activeKeys = new Set<string>(Array.isArray(state?.active_live_keys) ? state.active_live_keys : []);
   const candidates = (lives || []) as Live[];
@@ -113,8 +110,6 @@ async function runChecks(request: Request) {
   const checkUpdates = [];
   for (const { live, result } of results) {
     const previous = checkByKey.get(live.key);
-    const overrideUntil = Date.parse(previous?.manual_override_until || "") || 0;
-    const overrideActive = overrideUntil > now && typeof previous?.manual_override === "boolean";
     const consecutiveLive = result.status === "live" ? (previous?.consecutive_live || 0) + 1 : 0;
     const consecutiveOffline = result.status === "offline" ? (previous?.consecutive_offline || 0) + 1 : 0;
 
@@ -128,10 +123,7 @@ async function runChecks(request: Request) {
       updated_at: new Date().toISOString(),
     });
 
-    if (overrideActive) {
-      if (previous!.manual_override) activeKeys.add(live.key);
-      else activeKeys.delete(live.key);
-    } else if (consecutiveLive >= 1 && !activeKeys.has(live.key)) {
+    if (consecutiveLive >= 1 && !activeKeys.has(live.key)) {
       activeKeys.add(live.key);
       activated += 1;
     } else if (consecutiveOffline >= 2 && activeKeys.has(live.key)) {
