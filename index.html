@@ -593,6 +593,12 @@
       color: #735417;
     }
 
+    .live-editor-category.faves {
+      border-color: #d698bd;
+      background: linear-gradient(135deg, #fbe8f4, #eee5fb);
+      color: #783e68;
+    }
+
     .live-editor-actions {
       display: flex;
       align-items: center;
@@ -4008,7 +4014,9 @@
         top: 0;
         right: 3px;
         z-index: 2;
-        display: inline;
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
         padding: 2px 3px;
         border: 0;
         background: transparent;
@@ -4030,7 +4038,7 @@
 
       .quick-lives-filter-toggle {
         position: absolute;
-        top: -4px;
+        top: 0;
         right: 55px;
         z-index: 3;
         display: grid;
@@ -4046,12 +4054,13 @@
 
       .live-detection-toggle {
         position: absolute;
-        top: 2px;
+        top: 0;
         right: 84px;
         z-index: 3;
         display: inline-flex;
         align-items: center;
-        min-height: 22px;
+        height: 24px;
+        min-height: 24px;
         padding: 3px 7px;
         border: 1px solid #d9d2df;
         border-radius: 999px;
@@ -4202,6 +4211,16 @@
 
       .quick-lives-category-filter.all-star.selected {
         box-shadow: 0 0 0 2px rgba(218, 153, 40, 0.24);
+      }
+
+      .quick-lives-category-filter.faves {
+        border-color: #d698bd;
+        background: linear-gradient(135deg, #fbe8f4, #eee5fb);
+        color: #783e68;
+      }
+
+      .quick-lives-category-filter.faves.selected {
+        box-shadow: 0 0 0 2px rgba(184, 103, 157, 0.2);
       }
 
       .quick-lives-filter-clear {
@@ -4477,6 +4496,16 @@
 
       .quick-lives-category-filter.all-star.selected {
         box-shadow: 0 0 0 2px rgba(218, 153, 40, 0.24);
+      }
+
+      .quick-lives-category-filter.faves {
+        border-color: #d698bd;
+        background: linear-gradient(135deg, #fbe8f4, #eee5fb);
+        color: #783e68;
+      }
+
+      .quick-lives-category-filter.faves.selected {
+        box-shadow: 0 0 0 2px rgba(184, 103, 157, 0.2);
       }
 
       .quick-lives-filter-clear {
@@ -10249,8 +10278,9 @@
           : STARTER_LIVE_CATEGORIES
       );
       return categories.sort((left, right) => {
-        if (left.toLowerCase() === "all star") return -1;
-        if (right.toLowerCase() === "all star") return 1;
+        const leftRank = left.toLowerCase() === "all star" ? 0 : (left.toLowerCase().includes("faves") ? 1 : 2);
+        const rightRank = right.toLowerCase() === "all star" ? 0 : (right.toLowerCase().includes("faves") ? 1 : 2);
+        if (leftRank !== rightRank) return leftRank - rightRank;
         return left.localeCompare(right, undefined, { sensitivity: "base" });
       });
     }
@@ -10264,10 +10294,11 @@
 
       const addFilter = (label, value, special = false) => {
         const selected = selectedQuickLiveCategories.has(value);
+        const favorite = !special && label.toLowerCase().includes("faves");
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `quick-lives-category-filter${special ? " all-star" : ""}${selected ? " selected" : ""}`;
-        button.textContent = special ? `★ ${label}` : label;
+        button.className = `quick-lives-category-filter${special ? " all-star" : ""}${favorite ? " faves" : ""}${selected ? " selected" : ""}`;
+        button.textContent = special ? `★ ${label}` : (favorite ? `♥ ${label}` : label);
         button.setAttribute("aria-pressed", String(selected));
         button.addEventListener("click", () => {
           if (selectedQuickLiveCategories.has(value)) {
@@ -10785,8 +10816,9 @@
         ...liveCategoryCatalog,
         ...editingLiveLibraryCategories
       ]).sort((left, right) => {
-        if (left.toLowerCase() === "all star") return -1;
-        if (right.toLowerCase() === "all star") return 1;
+        const leftRank = left.toLowerCase() === "all star" ? 0 : (left.toLowerCase().includes("faves") ? 1 : 2);
+        const rightRank = right.toLowerCase() === "all star" ? 0 : (right.toLowerCase().includes("faves") ? 1 : 2);
+        if (leftRank !== rightRank) return leftRank - rightRank;
         return left.localeCompare(right, undefined, { sensitivity: "base" });
       });
       holder.replaceChildren();
@@ -10797,10 +10829,11 @@
         );
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `live-editor-category${selected ? " selected" : ""}${category.toLowerCase() === "all star" ? " all-star" : ""}`;
+        const favorite = category.toLowerCase().includes("faves");
+        button.className = `live-editor-category${selected ? " selected" : ""}${category.toLowerCase() === "all star" ? " all-star" : ""}${favorite ? " faves" : ""}`;
         button.textContent = category.toLowerCase() === "all star"
           ? `★ ${category}`
-          : category;
+          : (favorite ? `♥ ${category}` : category);
         button.setAttribute("aria-pressed", String(selected));
         button.addEventListener("click", () => {
           const index = editingLiveLibraryCategories.findIndex(saved =>

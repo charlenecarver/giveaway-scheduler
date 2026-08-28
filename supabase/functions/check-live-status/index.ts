@@ -8,7 +8,12 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 type Status = "live" | "offline" | "unknown";
-type Live = { key: string; username: string; last_giveaway_at: string | null };
+type Live = {
+  key: string;
+  username: string;
+  categories: string[] | null;
+  last_giveaway_at: string | null;
+};
 type Check = {
   live_key: string;
   detected_status: Status;
@@ -105,7 +110,7 @@ async function runChecks(request: Request) {
 
   const [{ data: lives, error: livesError }, { data: checks, error: checksError }, { data: state, error: stateError }] =
     await Promise.all([
-      supabase.from("lives").select("key, username, last_giveaway_at").neq("username", ""),
+      supabase.from("lives").select("key, username, categories, last_giveaway_at").neq("username", ""),
       supabase.from("live_status_checks").select("*"),
       supabase.from("giveaway_state").select("active_live_keys, live_detection_until").eq("id", "shared").single(),
     ]);
@@ -132,10 +137,22 @@ async function runChecks(request: Request) {
   const checkByKey = new Map((checks || []).map((check: Check) => [check.live_key, check]));
   const activeKeys = new Set<string>(Array.isArray(state?.active_live_keys) ? state.active_live_keys : []);
   const candidates = (lives || []) as Live[];
+  const detectionSessionStartedAt = detectionUntil - (15 * 60 * 1000);
+  const isInitialPriority = (live: Live) =>
+    (live.categories || []).some(category => {
+      const normalized = String(category).trim().toLowerCase();
+      return normalized === "all star" || normalized.includes("faves");
+    });
   const sortByOldestCheck = (left: Live, right: Live) => {
-    const leftChecked = Date.parse(checkByKey.get(left.key)?.last_checked_at || "") || 0;
-    const rightChecked = Date.parse(checkByKey.get(right.key)?.last_checked_at || "") || 0;
-    return leftChecked - rightChecked;
+    const leftLastChecked = Date.parse(checkByKey.get(left.key)?.last_checked_at || "") || 0;
+    const rightLastChecked = Date.parse(checkByKey.get(right.key)?.last_checked_at || "") || 0;
+    const leftChecked = leftLastChecked >= detectionSessionStartedAt ? leftLastChecked : 0;
+    const rightChecked = rightLastChecked >= detectionSessionStartedAt ? rightLastChecked : 0;
+    if (leftChecked !== rightChecked) return leftChecked - rightChecked;
+
+    // Start each detection session with favorite and All Star lives. As soon as
+    // they are checked, the still-unchecked accounts move ahead of them.
+    return Number(isInitialPriority(right)) - Number(isInitialPriority(left));
   };
   const activeCandidates = candidates
     .filter(live => activeKeys.has(live.key))
