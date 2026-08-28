@@ -1,4 +1,4 @@
-const CACHE_NAME = "givvy-time-v60";
+const CACHE_NAME = "givvy-time-v64";
 const IMAGE_CACHE_NAME = "givvy-time-images-v3";
 const REMOTE_IMAGE_TIMEOUT_MS = 8000;
 const APP_SHELL = [

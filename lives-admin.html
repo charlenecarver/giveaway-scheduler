@@ -324,10 +324,6 @@
     .category-new-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
     .category-new-row[hidden] { display: none; }
     .categories-empty { color: #9a8992; font-size: 11px; font-style: italic; }
-    .issue-cell { width: 135px; }
-    .issue-badge { padding: 6px 9px; border: 1px solid #e5b9c4; border-radius: 999px; background: #fff0f3; color: #9a3f56; cursor: pointer; font-size: 11px; font-weight: 850; }
-    .issue-clear { display: block; margin-top: 5px; padding: 0; border: 0; background: transparent; color: #826f78; cursor: pointer; font-size: 10px; text-decoration: underline; }
-    .issue-none { color: #a1949a; font-size: 11px; }
     .actions-cell { width: 205px; white-space: nowrap; }
     .actions-cell .button {
       display: inline-flex;
@@ -480,7 +476,6 @@
       <select id="sortSelect" class="sort-select" aria-label="Sort lives">
         <option value="giveaway-newest" selected>Latest giveaway activity</option>
         <option value="giveaway-oldest">Oldest giveaway activity</option>
-        <option value="import-flags">Import flags first</option>
         <option value="name">Name A–Z</option>
         <option value="username">Username A–Z</option>
       </select>
@@ -504,7 +499,6 @@
             <th>Username</th>
             <th>Giveaway Items</th>
             <th>Categories</th>
-            <th>Import Flags</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -546,7 +540,6 @@
     const emptyState = document.getElementById("emptyState");
     let rows = [];
     let createdAtSupported = false;
-    let importIssuesSupported = false;
     const quickCategoryChangedRows = new Set();
     const quickCategoryInitiallyDirtyRows = new Set();
     let quickCategoriesSaving = false;
@@ -1243,11 +1236,7 @@
         username: row.querySelector('[data-field="username"]').value,
         items: [...row._items],
         categories: [...row._categories],
-        logoPath: row.dataset.logoPath || "",
-        importIssues: row._importIssues.map(issue => ({
-          ...issue,
-          parameters: { ...(issue.parameters || {}) }
-        }))
+        logoPath: row.dataset.logoPath || ""
       };
     }
 
@@ -1262,8 +1251,7 @@
         current.username !== original.username ||
         current.logoPath !== original.logoPath ||
         JSON.stringify(current.items) !== JSON.stringify(original.items) ||
-        JSON.stringify(current.categories) !== JSON.stringify(original.categories) ||
-        JSON.stringify(current.importIssues) !== JSON.stringify(original.importIssues)
+        JSON.stringify(current.categories) !== JSON.stringify(original.categories)
       );
     }
 
@@ -1283,10 +1271,6 @@
       row._categories = [...original.categories];
       row.dataset.logoPath = original.logoPath;
       row._logoFile = null;
-      row._importIssues = original.importIssues.map(issue => ({
-        ...issue,
-        parameters: { ...(issue.parameters || {}) }
-      }));
       const logoInput = row.querySelector('.logo-picker input[type="file"]');
       logoInput.value = "";
       row.querySelector(".logo-picker").childNodes[0].textContent =
@@ -1299,7 +1283,6 @@
       updateProfileLink(row);
       renderItemsEditor(row);
       renderCategoryEditor(row);
-      renderImportIssues(row);
       applyView();
     }
 
@@ -1309,45 +1292,11 @@
       return cell;
     }
 
-    function renderImportIssues(row) {
-      const cell = row.querySelector(".issue-cell");
-      cell.replaceChildren();
-      if (row._importIssues.length === 0) {
-        const empty = document.createElement("span");
-        empty.className = "issue-none";
-        empty.textContent = "None";
-        cell.append(empty);
-        return;
-      }
-      const badge = document.createElement("button");
-      badge.type = "button";
-      badge.className = "issue-badge";
-      badge.textContent = `⚑ ${row._importIssues.length}`;
-      badge.title = "View captured import details";
-      badge.addEventListener("click", () => {
-        const details = row._importIssues.map((issue, index) =>
-          `${index + 1}. ${String(issue.type || "import").toUpperCase()} — ${new Date(issue.createdAt || Date.now()).toLocaleString()}\n${JSON.stringify(issue.parameters || {}, null, 2)}`
-        ).join("\n\n");
-        window.alert(details);
-      });
-      const clear = document.createElement("button");
-      clear.type = "button";
-      clear.className = "issue-clear";
-      clear.textContent = "Mark resolved";
-      clear.addEventListener("click", () => {
-        row._importIssues = [];
-        markDirty(row);
-        renderImportIssues(row);
-      });
-      cell.append(badge, clear);
-    }
-
     function createRow(live = {}) {
       const row = document.createElement("tr");
       row.dataset.originalKey = live.key || "";
       row.dataset.logoPath = live.logo_path || "";
       row.dataset.lastGiveawayAt = live.last_giveaway_at || live.updated_at || "";
-      row._importIssues = Array.isArray(live.import_issues) ? [...live.import_issues] : [];
 
       const logoCell = makeCell("logo-cell");
       const logoHolder = document.createElement("div");
@@ -1379,7 +1328,6 @@
       itemsCell.append(createItemsEditor(row, live.items));
       const categoriesCell = makeCell("categories-cell");
       categoriesCell.append(createCategoryEditor(row, live.categories));
-      const issueCell = makeCell("issue-cell");
       const createdAt = live.created_at || (live.key ? "" : new Date().toISOString());
       row.dataset.createdAt = createdAt;
       const actionsCell = makeCell("actions-cell");
@@ -1409,7 +1357,7 @@
       message.className = "row-message";
       actionsCell.append(profile, " ", remove, " ", undo, message);
 
-      row.append(logoCell, nameCell, usernameCell, itemsCell, categoriesCell, issueCell, actionsCell);
+      row.append(logoCell, nameCell, usernameCell, itemsCell, categoriesCell, actionsCell);
       row.querySelectorAll("[data-field]").forEach(input => {
         input.addEventListener("input", () => {
           markDirty(row);
@@ -1431,7 +1379,6 @@
       updateProfileLink(row);
       renderItemsEditor(row);
       renderCategoryEditor(row);
-      renderImportIssues(row);
       row._originalState = captureRowState(row);
       return row;
     }
@@ -1452,7 +1399,6 @@
       if (createdAtSupported && row.dataset.createdAt) {
         record.created_at = row.dataset.createdAt;
       }
-      if (importIssuesSupported) record.import_issues = [...row._importIssues];
       return record;
     }
 
@@ -1598,14 +1544,6 @@
       const missingLogoOnly = document.getElementById("missingLogoFilter").checked;
       const sort = document.getElementById("sortSelect").value;
       rows.sort((left, right) => {
-        if (sort === "import-flags") {
-          const flagDelta = right._importIssues.length - left._importIssues.length;
-          if (flagDelta) return flagDelta;
-          const leftName = left.querySelector('[data-field="name"]').value.trim();
-          const rightName = right.querySelector('[data-field="name"]').value.trim();
-          return leftName.localeCompare(rightName, undefined, { sensitivity: "base" });
-        }
-
         if (sort === "name" || sort === "username") {
           const leftValue = left.querySelector(`[data-field="${sort}"]`).value.trim();
           const rightValue = right.querySelector(`[data-field="${sort}"]`).value.trim();
@@ -1685,7 +1623,6 @@
       savedCategoryCatalog = [...categoryCatalog];
       body.replaceChildren();
       createdAtSupported = data.some(live => Object.prototype.hasOwnProperty.call(live, "created_at"));
-      importIssuesSupported = data.some(live => Object.prototype.hasOwnProperty.call(live, "import_issues"));
       rows = data.map(live => {
         const row = createRow(live);
         body.append(row);

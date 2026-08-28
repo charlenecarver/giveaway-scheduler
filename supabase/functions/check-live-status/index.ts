@@ -6,6 +6,7 @@ const cronSecret = Deno.env.get("CRON_SECRET") || "";
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
+const LIVE_DETECTION_SESSION_MS = 30 * 60 * 1000;
 
 type Status = "live" | "offline" | "unknown";
 type Live = {
@@ -137,7 +138,7 @@ async function runChecks(request: Request) {
   const checkByKey = new Map((checks || []).map((check: Check) => [check.live_key, check]));
   const activeKeys = new Set<string>(Array.isArray(state?.active_live_keys) ? state.active_live_keys : []);
   const candidates = (lives || []) as Live[];
-  const detectionSessionStartedAt = detectionUntil - (15 * 60 * 1000);
+  const detectionSessionStartedAt = detectionUntil - LIVE_DETECTION_SESSION_MS;
   const isInitialPriority = (live: Live) =>
     (live.categories || []).some(category => {
       const normalized = String(category).trim().toLowerCase();

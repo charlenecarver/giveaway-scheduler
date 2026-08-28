@@ -42,7 +42,6 @@ const localLives = lives.map(live => ({
   items: Array.isArray(live.items) ? live.items : [],
   categories: Array.isArray(live.categories) ? live.categories : [],
   logo_path: live.logo_path || "",
-  import_issues: Array.isArray(live.import_issues) ? live.import_issues : [],
   last_giveaway_at: live.last_giveaway_at || null
 }));
 const html = await readFile(INDEX_URL, "utf8");

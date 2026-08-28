@@ -380,6 +380,10 @@
 
     .live-editor {
       width: min(420px, 100%);
+      max-height: calc(100vh - 40px);
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
       padding: 20px;
       border-radius: 14px;
       background: white;
@@ -406,24 +410,6 @@
     .live-import-notice.visible {
       display: block;
     }
-
-    .import-flag-control {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      margin: 0 0 14px;
-      padding: 9px 11px;
-      border: 1px solid #e6c6ce;
-      border-radius: 9px;
-      background: #fff4f6;
-      color: #7d4050;
-      font-size: 12px;
-      font-weight: 750;
-      cursor: pointer;
-    }
-
-    .import-flag-control.visible { display: flex; }
-    .import-flag-control input { width: 18px; height: 18px; margin: 0; accent-color: #d85d79; }
 
     .live-editor-field + .live-editor-field {
       margin-top: 14px;
@@ -570,33 +556,57 @@
       margin-top: 7px;
     }
 
-    .live-editor-category {
+    .live-editor-category-select {
+      width: 100%;
+      min-height: 38px;
+      margin-top: 7px;
+      padding: 7px 34px 7px 10px;
+      border: 1px solid #d8d4e3;
+      border-radius: 8px;
+      background: #fcfbff;
+      color: #5f5669;
+      font-size: 12px;
+    }
+
+    .live-editor-category-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       min-height: 30px;
       padding: 5px 9px;
-      border: 1px solid #d8d4e3;
+      border: 1px solid #b08bc2;
       border-radius: 999px;
-      background: #fcfbff;
-      color: #665d70;
+      background: #eee4f5;
+      color: #5f3f72;
       font-size: 11px;
       font-weight: 750;
     }
 
-    .live-editor-category.selected {
-      border-color: #b08bc2;
-      background: #eee4f5;
-      color: #5f3f72;
+    .live-editor-category-remove {
+      display: grid;
+      place-items: center;
+      width: 18px;
+      height: 18px;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(89, 57, 106, 0.13);
+      color: inherit;
+      font-size: 14px;
+      line-height: 1;
     }
 
-    .live-editor-category.all-star {
+    .live-editor-category-chip.all-star {
       border-color: #e4b85f;
       background: #fff7db;
       color: #735417;
     }
 
-    .live-editor-category.faves {
-      border-color: #d698bd;
-      background: linear-gradient(135deg, #fbe8f4, #eee5fb);
-      color: #783e68;
+    .live-editor-category-chip.faves {
+      border-color: #c45d87;
+      background: #f7d8e4;
+      color: #752747;
     }
 
     .live-editor-actions {
@@ -3077,8 +3087,7 @@
 
       .add-card.mobile-collapsed .settings-button,
       .add-card.mobile-collapsed .settings-panel,
-      .add-card.mobile-collapsed .import-error-notice,
-      .add-card.mobile-collapsed .import-flag-control {
+      .add-card.mobile-collapsed .import-error-notice {
         display: none !important;
       }
 
@@ -4214,13 +4223,16 @@
       }
 
       .quick-lives-category-filter.faves {
-        border-color: #d698bd;
-        background: linear-gradient(135deg, #fbe8f4, #eee5fb);
-        color: #783e68;
+        border-color: #df9a79;
+        background: #fff1e8;
+        color: #8b4d33;
       }
 
       .quick-lives-category-filter.faves.selected {
-        box-shadow: 0 0 0 2px rgba(184, 103, 157, 0.2);
+        border-color: #bd4f7c;
+        background: #f4cade;
+        color: #6f2344;
+        box-shadow: 0 0 0 2px rgba(189, 79, 124, 0.2);
       }
 
       .quick-lives-filter-clear {
@@ -4499,13 +4511,16 @@
       }
 
       .quick-lives-category-filter.faves {
-        border-color: #d698bd;
-        background: linear-gradient(135deg, #fbe8f4, #eee5fb);
-        color: #783e68;
+        border-color: #df9a79;
+        background: #fff1e8;
+        color: #8b4d33;
       }
 
       .quick-lives-category-filter.faves.selected {
-        box-shadow: 0 0 0 2px rgba(184, 103, 157, 0.2);
+        border-color: #bd4f7c;
+        background: #f4cade;
+        color: #6f2344;
+        box-shadow: 0 0 0 2px rgba(189, 79, 124, 0.2);
       }
 
       .quick-lives-filter-clear {
@@ -4545,10 +4560,6 @@
       <h2 id="liveEditorTitle">Edit Live</h2>
 
       <div id="liveImportNotice" class="live-import-notice" role="alert"></div>
-      <label id="liveImportFlagControl" class="import-flag-control">
-        <input id="liveImportIssueFlag" type="checkbox" />
-        <span>⚑ Flag this import—it needs correction</span>
-      </label>
 
       <div class="live-editor-field">
         <label for="liveEditorName">Live Name</label>
@@ -4616,7 +4627,12 @@
       </div>
 
       <div class="live-editor-field">
-        <label>Categories</label>
+        <label for="liveEditorCategorySelect">Categories</label>
+        <select
+          id="liveEditorCategorySelect"
+          class="live-editor-category-select"
+          onchange="addLiveEditorCategory()"
+        ></select>
         <div id="liveEditorCategories" class="live-editor-categories"></div>
       </div>
 
@@ -5032,11 +5048,6 @@
         <strong>Shortcut import needs attention</strong>
         <ul id="importErrorMessages"></ul>
       </div>
-
-      <label id="giveawayImportFlagControl" class="import-flag-control">
-        <input id="giveawayImportIssueFlag" type="checkbox" />
-        <span>⚑ Flag this giveaway import—it needs correction</span>
-      </label>
 
       <div id="editNotice" class="edit-notice">
         <div>
@@ -8644,9 +8655,6 @@
             items: Array.isArray(live.items) ? live.items : [],
             categories: normalizeLiveCategories(live.categories),
             logoPath: String(live.logo_path ?? live.logoPath ?? "").trim(),
-            importIssues: Array.isArray(live.import_issues ?? live.importIssues)
-              ? [...(live.import_issues ?? live.importIssues)]
-              : [],
             lastGiveawayAt: live.last_giveaway_at ?? live.lastGiveawayAt ?? null
           };
         })
@@ -8672,7 +8680,7 @@
     );
 
     const ACTIVE_LIVE_TIMEOUT_MS = 60 * 60 * 1000;
-    const LIVE_DETECTION_IDLE_MS = 15 * 60 * 1000;
+    const LIVE_DETECTION_IDLE_MS = 30 * 60 * 1000;
     let liveDetectionUntil = null;
     let activeQuickLiveActivity = JSON.parse(
       localStorage.getItem("activeQuickLiveActivity") || "{}"
@@ -8701,12 +8709,18 @@
         .replace(/[^a-z0-9]/g, "");
     }
 
-    function createImportIssue(type) {
-      return {
-        type,
-        createdAt: new Date().toISOString(),
-        parameters: Object.fromEntries(new URLSearchParams(window.location.search))
-      };
+    function removeImportedLiveEllipsis(value) {
+      return String(value || "")
+        .replace(/(?:\.{3,}|…)+\s*$/u, "")
+        .trim();
+    }
+
+    function clearCompletedGiveawayImportParameters() {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("import") !== "giveaway") return;
+      ["import", "live", "item", "time", "buyer", "countdown", "captured"]
+        .forEach(parameter => url.searchParams.delete(parameter));
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
     }
 
     function getImportedLiveSimilarity(left, right) {
@@ -8829,9 +8843,6 @@
         return;
       }
 
-      document.getElementById("giveawayImportFlagControl").classList.add("visible");
-      document.getElementById("giveawayImportIssueFlag").checked = false;
-
       const receivedLiveName = searchParameters.get("live") || "";
 
       if (!receivedLiveName) {
@@ -8842,7 +8853,9 @@
       const liveInput = document.getElementById("liveName");
       const nextValue = liveMatch.status === "matched"
         ? (liveMatch.matches[0].name || liveMatch.matches[0].username)
-        : receivedLiveName;
+        : liveMatch.status === "ambiguous"
+          ? removeImportedLiveEllipsis(receivedLiveName)
+          : receivedLiveName;
 
       updateImportedLiveWarning(receivedLiveName, liveMatch);
 
@@ -8913,7 +8926,9 @@
       const liveMatch = matchImportedLiveName(receivedLiveName);
       const importedLiveName = liveMatch.status === "matched"
         ? (liveMatch.matches[0].name || liveMatch.matches[0].username)
-        : receivedLiveName;
+        : liveMatch.status === "ambiguous"
+          ? removeImportedLiveEllipsis(receivedLiveName)
+          : receivedLiveName;
       const itemName = searchParameters.get("item") || "";
 
       document.getElementById("liveName").value = importedLiveName;
@@ -9958,7 +9973,6 @@
         items = [],
         storedKey = "",
         logoPath = "",
-        importIssues = [],
         lastGiveawayAt = null,
         categories = []
       ) => {
@@ -9984,7 +9998,6 @@
           isActive: activeQuickLiveKeys.has(key),
           logoKey: cleanUsername,
           logoPath: String(logoPath || "").trim(),
-          importIssues: Array.isArray(importIssues) ? [...importIssues] : [],
           lastGiveawayAt,
           key
         };
@@ -9996,9 +10009,6 @@
             existing.categories.push(category);
           }
         });
-        if (Array.isArray(importIssues) && importIssues.length > existing.importIssues.length) {
-          existing.importIssues = [...importIssues];
-        }
         existing.lastGiveawayAt ||= lastGiveawayAt;
 
         if (cleanName && existing.name === existing.username) {
@@ -10027,7 +10037,6 @@
           live.items,
           live.key,
           live.logoPath,
-          live.importIssues,
           live.lastGiveawayAt,
           live.categories
         );
@@ -10349,7 +10358,7 @@
           : "Detection Off";
         detectionButton.title = detectionEnabled
           ? "Turn off automatic TikTok LIVE detection"
-          : "Check saved TikTok accounts for LIVE status for 15 minutes";
+          : "Check saved TikTok accounts for LIVE status for 30 minutes";
       }
 
       renderLiveNameSuggestions();
@@ -10812,6 +10821,7 @@
 
     function renderLiveEditorCategories() {
       const holder = document.getElementById("liveEditorCategories");
+      const select = document.getElementById("liveEditorCategorySelect");
       const options = normalizeLiveCategories([
         ...liveCategoryCatalog,
         ...editingLiveLibraryCategories
@@ -10822,29 +10832,62 @@
         return left.localeCompare(right, undefined, { sensitivity: "base" });
       });
       holder.replaceChildren();
+      select.replaceChildren(new Option("Add a category…", ""));
 
       options.forEach(category => {
         const selected = editingLiveLibraryCategories.some(saved =>
           saved.toLowerCase() === category.toLowerCase()
         );
-        const button = document.createElement("button");
-        button.type = "button";
+        if (!selected) {
+          const label = category.toLowerCase() === "all star"
+            ? `★ ${category}`
+            : (category.toLowerCase().includes("faves") ? `♥ ${category}` : category);
+          select.add(new Option(label, category));
+          return;
+        }
+
+        const chip = document.createElement("span");
         const favorite = category.toLowerCase().includes("faves");
-        button.className = `live-editor-category${selected ? " selected" : ""}${category.toLowerCase() === "all star" ? " all-star" : ""}${favorite ? " faves" : ""}`;
-        button.textContent = category.toLowerCase() === "all star"
+        chip.className = `live-editor-category-chip${category.toLowerCase() === "all star" ? " all-star" : ""}${favorite ? " faves" : ""}`;
+        const label = document.createElement("span");
+        label.textContent = category.toLowerCase() === "all star"
           ? `★ ${category}`
           : (favorite ? `♥ ${category}` : category);
-        button.setAttribute("aria-pressed", String(selected));
-        button.addEventListener("click", () => {
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "live-editor-category-remove";
+        remove.textContent = "×";
+        remove.setAttribute("aria-label", `Remove ${category}`);
+        remove.addEventListener("click", () => {
           const index = editingLiveLibraryCategories.findIndex(saved =>
             saved.toLowerCase() === category.toLowerCase()
           );
           if (index >= 0) editingLiveLibraryCategories.splice(index, 1);
-          else editingLiveLibraryCategories.push(category);
           renderLiveEditorCategories();
         });
-        holder.append(button);
+        chip.append(label, remove);
+        holder.append(chip);
       });
+
+      if (select.options.length === 1) {
+        select.options[0].textContent = "All categories added";
+        select.disabled = true;
+      } else {
+        select.disabled = false;
+      }
+    }
+
+
+    function addLiveEditorCategory() {
+      const select = document.getElementById("liveEditorCategorySelect");
+      const category = select.value;
+      if (!category) return;
+      if (!editingLiveLibraryCategories.some(saved =>
+        saved.toLowerCase() === category.toLowerCase()
+      )) {
+        editingLiveLibraryCategories.push(category);
+      }
+      renderLiveEditorCategories();
     }
 
 
@@ -10854,8 +10897,6 @@
       }
 
       liveEditorIsImport = false;
-      document.getElementById("liveImportFlagControl").classList.remove("visible");
-      document.getElementById("liveImportIssueFlag").checked = false;
       setLiveImportNotice();
       editingLiveLibraryKey = live.key;
       editingLiveLibraryName = live.name;
@@ -10883,8 +10924,6 @@
 
     function openNewLiveEditor() {
       liveEditorIsImport = false;
-      document.getElementById("liveImportFlagControl").classList.remove("visible");
-      document.getElementById("liveImportIssueFlag").checked = false;
       setLiveImportNotice();
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
@@ -10937,8 +10976,6 @@
       }
 
       liveEditorIsImport = true;
-      document.getElementById("liveImportFlagControl").classList.add("visible");
-      document.getElementById("liveImportIssueFlag").checked = false;
       document.getElementById("liveEditorTitle").textContent =
         existingLive ? "Update Imported Live" : "Import Live";
       document.getElementById("liveEditorName").value = existingLive
@@ -11116,8 +11153,6 @@
       document.body.classList.remove("live-editor-open");
       clearLiveEditorLogoPreview();
       liveEditorIsImport = false;
-      document.getElementById("liveImportFlagControl").classList.remove("visible");
-      document.getElementById("liveImportIssueFlag").checked = false;
       setLiveImportNotice();
       editingLiveLibraryKey = null;
       editingLiveLibraryName = "";
@@ -11252,11 +11287,6 @@
       }
 
       let logoPath;
-      const importIssues = [...(currentLive?.importIssues || [])];
-
-      if (liveEditorIsImport && document.getElementById("liveImportIssueFlag").checked) {
-        importIssues.push(createImportIssue("live"));
-      }
 
       try {
         logoPath = await uploadLiveLogo(logoFile, key);
@@ -11271,7 +11301,6 @@
         items,
         categories,
         logoPath,
-        importIssues,
         lastGiveawayAt: currentLive?.lastGiveawayAt || null
       });
 
@@ -11283,7 +11312,6 @@
           items,
           categories,
           logoPath,
-          importIssues,
           lastGiveawayAt: currentLive?.lastGiveawayAt || null
         };
         const existingIndex = starterQuickLives.findIndex(
@@ -11718,9 +11746,6 @@
         items: Array.isArray(live.items) ? [...new Set(live.items)] : [],
         categories: normalizeLiveCategories(live.categories),
         logo_path: String(live.logo_path ?? live.logoPath ?? "").trim(),
-        import_issues: Array.isArray(live.import_issues ?? live.importIssues)
-          ? [...(live.import_issues ?? live.importIssues)]
-          : [],
         last_giveaway_at: live.last_giveaway_at ?? live.lastGiveawayAt ?? null,
         updated_at: new Date().toISOString()
       };
@@ -11730,7 +11755,7 @@
     async function loadSharedLiveLibrary() {
       const { data, error } = await sharedDatabase
         .from("lives")
-        .select("key, name, username, items, categories, logo_path, import_issues, last_giveaway_at")
+        .select("key, name, username, items, categories, logo_path, last_giveaway_at")
         .order("name");
 
       if (error) {
@@ -11993,24 +12018,16 @@
         };
 
         giveaways.push(giveaway);
+        clearCompletedGiveawayImportParameters();
 
         const sharedLive = matchedQuickLive || {
           key: liveKey,
           name: liveName,
           username: "",
-          items: [],
-          importIssues: []
+          items: []
         };
-        const importIssues = [...(sharedLive.importIssues || [])];
-        if (
-          new URLSearchParams(window.location.search).get("import") === "giveaway" &&
-          document.getElementById("giveawayImportIssueFlag").checked
-        ) {
-          importIssues.push(createImportIssue("giveaway"));
-        }
         saveSharedLive({
           ...sharedLive,
-          importIssues,
           lastGiveawayAt: new Date(now).toISOString(),
           items: enteredItemName
             ? [...new Set([...sharedLive.items, itemName])]
@@ -12042,7 +12059,7 @@
         }
       }
 
-      if (!isEditing && isLiveDetectionEnabled(now)) {
+      if (!isEditing) {
         liveDetectionUntil = new Date(
           now + LIVE_DETECTION_IDLE_MS
         ).toISOString();
@@ -12087,8 +12104,6 @@
       document.getElementById("importTimeEditButton").classList.remove("visible");
       document.getElementById("importErrorNotice").classList.remove("visible");
       document.getElementById("importErrorMessages").replaceChildren();
-      document.getElementById("giveawayImportFlagControl").classList.remove("visible");
-      document.getElementById("giveawayImportIssueFlag").checked = false;
       document.getElementById("countdownMinutes").value = "none";
       document.getElementById("isBuyerGiveaway").checked = false;
 
