@@ -204,7 +204,17 @@
     .logo-preview { display: block; object-fit: contain; background: white; }
     .logo-fallback { display: flex; align-items: center; justify-content: center; background: #eee3f5; color: #6b5779; font-size: 11px; font-weight: 900; }
     .logo-picker { display: block; margin-top: 6px; color: #765d88; font-size: 10px; font-weight: 850; cursor: pointer; }
-    .logo-picker input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .logo-picker input {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      opacity: 0;
+      pointer-events: none;
+    }
     .row-change-badge {
       display: none;
       width: fit-content;
@@ -1307,6 +1317,24 @@
       const logoInput = document.createElement("input");
       logoInput.type = "file";
       logoInput.accept = "image/png,image/jpeg,image/webp,image/gif";
+      logoInput.addEventListener("click", () => {
+        const shell = document.querySelector(".grid-shell");
+        const scrollState = {
+          pageX: window.scrollX,
+          pageY: window.scrollY,
+          shellLeft: shell?.scrollLeft || 0,
+          shellTop: shell?.scrollTop || 0
+        };
+        window.addEventListener("focus", () => {
+          requestAnimationFrame(() => {
+            window.scrollTo(scrollState.pageX, scrollState.pageY);
+            if (shell) {
+              shell.scrollLeft = scrollState.shellLeft;
+              shell.scrollTop = scrollState.shellTop;
+            }
+          });
+        }, { once: true });
+      });
       logoInput.addEventListener("change", () => {
         const file = logoInput.files[0];
         if (!file) return;
