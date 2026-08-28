@@ -1301,6 +1301,11 @@
       transition: none;
     }
 
+    .giveaway.actions-open,
+    .history-item.actions-open {
+      z-index: 30;
+    }
+
     .giveaway.has-live-link {
       cursor: pointer;
     }
@@ -10512,6 +10517,9 @@
 
         actions.classList.remove("open");
         actions
+          .closest(".giveaway, .history-item")
+          ?.classList.remove("actions-open");
+        actions
           .querySelector(".actions-menu-btn")
           ?.setAttribute("aria-expanded", "false");
       });
@@ -10525,6 +10533,9 @@
 
       closeGiveawayActions(actions);
       actions.classList.toggle("open", shouldOpen);
+      actions
+        .closest(".giveaway, .history-item")
+        ?.classList.toggle("actions-open", shouldOpen);
       event.currentTarget.setAttribute(
         "aria-expanded",
         String(shouldOpen)
