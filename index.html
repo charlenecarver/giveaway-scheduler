@@ -243,6 +243,7 @@
         transform 0.15s ease,
         box-shadow 0.15s ease;
       cursor: pointer;
+      text-decoration: none;
     }
 
     .quick-live-btn-name,
@@ -1243,6 +1244,15 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       border: 2px solid transparent;
       transition: none;
+    }
+
+    .giveaway.has-live-link {
+      cursor: pointer;
+    }
+
+    .giveaway.has-live-link:focus-visible {
+      outline: 3px solid rgba(37, 244, 238, 0.45);
+      outline-offset: 2px;
     }
 
     .giveaway.next {
@@ -2783,6 +2793,17 @@
     .admin-lives-link:hover {
       border-color: #cdb9da;
       background: #f3eaff;
+    }
+
+    .mobile-quick-categories-link {
+      display: none;
+    }
+
+    @media (max-width: 760px) {
+      .mobile-quick-categories-link {
+        display: flex;
+        margin-top: -7px;
+      }
     }
 
     .settings-row {
@@ -4812,6 +4833,14 @@
 
     <a class="admin-lives-link" href="lives-admin.html">
       Manage Lives
+      <span aria-hidden="true">›</span>
+    </a>
+
+    <a
+      class="admin-lives-link mobile-quick-categories-link"
+      href="lives-admin.html?quickCategories=1"
+    >
+      Quick Categories
       <span aria-hidden="true">›</span>
     </a>
 
@@ -10862,43 +10891,6 @@
     }
 
 
-    function addTikTokLiveLink(image, fallback, username, liveName) {
-      const cleanUsername = String(username || "").trim().replace(/^@/, "");
-
-      if (!cleanUsername) {
-        return;
-      }
-
-      const openLive = event => {
-        event.preventDefault();
-        event.stopPropagation();
-        const liveUrl =
-          `https://www.tiktok.com/@${encodeURIComponent(cleanUsername)}/live`;
-
-        if (window.matchMedia("(max-width: 760px)").matches) {
-          window.location.assign(liveUrl);
-        } else {
-          window.open(liveUrl, "_blank", "noopener,noreferrer");
-        }
-      };
-      const label = `Open ${liveName || cleanUsername} on TikTok LIVE`;
-
-      [image, fallback].forEach(element => {
-        element.classList.add("tiktok-live-link");
-        element.setAttribute("role", "link");
-        element.setAttribute("tabindex", "0");
-        element.setAttribute("aria-label", label);
-        element.title = label;
-        element.addEventListener("click", openLive);
-        element.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") {
-            openLive(event);
-          }
-        });
-      });
-    }
-
-
     function configureTikTokLiveAnchor(anchor, username, liveName) {
       const cleanUsername = String(username || "").trim().replace(/^@/, "");
 
@@ -10943,6 +10935,42 @@
       } else {
         window.open(liveUrl, "_blank", "noopener,noreferrer");
       }
+    }
+
+
+    function makeGiveawayTileNavigable(tile, username, liveName) {
+      const cleanUsername = String(username || "").trim().replace(/^@/, "");
+
+      if (!cleanUsername) {
+        return;
+      }
+
+      tile.classList.add("has-live-link");
+      tile.setAttribute("role", "link");
+      tile.setAttribute("tabindex", "0");
+      tile.setAttribute(
+        "aria-label",
+        `Open ${liveName || cleanUsername} on TikTok LIVE`
+      );
+      tile.title = `Open ${liveName || cleanUsername} on TikTok LIVE`;
+
+      tile.addEventListener("click", event => {
+        if (event.target.closest("a, button, input, select, textarea, .entry-actions")) {
+          return;
+        }
+
+        openQuickLive({ username: cleanUsername });
+      });
+
+      tile.addEventListener("keydown", event => {
+        if (
+          event.target === tile &&
+          (event.key === "Enter" || event.key === " ")
+        ) {
+          event.preventDefault();
+          openQuickLive({ username: cleanUsername });
+        }
+      });
     }
 
 
@@ -11136,11 +11164,9 @@
           return;
         }
 
-        const button = document.createElement("div");
+        const button = document.createElement("a");
 
         button.className = `quick-live-btn${live.isActive ? " active" : ""}`;
-        button.setAttribute("role", "link");
-        button.setAttribute("tabindex", "0");
         button.innerHTML = `
           <span class="quick-live-logo-fallback"></span>
           <img class="quick-live-logo" alt="" />
@@ -11151,30 +11177,10 @@
         const logo = button.querySelector(".quick-live-logo");
         logoFallback.textContent = getLiveInitials(live.name);
         loadVisibleQuickLiveLogo(logo, logoFallback, live.logoKey, live.logoPath);
-        addTikTokLiveLink(logo, logoFallback, live.username, live.name);
 
         button.querySelector(".quick-live-btn-name").textContent = live.name;
         button.querySelector(".quick-live-btn-username").textContent = live.username;
-        button.title = `Open ${live.name} on TikTok LIVE`;
-
-        button.addEventListener(
-          "click",
-          () => openQuickLive(live)
-        );
-
-        button.addEventListener(
-          "keydown",
-          event => {
-            if (event.target !== button) {
-              return;
-            }
-
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              openQuickLive(live);
-            }
-          }
-        );
+        configureTikTokLiveAnchor(button, live.username, live.name);
 
         row.appendChild(button);
 
@@ -13645,6 +13651,11 @@
           );
           configureTikTokLiveAnchor(
             activeLogoLink,
+            activeUsername,
+            giveaway.liveName
+          );
+          makeGiveawayTileNavigable(
+            card,
             activeUsername,
             giveaway.liveName
           );
