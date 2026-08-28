@@ -10657,8 +10657,31 @@
         "activeQuickLiveActivity",
         JSON.stringify(activeQuickLiveActivity)
       );
+      saveManualLiveOverride(key, activeQuickLiveKeys.has(key));
       saveSharedLiveStatuses();
       renderQuickLives();
+    }
+
+
+    async function saveManualLiveOverride(key, isLive) {
+      if (!sharedDatabase || !key) {
+        return;
+      }
+
+      const { error } = await sharedDatabase
+        .from("live_status_checks")
+        .upsert({
+          live_key: key,
+          manual_override: Boolean(isLive),
+          manual_override_until: new Date(
+            Date.now() + ACTIVE_LIVE_TIMEOUT_MS
+          ).toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: "live_key" });
+
+      if (error) {
+        console.error("Could not save manual live-status override:", error);
+      }
     }
 
 
