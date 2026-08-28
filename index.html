@@ -108,6 +108,10 @@
       display: none;
     }
 
+    .live-detection-toggle {
+      display: none;
+    }
+
     .quick-lives-filter-menu {
       display: contents;
     }
@@ -4039,6 +4043,36 @@
         box-shadow: none;
       }
 
+      .live-detection-toggle {
+        position: absolute;
+        top: -3px;
+        right: 84px;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        min-height: 22px;
+        padding: 3px 7px;
+        border: 1px solid #d9d2df;
+        border-radius: 999px;
+        background: #f5f2f6;
+        color: #746a78;
+        box-shadow: none;
+        font-size: 9px;
+        font-weight: 850;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .live-detection-toggle.active {
+        border-color: #ff6a8e;
+        background: #ffe2e9;
+        color: #b32950;
+      }
+
+      .quick-lives-panel.mobile-show-all .live-detection-toggle {
+        right: 97px;
+      }
+
       .quick-lives-panel.mobile-show-all .quick-lives-filter-toggle {
         right: 68px;
       }
@@ -4336,6 +4370,29 @@
     }
 
     @media (min-width: 761px) {
+      .live-detection-toggle {
+        display: inline-flex;
+        align-items: center;
+        align-self: flex-end;
+        min-height: 26px;
+        margin: -2px 34px 4px 0;
+        padding: 4px 8px;
+        border: 1px solid #d9d2df;
+        border-radius: 999px;
+        background: #f5f2f6;
+        color: #746a78;
+        box-shadow: none;
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .live-detection-toggle.active {
+        border-color: #ff6a8e;
+        background: #ffe2e9;
+        color: #b32950;
+      }
+
       .quick-lives-filter-toggle {
         display: grid;
         place-items: center;
@@ -4589,6 +4646,15 @@
             onclick="toggleAllMobileQuickLives()"
           >
             Show all
+          </button>
+          <button
+            id="liveDetectionToggle"
+            class="live-detection-toggle"
+            type="button"
+            aria-pressed="false"
+            onclick="toggleLiveDetection()"
+          >
+            Detection Off
           </button>
           <button
             id="quickLivesFilterToggle"
@@ -8576,6 +8642,8 @@
     );
 
     const ACTIVE_LIVE_TIMEOUT_MS = 60 * 60 * 1000;
+    const LIVE_DETECTION_IDLE_MS = 15 * 60 * 1000;
+    let liveDetectionUntil = null;
     let activeQuickLiveActivity = JSON.parse(
       localStorage.getItem("activeQuickLiveActivity") || "{}"
     );
@@ -10222,9 +10290,23 @@
         document.getElementById("quickLivesShowAll");
       const filterButton =
         document.getElementById("quickLivesFilterToggle");
+      const detectionButton =
+        document.getElementById("liveDetectionToggle");
 
       if (!list) {
         return;
+      }
+
+      const detectionEnabled = isLiveDetectionEnabled();
+      if (detectionButton) {
+        detectionButton.classList.toggle("active", detectionEnabled);
+        detectionButton.setAttribute("aria-pressed", String(detectionEnabled));
+        detectionButton.textContent = detectionEnabled
+          ? "Detection On"
+          : "Detection Off";
+        detectionButton.title = detectionEnabled
+          ? "Turn off automatic TikTok LIVE detection"
+          : "Check saved TikTok accounts for LIVE status for 15 minutes";
       }
 
       renderLiveNameSuggestions();
@@ -10456,6 +10538,58 @@
       quickLivesSearchClearTimer = null;
       renderQuickLives();
       search.focus();
+    }
+
+
+    function isLiveDetectionEnabled(now = Date.now()) {
+      return (Date.parse(liveDetectionUntil || "") || 0) > now;
+    }
+
+
+    function saveLiveDetectionState() {
+      if (!sharedDatabase) {
+        return;
+      }
+
+      const update = {
+        live_detection_until: liveDetectionUntil,
+        active_live_keys: [...activeQuickLiveKeys],
+        updated_at: new Date().toISOString()
+      };
+
+      pendingSharedSaves += 1;
+      sharedSaveQueue = sharedSaveQueue
+        .then(async () => {
+          const { error } = await sharedDatabase
+            .from("giveaway_state")
+            .update(update)
+            .eq("id", "shared");
+          if (error) throw error;
+        })
+        .catch(error => {
+          console.error("Could not save LIVE detection setting:", error);
+        })
+        .finally(() => {
+          pendingSharedSaves -= 1;
+        });
+    }
+
+
+    function toggleLiveDetection() {
+      const enabling = !isLiveDetectionEnabled();
+      liveDetectionUntil = enabling
+        ? new Date(Date.now() + LIVE_DETECTION_IDLE_MS).toISOString()
+        : null;
+
+      if (!enabling) {
+        activeQuickLiveKeys.clear();
+        activeQuickLiveActivity = {};
+        localStorage.setItem("activeQuickLives", "[]");
+        localStorage.setItem("activeQuickLiveActivity", "{}");
+      }
+
+      saveLiveDetectionState();
+      renderQuickLives();
     }
 
 
@@ -11244,6 +11378,7 @@
             isFavorite: entry.isFavorite ?? false
           })))
         : [];
+      liveDetectionUntil = state.live_detection_until || null;
       activeQuickLiveKeys = new Set(
         Array.isArray(state.active_live_keys)
           ? state.active_live_keys
@@ -11377,6 +11512,7 @@
             history: mergedHistory,
             active_live_keys: [...activeQuickLiveKeys],
             hidden_live_keys: [...hiddenQuickLiveKeys],
+            live_detection_until: liveDetectionUntil,
             updated_at: new Date().toISOString()
           };
 
@@ -11449,7 +11585,7 @@
 
       const { data, error } = await sharedDatabase
         .from("giveaway_state")
-        .select("giveaways, history, active_live_keys, hidden_live_keys, updated_at")
+        .select("giveaways, history, active_live_keys, hidden_live_keys, live_detection_until, updated_at")
         .eq("id", "shared")
         .maybeSingle();
 
@@ -11508,7 +11644,7 @@
 
       const { data, error } = await sharedDatabase
         .from("giveaway_state")
-        .select("giveaways, history, active_live_keys, hidden_live_keys, updated_at")
+        .select("giveaways, history, active_live_keys, hidden_live_keys, live_detection_until, updated_at")
         .eq("id", "shared")
         .maybeSingle();
 
@@ -11859,6 +11995,12 @@
             JSON.stringify(activeQuickLiveActivity)
           );
         }
+      }
+
+      if (!isEditing && isLiveDetectionEnabled(now)) {
+        liveDetectionUntil = new Date(
+          now + LIVE_DETECTION_IDLE_MS
+        ).toISOString();
       }
 
       saveData();

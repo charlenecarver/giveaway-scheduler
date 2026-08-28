@@ -107,11 +107,27 @@ async function runChecks(request: Request) {
     await Promise.all([
       supabase.from("lives").select("key, username, last_giveaway_at").neq("username", ""),
       supabase.from("live_status_checks").select("*"),
-      supabase.from("giveaway_state").select("active_live_keys").eq("id", "shared").single(),
+      supabase.from("giveaway_state").select("active_live_keys, live_detection_until").eq("id", "shared").single(),
     ]);
   if (livesError) throw livesError;
   if (checksError) throw checksError;
   if (stateError) throw stateError;
+
+  const detectionUntil = Date.parse(state?.live_detection_until || "") || 0;
+  if (detectionUntil <= Date.now()) {
+    if (Array.isArray(state?.active_live_keys) && state.active_live_keys.length > 0) {
+      const { error } = await supabase
+        .from("giveaway_state")
+        .update({
+          active_live_keys: [],
+          live_detection_until: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", "shared");
+      if (error) throw error;
+    }
+    return json({ checked: 0, disabled: true });
+  }
 
   const checkByKey = new Map((checks || []).map((check: Check) => [check.live_key, check]));
   const activeKeys = new Set<string>(Array.isArray(state?.active_live_keys) ? state.active_live_keys : []);
