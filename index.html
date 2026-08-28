@@ -12594,12 +12594,11 @@
       }
 
       const liveKey = liveName.toLowerCase();
-      const matchedQuickLive = !isEditing
-        ? getQuickLives().find(live =>
-            live.name.trim().toLowerCase() === liveKey ||
-            live.username.trim().toLowerCase() === liveKey
-          )
-        : null;
+      const selectedQuickLive = getQuickLives().find(live =>
+        live.name.trim().toLowerCase() === liveKey ||
+        live.username.trim().toLowerCase() === liveKey
+      );
+      const matchedQuickLive = !isEditing ? selectedQuickLive : null;
       const isNewQuickLive = !isEditing && !matchedQuickLive;
 
       if (isEditing) {
@@ -12654,6 +12653,13 @@
         giveaway.countdownMinutes = countdownMinutes;
         giveaway.countdownEndTime = null;
         giveaway.isBuyerGiveaway = isBuyerGiveaway;
+
+        if (selectedQuickLive && enteredItemName) {
+          saveSharedLive({
+            ...selectedQuickLive,
+            items: [...new Set([...selectedQuickLive.items, itemName])]
+          });
+        }
 
         if (!useCountdown) {
           clearGiveawayParticipation(giveaway.id);
