@@ -12563,9 +12563,10 @@
       );
 
       if (duplicateGiveaway) {
-        const duplicateCard = document.querySelector(
-          `.giveaway[data-giveaway-id="${CSS.escape(String(duplicateGiveaway.id))}"]`
-        );
+        const duplicateCard = [...document.querySelectorAll(".giveaway")]
+          .find(card =>
+            card.dataset.giveawayId === String(duplicateGiveaway.id)
+          );
         const remainingSeconds = Math.max(
           0,
           Math.ceil((Number(duplicateGiveaway.endTime) - now) / 1000)
