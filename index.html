@@ -12355,6 +12355,11 @@
       pendingSharedState = state;
       clearTimeout(sharedStateRenderTimer);
       sharedStateRenderTimer = setTimeout(() => {
+        if (pendingSharedSaves > 0) {
+          pendingSharedState = null;
+          sharedStateRenderTimer = null;
+          return;
+        }
         const nextState = pendingSharedState;
         pendingSharedState = null;
         sharedStateRenderTimer = null;
@@ -12380,73 +12385,91 @@
       }
 
       const deletedIdSet = new Set(deletedIds.map(String));
+      const localGiveaways = JSON.parse(JSON.stringify(giveaways));
+      const localHistory = JSON.parse(JSON.stringify(history));
+      const localActiveLiveKeys = [...activeQuickLiveKeys];
+      const localHiddenLiveKeys = [...hiddenQuickLiveKeys];
+      const localDetectionUntil = liveDetectionUntil;
 
       pendingSharedSaves += 1;
       sharedSaveQueue = sharedSaveQueue
         .then(async () => {
-          const { data: currentState, error: loadError } = await sharedDatabase
-            .from("giveaway_state")
-            .select("giveaways, history")
-            .eq("id", "shared")
-            .maybeSingle();
+          for (let attempt = 0; attempt < 4; attempt += 1) {
+            const { data: currentState, error: loadError } = await sharedDatabase
+              .from("giveaway_state")
+              .select("giveaways, history, updated_at")
+              .eq("id", "shared")
+              .maybeSingle();
 
-          if (loadError) {
-            throw loadError;
-          }
+            if (loadError) throw loadError;
 
-          const localGiveaways = JSON.parse(JSON.stringify(giveaways));
-          const localHistory = JSON.parse(JSON.stringify(history));
-          const mergedHistoryById = new Map();
+            const mergedHistoryById = new Map();
+            if (!clearHistory) {
+              (Array.isArray(currentState?.history) ? currentState.history : [])
+                .forEach(entry => mergedHistoryById.set(String(entry.id), entry));
+            }
+            localHistory.forEach(entry => {
+              mergedHistoryById.set(String(entry.id), entry);
+            });
+            deletedIdSet.forEach(id => mergedHistoryById.delete(id));
 
-          if (!clearHistory) {
-            (Array.isArray(currentState?.history) ? currentState.history : [])
-              .forEach(entry => mergedHistoryById.set(String(entry.id), entry));
-          }
-          localHistory.forEach(entry => {
-            mergedHistoryById.set(String(entry.id), entry);
-          });
-          deletedIdSet.forEach(id => mergedHistoryById.delete(id));
-
-          const mergedGiveawaysById = new Map();
-          (Array.isArray(currentState?.giveaways) ? currentState.giveaways : [])
-            .forEach(giveaway => {
+            const mergedGiveawaysById = new Map();
+            (Array.isArray(currentState?.giveaways) ? currentState.giveaways : [])
+              .forEach(giveaway => {
+                mergedGiveawaysById.set(String(giveaway.id), giveaway);
+              });
+            localGiveaways.forEach(giveaway => {
               mergedGiveawaysById.set(String(giveaway.id), giveaway);
             });
-          localGiveaways.forEach(giveaway => {
-            mergedGiveawaysById.set(String(giveaway.id), giveaway);
-          });
-          mergedHistoryById.forEach((_, id) => mergedGiveawaysById.delete(id));
-          deletedIdSet.forEach(id => mergedGiveawaysById.delete(id));
+            mergedHistoryById.forEach((_, id) => mergedGiveawaysById.delete(id));
+            deletedIdSet.forEach(id => mergedGiveawaysById.delete(id));
 
-          const mergedHistory = limitHistoryEntries(
-            [...mergedHistoryById.values()]
-          );
-          const retainedHistoryIds = new Set(
-            mergedHistory.map(entry => String(entry.id))
-          );
-          mergedHistoryById.forEach((_, id) => {
-            if (!retainedHistoryIds.has(id)) {
-              mergedGiveawaysById.delete(id);
+            const mergedHistory = limitHistoryEntries(
+              [...mergedHistoryById.values()]
+            );
+            const retainedHistoryIds = new Set(
+              mergedHistory.map(entry => String(entry.id))
+            );
+            mergedHistoryById.forEach((_, id) => {
+              if (!retainedHistoryIds.has(id)) {
+                mergedGiveawaysById.delete(id);
+              }
+            });
+
+            const state = {
+              id: "shared",
+              giveaways: [...mergedGiveawaysById.values()],
+              history: mergedHistory,
+              active_live_keys: localActiveLiveKeys,
+              hidden_live_keys: localHiddenLiveKeys,
+              live_detection_until: localDetectionUntil,
+              updated_at: new Date().toISOString()
+            };
+
+            if (!currentState) {
+              const { error } = await sharedDatabase
+                .from("giveaway_state")
+                .upsert(state, { onConflict: "id" });
+              if (error) throw error;
+              return;
             }
-          });
 
-          const state = {
-            id: "shared",
-            giveaways: [...mergedGiveawaysById.values()],
-            history: mergedHistory,
-            active_live_keys: [...activeQuickLiveKeys],
-            hidden_live_keys: [...hiddenQuickLiveKeys],
-            live_detection_until: liveDetectionUntil,
-            updated_at: new Date().toISOString()
-          };
+            let updateQuery = sharedDatabase
+              .from("giveaway_state")
+              .update(state)
+              .eq("id", "shared");
+            updateQuery = currentState.updated_at
+              ? updateQuery.eq("updated_at", currentState.updated_at)
+              : updateQuery.is("updated_at", null);
 
-          const { error } = await sharedDatabase
-            .from("giveaway_state")
-            .upsert(state, { onConflict: "id" });
-
-          if (error) {
-            console.error("Could not save shared giveaway data:", error);
+            const { data: savedState, error: saveError } = await updateQuery
+              .select("updated_at")
+              .maybeSingle();
+            if (saveError) throw saveError;
+            if (savedState) return;
           }
+
+          throw new Error("Shared giveaway data changed repeatedly while saving.");
         })
         .catch(error => {
           console.error("Could not save shared giveaway data:", error);
@@ -12566,6 +12589,10 @@
         return true;
       }
 
+      if (pendingSharedSaves > 0) {
+        await sharedSaveQueue;
+      }
+
       const { data, error } = await sharedDatabase
         .from("giveaway_state")
         .select("giveaways, history, active_live_keys, hidden_live_keys, live_detection_until, updated_at")
@@ -12575,6 +12602,11 @@
       if (error) {
         console.error("Could not refresh shared giveaway data:", error);
         return false;
+      }
+
+      if (pendingSharedSaves > 0) {
+        await sharedSaveQueue;
+        return refreshSharedData();
       }
 
       if (data) {
