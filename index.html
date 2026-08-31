@@ -9391,6 +9391,7 @@
     ]
   </script>
 
+  <script src="logos/manifest.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
@@ -10966,11 +10967,35 @@
     }
 
 
-    const pngLogoStems = new Set([
-      "casemate",
-      "gomrpen",
-      "thatangelavibe"
-    ]);
+    const MAX_CONCURRENT_LOGO_LOADS = 6;
+    const logoLoadQueue = [];
+    let activeLogoLoads = 0;
+
+    function drainLogoLoadQueue() {
+      while (activeLogoLoads < MAX_CONCURRENT_LOGO_LOADS && logoLoadQueue.length) {
+        const task = logoLoadQueue.shift();
+        if (!task.image.isConnected) continue;
+
+        activeLogoLoads += 1;
+        const finish = callback => {
+          task.image.removeEventListener("load", handleLoad);
+          task.image.removeEventListener("error", handleError);
+          activeLogoLoads -= 1;
+          callback();
+          drainLogoLoadQueue();
+        };
+        const handleLoad = () => finish(task.onLoad);
+        const handleError = () => finish(task.onError);
+        task.image.addEventListener("load", handleLoad, { once: true });
+        task.image.addEventListener("error", handleError, { once: true });
+        task.image.src = task.src;
+      }
+    }
+
+    function queueLogoLoad(image, src, onLoad, onError) {
+      logoLoadQueue.push({ image, src, onLoad, onError });
+      drainLogoLoadQueue();
+    }
 
 
     function loadLocalLogo(image, fallback, logoKey, logoPath = "") {
@@ -10980,13 +11005,16 @@
       }
 
       const logoStem = String(logoKey).replace(/\./g, "").toLowerCase();
-      const extension = pngLogoStems.has(logoStem) ? "png" : "jpeg";
+      const bundledLogos = window.GIVVY_BUNDLED_LOGOS || new Set();
+      const localLogoFile = ["jpeg", "png", "webp"]
+        .map(extension => `${logoStem}.${extension}`)
+        .find(filename => bundledLogos.has(filename));
       const encodedLogoPath = String(logoPath || "")
         .split("/")
         .map(encodeURIComponent)
         .join("/");
       const logoCandidates = [
-        logoStem ? `logos/${logoStem}.${extension}` : "",
+        localLogoFile ? `logos/${encodeURIComponent(localLogoFile)}` : "",
         encodedLogoPath
           ? `${SUPABASE_URL}/storage/v1/object/public/live-logos/${encodedLogoPath}`
           : ""
@@ -11000,14 +11028,17 @@
           return;
         }
 
-        image.src = logoCandidates[logoIndex];
+        const source = logoCandidates[logoIndex];
         logoIndex += 1;
+        queueLogoLoad(
+          image,
+          source,
+          () => {
+            fallback.style.display = "none";
+          },
+          tryNextLogo
+        );
       };
-
-      image.addEventListener("load", () => {
-        fallback.style.display = "none";
-      });
-      image.addEventListener("error", tryNextLogo);
       tryNextLogo();
     }
 

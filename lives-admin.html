@@ -637,6 +637,7 @@
     </section>
   </div>
 
+  <script src="logos/manifest.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://arlpqgcuoprznagadnau.supabase.co";
@@ -1267,6 +1268,36 @@
       return editor;
     }
 
+    const MAX_CONCURRENT_LOGO_LOADS = 6;
+    const logoLoadQueue = [];
+    let activeLogoLoads = 0;
+
+    function drainLogoLoadQueue() {
+      while (activeLogoLoads < MAX_CONCURRENT_LOGO_LOADS && logoLoadQueue.length) {
+        const task = logoLoadQueue.shift();
+        if (!task.image.isConnected) continue;
+
+        activeLogoLoads += 1;
+        const finish = callback => {
+          task.image.removeEventListener("load", handleLoad);
+          task.image.removeEventListener("error", handleError);
+          activeLogoLoads -= 1;
+          callback();
+          drainLogoLoadQueue();
+        };
+        const handleLoad = () => finish(task.onLoad);
+        const handleError = () => finish(task.onError);
+        task.image.addEventListener("load", handleLoad, { once: true });
+        task.image.addEventListener("error", handleError, { once: true });
+        task.image.src = task.src;
+      }
+    }
+
+    function queueLogoLoad(image, src, onLoad, onError) {
+      logoLoadQueue.push({ image, src, onLoad, onError });
+      drainLogoLoadQueue();
+    }
+
     function updateLogoPreview(row) {
       const holder = row.querySelector(".logo-holder");
       const path = row.dataset.logoPath || "";
@@ -1288,27 +1319,34 @@
       if (row._logoFile) {
         row._logoPreviewUrl = URL.createObjectURL(row._logoFile);
         candidates.push(row._logoPreviewUrl);
-      } else if (path) {
-        const encoded = path.split("/").map(encodeURIComponent).join("/");
-        candidates.push(`${SUPABASE_URL}/storage/v1/object/public/live-logos/${encoded}`);
       }
       if (username) {
-        candidates.push(`logos/${username.replace(/\./g, "").toLowerCase()}.jpeg`);
-        candidates.push(`logos/${username.replace(/\./g, "").toLowerCase()}.png`);
+        const stem = username.replace(/\./g, "").toLowerCase();
+        const bundledLogos = window.GIVVY_BUNDLED_LOGOS || new Set();
+        const localLogoFile = ["jpeg", "png", "webp"]
+          .map(extension => `${stem}.${extension}`)
+          .find(filename => bundledLogos.has(filename));
+        if (localLogoFile) candidates.push(`logos/${encodeURIComponent(localLogoFile)}`);
+      }
+      if (!row._logoFile && path) {
+        const encoded = path.split("/").map(encodeURIComponent).join("/");
+        candidates.push(`${SUPABASE_URL}/storage/v1/object/public/live-logos/${encoded}`);
       }
 
       let index = 0;
       const image = document.createElement("img");
       image.className = "logo-preview";
       image.alt = "";
-      image.onload = () => fallback.remove();
-      image.onerror = () => {
-        if (index < candidates.length) image.src = candidates[index++];
-        else image.remove();
-      };
       holder.append(image);
-      if (candidates.length) image.src = candidates[index++];
-      else image.remove();
+      const tryNextLogo = () => {
+        if (index >= candidates.length) {
+          image.remove();
+          return;
+        }
+        const source = candidates[index++];
+        queueLogoLoad(image, source, () => fallback.remove(), tryNextLogo);
+      };
+      tryNextLogo();
     }
 
     function updateLogoInitials(row) {

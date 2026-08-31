@@ -1,4 +1,4 @@
-const CACHE_NAME = "givvy-time-v85";
+const CACHE_NAME = "givvy-time-v86";
 const IMAGE_CACHE_NAME = "givvy-time-images-v4";
 const REMOTE_IMAGE_TIMEOUT_MS = 8000;
 const APP_SHELL = [
@@ -10,7 +10,8 @@ const APP_SHELL = [
   "./app-icon-180.png",
   "./app-icon-192.png",
   "./app-icon-512.png",
-  "./givvy-time-logo-web.png"
+  "./givvy-time-logo-web.png",
+  "./logos/manifest.js"
 ];
 
 self.addEventListener("install", event => {
