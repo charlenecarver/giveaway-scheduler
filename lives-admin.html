@@ -410,7 +410,8 @@
     }
     .item-copy-panel h2 { margin: 0; font-size: 20px; }
     .item-copy-panel p { margin: 5px 0 13px; color: var(--muted); font-size: 12px; }
-    .item-copy-select {
+    .item-copy-picker { position: relative; }
+    .item-copy-search {
       width: 100%;
       height: 42px;
       padding: 7px 10px;
@@ -419,6 +420,52 @@
       background: white;
       color: var(--ink);
     }
+    .item-copy-menu {
+      position: absolute;
+      z-index: 2;
+      top: calc(100% + 5px);
+      right: 0;
+      left: 0;
+      display: none;
+      max-height: min(300px, 48dvh);
+      padding: 5px;
+      overflow-y: auto;
+      border: 1px solid #ded2e4;
+      border-radius: 12px;
+      background: #fffdfb;
+      box-shadow: 0 14px 34px rgba(71, 43, 58, 0.2);
+    }
+    .item-copy-menu.open { display: grid; gap: 3px; }
+    .item-copy-option {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      min-height: 46px;
+      padding: 5px 8px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+    .item-copy-option:hover { background: #f5eff7; transform: none; }
+    .item-copy-option.selected { background: #eee2f4; }
+    .item-copy-logo,
+    .item-copy-logo-fallback {
+      grid-row: 1 / span 2;
+      grid-column: 1;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+    }
+    .item-copy-logo { display: block; object-fit: contain; background: white; }
+    .item-copy-logo-fallback { display: flex; align-items: center; justify-content: center; background: #eee3f5; color: #6b5779; font-size: 10px; font-weight: 900; }
+    .item-copy-option-name { grid-row: 1; grid-column: 2; overflow: hidden; font-size: 12px; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
+    .item-copy-option-username { grid-row: 2; grid-column: 2; overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .item-copy-empty { padding: 12px; color: var(--muted); font-size: 12px; text-align: center; }
     .item-copy-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 
     .quick-category-backdrop {
@@ -658,7 +705,10 @@
     <section class="item-copy-panel">
       <h2 id="itemCopyTitle">Copy giveaway item</h2>
       <p id="itemCopyDescription"></p>
-      <select id="itemCopyLiveSelect" class="item-copy-select" aria-label="Copy item to live"></select>
+      <div class="item-copy-picker">
+        <input id="itemCopyLiveSearch" class="item-copy-search" type="search" placeholder="Search lives…" autocomplete="off" aria-label="Copy item to live" />
+        <div id="itemCopyLiveMenu" class="item-copy-menu"></div>
+      </div>
       <div class="item-copy-actions">
         <button class="button button-secondary" type="button" onclick="closeItemCopyDialog()">Cancel</button>
         <button id="itemCopyConfirmButton" class="button button-primary" type="button" onclick="confirmItemCopy()">Copy</button>
@@ -705,6 +755,7 @@
     let activeMobileEditRow = null;
     let copyingItemSourceRow = null;
     let copyingItemValue = "";
+    let copyingItemTargetKey = "";
     let categoryCatalog = [];
     let savedCategoryCatalog = [];
     let quickCategoryCatalogSnapshot = [];
@@ -1088,11 +1139,19 @@
       document.getElementById("itemCopyBackdrop").classList.remove("open");
       copyingItemSourceRow = null;
       copyingItemValue = "";
+      copyingItemTargetKey = "";
     }
 
-    function openItemCopyDialog(sourceRow, item) {
-      const candidates = rows
-        .filter(row => row !== sourceRow && row.dataset.originalKey)
+    function getItemCopyCandidates() {
+      const query = document.getElementById("itemCopyLiveSearch").value.trim().toLowerCase();
+      return rows
+        .filter(row => row !== copyingItemSourceRow && row.dataset.originalKey)
+        .filter(row => {
+          if (!query) return true;
+          const name = row.querySelector('[data-field="name"]').value.trim().toLowerCase();
+          const username = row.querySelector('[data-field="username"]').value.trim().toLowerCase();
+          return name.includes(query) || username.includes(query);
+        })
         .sort((left, right) =>
           left.querySelector('[data-field="name"]').value.trim().localeCompare(
             right.querySelector('[data-field="name"]').value.trim(),
@@ -1100,6 +1159,67 @@
             { sensitivity: "base" }
           )
         );
+    }
+
+    function renderItemCopyLiveMenu() {
+      const menu = document.getElementById("itemCopyLiveMenu");
+      const candidates = getItemCopyCandidates();
+      menu.replaceChildren();
+
+      if (candidates.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "item-copy-empty";
+        empty.textContent = "No matching lives.";
+        menu.append(empty);
+      }
+
+      candidates.forEach(row => {
+        const key = row.dataset.originalKey;
+        const name = row.querySelector('[data-field="name"]').value.trim() || "Unnamed live";
+        const username = row.querySelector('[data-field="username"]').value.trim().replace(/^@/, "");
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = `item-copy-option${key === copyingItemTargetKey ? " selected" : ""}`;
+
+        const fallback = document.createElement("span");
+        fallback.className = "item-copy-logo-fallback";
+        fallback.textContent = getInitials(name);
+        option.append(fallback);
+        const source = row.querySelector(".logo-preview")?.src;
+        if (source) {
+          const image = document.createElement("img");
+          image.className = "item-copy-logo";
+          image.alt = "";
+          image.onload = () => fallback.remove();
+          image.onerror = () => image.remove();
+          image.src = source;
+          option.append(image);
+        }
+
+        const nameLabel = document.createElement("span");
+        nameLabel.className = "item-copy-option-name";
+        nameLabel.textContent = name;
+        const usernameLabel = document.createElement("span");
+        usernameLabel.className = "item-copy-option-username";
+        usernameLabel.textContent = username ? `@${username}` : "No username";
+        option.append(nameLabel, usernameLabel);
+        option.addEventListener("mousedown", event => event.preventDefault());
+        option.addEventListener("click", () => {
+          copyingItemTargetKey = key;
+          document.getElementById("itemCopyLiveSearch").value = username
+            ? `${name} (@${username})`
+            : name;
+          menu.classList.remove("open");
+          document.getElementById("itemCopyConfirmButton").disabled = false;
+        });
+        menu.append(option);
+      });
+      menu.classList.add("open");
+    }
+
+    function openItemCopyDialog(sourceRow, item) {
+      const candidates = rows
+        .filter(row => row !== sourceRow && row.dataset.originalKey);
       if (candidates.length === 0) {
         setStatus("There are no other saved lives to copy this item to.", "error");
         return;
@@ -1107,20 +1227,18 @@
 
       copyingItemSourceRow = sourceRow;
       copyingItemValue = item;
-      const select = document.getElementById("itemCopyLiveSelect");
-      select.replaceChildren();
-      candidates.forEach(row => {
-        const name = row.querySelector('[data-field="name"]').value.trim() || "Unnamed live";
-        const username = row.querySelector('[data-field="username"]').value.trim().replace(/^@/, "");
-        select.add(new Option(username ? `${name} (@${username})` : name, row.dataset.originalKey));
-      });
+      copyingItemTargetKey = "";
+      const search = document.getElementById("itemCopyLiveSearch");
+      search.value = "";
+      document.getElementById("itemCopyConfirmButton").disabled = true;
       document.getElementById("itemCopyDescription").textContent = `Copy “${item}” to:`;
       document.getElementById("itemCopyBackdrop").classList.add("open");
-      select.focus();
+      search.focus();
+      renderItemCopyLiveMenu();
     }
 
     async function confirmItemCopy() {
-      const targetKey = document.getElementById("itemCopyLiveSelect").value;
+      const targetKey = copyingItemTargetKey;
       const targetRow = rows.find(row => row.dataset.originalKey === targetKey);
       if (!targetRow || !copyingItemValue) return;
 
@@ -2105,6 +2223,17 @@
     });
     document.getElementById("itemCopyBackdrop").addEventListener("click", event => {
       if (event.target === event.currentTarget) closeItemCopyDialog();
+    });
+    document.getElementById("itemCopyLiveSearch").addEventListener("focus", renderItemCopyLiveMenu);
+    document.getElementById("itemCopyLiveSearch").addEventListener("input", () => {
+      copyingItemTargetKey = "";
+      document.getElementById("itemCopyConfirmButton").disabled = true;
+      renderItemCopyLiveMenu();
+    });
+    document.getElementById("itemCopyLiveSearch").addEventListener("keydown", event => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      document.querySelector(".item-copy-option")?.click();
     });
     document.getElementById("saveAllButton").addEventListener("click", saveAll);
     document.getElementById("searchInput").addEventListener("input", applyView);
