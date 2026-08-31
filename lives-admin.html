@@ -1533,30 +1533,46 @@
       return record;
     }
 
+    async function optimizeLogoFile(file) {
+      const sourceUrl = URL.createObjectURL(file);
+      try {
+        const image = await new Promise((resolve, reject) => {
+          const element = new Image();
+          element.onload = () => resolve(element);
+          element.onerror = () => reject(new Error("The selected logo could not be read."));
+          element.src = sourceUrl;
+        });
+        const maxDimension = 256;
+        const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        canvas.getContext("2d", { alpha: true }).drawImage(image, 0, 0, canvas.width, canvas.height);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/webp", 0.82));
+        if (!blob) throw new Error("The selected logo could not be optimized.");
+        return new File([blob], "logo.webp", { type: "image/webp" });
+      } finally {
+        URL.revokeObjectURL(sourceUrl);
+      }
+    }
+
     async function uploadRowLogo(row, key) {
       const file = row._logoFile;
       if (!file) return row.dataset.logoPath || "";
       if (!file.type.startsWith("image/")) throw new Error("Choose an image file for the logo.");
-      if (file.size > 2 * 1024 * 1024) throw new Error("Logo files must be 2 MB or smaller.");
-
-      const extensionByType = {
-        "image/png": "png",
-        "image/jpeg": "jpeg",
-        "image/webp": "webp",
-        "image/gif": "gif"
-      };
-      const extension = extensionByType[file.type] || file.name.split(".").pop().toLowerCase();
+      if (file.size > 15 * 1024 * 1024) throw new Error("Logo source files must be 15 MB or smaller.");
+      const optimizedFile = await optimizeLogoFile(file);
       const safeKey = String(key || "live")
         .toLowerCase()
         .replace(/[^a-z0-9_-]+/g, "-")
         .replace(/^-+|-+$/g, "") || "live";
-      const logoPath = `${safeKey}-${Date.now()}.${extension}`;
+      const logoPath = `${safeKey}-${Date.now()}.webp`;
       const { error } = await database.storage
         .from("live-logos")
-        .upload(logoPath, file, {
+        .upload(logoPath, optimizedFile, {
           upsert: true,
-          contentType: file.type,
-          cacheControl: "3600"
+          contentType: "image/webp",
+          cacheControl: "31536000"
         });
       if (error) throw error;
       return logoPath;

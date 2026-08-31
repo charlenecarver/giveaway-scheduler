@@ -1,5 +1,5 @@
-const CACHE_NAME = "givvy-time-v84";
-const IMAGE_CACHE_NAME = "givvy-time-images-v3";
+const CACHE_NAME = "givvy-time-v85";
+const IMAGE_CACHE_NAME = "givvy-time-images-v4";
 const REMOTE_IMAGE_TIMEOUT_MS = 8000;
 const APP_SHELL = [
   "./",
@@ -45,9 +45,13 @@ self.addEventListener("fetch", event => {
     event.respondWith((async () => {
       const requestUrl = new URL(event.request.url);
 
-      // Never cache cross-origin logos as opaque responses. A failed opaque
-      // response can otherwise leave one device permanently stuck on initials.
+      // Logo filenames are versioned when an image changes, so a cached
+      // response is safe to reuse and avoids repeatedly billing Storage egress.
       if (requestUrl.origin !== self.location.origin) {
+        const imageCache = await caches.open(IMAGE_CACHE_NAME);
+        const cached = await imageCache.match(event.request);
+        if (cached) return cached;
+
         const controller = new AbortController();
         const timeout = setTimeout(
           () => controller.abort(),
@@ -55,10 +59,11 @@ self.addEventListener("fetch", event => {
         );
 
         try {
-          return await fetch(event.request, {
-            cache: "no-store",
-            signal: controller.signal
-          });
+          const response = await fetch(event.request, { signal: controller.signal });
+          if (response.ok || response.type === "opaque") {
+            await imageCache.put(event.request, response.clone());
+          }
+          return response;
         } catch (error) {
           // Resolve the request promptly so the image element can run its
           // normal error handler and try a bundled-logo fallback.
