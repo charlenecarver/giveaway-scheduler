@@ -119,8 +119,8 @@
     }
 
     .quick-lives-settings-menu {
-      position: absolute;
-      z-index: 12;
+      position: fixed;
+      z-index: 1000;
       min-width: 150px;
       padding: 6px;
       border: 1px solid #ddd3e3;
@@ -11429,7 +11429,21 @@
       const open = menu.classList.toggle("open");
 
       button.setAttribute("aria-expanded", String(open));
-      if (!open) return;
+      if (!open) {
+        menu.style.removeProperty("top");
+        menu.style.removeProperty("left");
+        return;
+      }
+
+      const buttonRect = button.getBoundingClientRect();
+      const menuWidth = Math.max(150, menu.offsetWidth);
+      const maxLeft = Math.max(8, window.innerWidth - menuWidth - 8);
+      const left = Math.min(
+        Math.max(8, buttonRect.right - menuWidth),
+        maxLeft
+      );
+      menu.style.top = `${buttonRect.bottom + 4}px`;
+      menu.style.left = `${left}px`;
 
       panel.classList.remove("mobile-filter-open", "desktop-filter-open");
       filterButton.setAttribute("aria-expanded", "false");
