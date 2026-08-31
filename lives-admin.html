@@ -1275,7 +1275,6 @@
     function drainLogoLoadQueue() {
       while (activeLogoLoads < MAX_CONCURRENT_LOGO_LOADS && logoLoadQueue.length) {
         const task = logoLoadQueue.shift();
-        if (!task.image.isConnected) continue;
 
         activeLogoLoads += 1;
         const finish = callback => {
