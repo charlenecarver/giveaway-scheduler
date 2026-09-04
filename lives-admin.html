@@ -86,7 +86,7 @@
 
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) 190px auto auto auto auto;
+      grid-template-columns: minmax(220px, 1fr) 190px auto auto auto auto auto;
       gap: 10px;
       margin-bottom: 12px;
       padding: 14px;
@@ -663,6 +663,10 @@
       <label class="logo-filter">
         <input id="missingLogoFilter" type="checkbox" />
         Missing logo only
+      </label>
+      <label class="logo-filter">
+        <input id="missingCategoryFilter" type="checkbox" />
+        No categories only
       </label>
       <button id="quickCategoriesButton" class="button button-secondary" type="button">Quick Categories</button>
       <button id="addButton" class="button button-secondary" type="button">+ Add Live</button>
@@ -2109,6 +2113,7 @@
     function applyView() {
       const query = document.getElementById("searchInput").value.trim().toLowerCase();
       const missingLogoOnly = document.getElementById("missingLogoFilter").checked;
+      const missingCategoryOnly = document.getElementById("missingCategoryFilter").checked;
       const sort = document.getElementById("sortSelect").value;
       rows.sort((left, right) => {
         if (sort === "name" || sort === "username") {
@@ -2139,7 +2144,11 @@
           .join(" ")
           .toLowerCase();
         const hasLogo = Boolean(row.dataset.logoPath || row._logoFile);
-        const show = (!query || values.includes(query)) && (!missingLogoOnly || !hasLogo);
+        const hasCategories = normalizeCategories(row._categories).length > 0;
+        const show =
+          (!query || values.includes(query)) &&
+          (!missingLogoOnly || !hasLogo) &&
+          (!missingCategoryOnly || !hasCategories);
         row.classList.toggle("hidden-row", !show);
         if (show) visible += 1;
       });
@@ -2239,6 +2248,7 @@
     document.getElementById("searchInput").addEventListener("input", applyView);
     document.getElementById("sortSelect").addEventListener("change", applyView);
     document.getElementById("missingLogoFilter").addEventListener("change", applyView);
+    document.getElementById("missingCategoryFilter").addEventListener("change", applyView);
     window.addEventListener("resize", renderMobileLivesGrid);
     window.addEventListener("beforeunload", event => {
       if (!rows.some(rowHasUnsavedChanges)) return;

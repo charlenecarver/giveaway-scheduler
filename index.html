@@ -11670,16 +11670,19 @@
 
       const preview = document.getElementById("liveEditorLogoPreview");
       const logoStem = String(logoKey || "").replace(/\./g, "").toLowerCase();
-      const extension = pngLogoStems.has(logoStem) ? "png" : "jpeg";
+      const bundledLogos = window.GIVVY_BUNDLED_LOGOS || new Set();
+      const localLogoFile = ["jpeg", "png", "webp"]
+        .map(extension => `${logoStem}.${extension}`)
+        .find(filename => bundledLogos.has(filename));
       const encodedLogoPath = String(logoPath || "")
         .split("/")
         .map(encodeURIComponent)
         .join("/");
       const candidates = [
+        localLogoFile ? `logos/${encodeURIComponent(localLogoFile)}` : "",
         encodedLogoPath
           ? `${SUPABASE_URL}/storage/v1/object/public/live-logos/${encodedLogoPath}`
-          : "",
-        logoStem ? `logos/${logoStem}.${extension}` : ""
+          : ""
       ].filter(Boolean);
       let candidateIndex = 0;
 
@@ -12343,6 +12346,13 @@
 
 
     function applySharedData(state) {
+      const previousGiveaways = JSON.stringify(giveaways);
+      const previousHistory = JSON.stringify(history);
+      const previousQuickLiveState = JSON.stringify({
+        detectionUntil: liveDetectionUntil,
+        active: [...activeQuickLiveKeys].sort(),
+        hidden: [...hiddenQuickLiveKeys].sort()
+      });
       giveaways = Array.isArray(state.giveaways)
         ? state.giveaways.map(giveaway => ({
             ...giveaway,
@@ -12399,7 +12409,19 @@
         "hiddenQuickLives",
         JSON.stringify([...hiddenQuickLiveKeys])
       );
-      render();
+      const giveawaysChanged = previousGiveaways !== JSON.stringify(giveaways);
+      const historyChanged = previousHistory !== JSON.stringify(history);
+      const quickLiveStateChanged = previousQuickLiveState !== JSON.stringify({
+        detectionUntil: liveDetectionUntil,
+        active: [...activeQuickLiveKeys].sort(),
+        hidden: [...hiddenQuickLiveKeys].sort()
+      });
+
+      if (giveawaysChanged || historyChanged) {
+        render();
+      } else if (quickLiveStateChanged) {
+        renderQuickLives();
+      }
 
       if (
         sharedDatabase &&
@@ -13116,7 +13138,8 @@
         endTime: giveaway.endTime,
         useCountdown: giveaway.useCountdown,
         countdownMinutes: giveaway.countdownMinutes,
-        countdownEndTime: participation?.countdownEndTime || null
+        countdownEndTime: participation?.countdownEndTime || null,
+        joined: participation?.joined === true
       };
       editingTimeChanged = false;
       editingCountdownChanged = false;
@@ -14384,9 +14407,14 @@
 
     document
       .getElementById("countdownMinutes")
-      .addEventListener("change", () => {
+      .addEventListener("change", event => {
         if (editingGiveawayId !== null) {
           editingCountdownChanged = true;
+          if (editingOriginalTiming?.useCountdown === false) {
+            document.getElementById("isJoinedGiveaway").checked =
+              event.currentTarget.value === "none" &&
+              editingOriginalTiming.joined;
+          }
         } else {
           updateJoinedFormDefault();
         }

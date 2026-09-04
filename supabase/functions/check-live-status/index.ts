@@ -6,14 +6,16 @@ const cronSecret = Deno.env.get("CRON_SECRET") || "";
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
-const LIVE_DETECTION_SESSION_MS = 30 * 60 * 1000;
+const ACTIVE_CHECK_INTERVAL_MS = 45 * 1000;
+const PRIORITY_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+const ORDINARY_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+const MAX_CHECKS_PER_RUN = 40;
 
 type Status = "live" | "offline" | "unknown";
 type Live = {
   key: string;
   username: string;
   categories: string[] | null;
-  last_giveaway_at: string | null;
 };
 type Check = {
   live_key: string;
@@ -111,8 +113,10 @@ async function runChecks(request: Request) {
 
   const [{ data: lives, error: livesError }, { data: checks, error: checksError }, { data: state, error: stateError }] =
     await Promise.all([
-      supabase.from("lives").select("key, username, categories, last_giveaway_at").neq("username", ""),
-      supabase.from("live_status_checks").select("*"),
+      supabase.from("lives").select("key, username, categories").neq("username", ""),
+      supabase.from("live_status_checks").select(
+        "live_key, detected_status, consecutive_live, consecutive_offline, last_checked_at",
+      ),
       supabase.from("giveaway_state").select("active_live_keys, live_detection_until").eq("id", "shared").single(),
     ]);
   if (livesError) throw livesError;
@@ -121,7 +125,10 @@ async function runChecks(request: Request) {
 
   const detectionUntil = Date.parse(state?.live_detection_until || "") || 0;
   if (detectionUntil <= Date.now()) {
-    if (Array.isArray(state?.active_live_keys) && state.active_live_keys.length > 0) {
+    if (
+      state?.live_detection_until ||
+      (Array.isArray(state?.active_live_keys) && state.active_live_keys.length > 0)
+    ) {
       const { error } = await supabase
         .from("giveaway_state")
         .update({
@@ -137,40 +144,50 @@ async function runChecks(request: Request) {
 
   const checkByKey = new Map((checks || []).map((check: Check) => [check.live_key, check]));
   const activeKeys = new Set<string>(Array.isArray(state?.active_live_keys) ? state.active_live_keys : []);
+  const originalActiveKeys = [...activeKeys].sort();
   const candidates = (lives || []) as Live[];
-  const detectionSessionStartedAt = detectionUntil - LIVE_DETECTION_SESSION_MS;
-  const isInitialPriority = (live: Live) =>
+  const isPriority = (live: Live) =>
     (live.categories || []).some(category => {
       const normalized = String(category).trim().toLowerCase();
       return normalized === "all star" || normalized.includes("faves");
     });
+  const lastCheckedAt = (live: Live) =>
+    Date.parse(checkByKey.get(live.key)?.last_checked_at || "") || 0;
+  const isDue = (live: Live) => {
+    const interval = activeKeys.has(live.key)
+      ? ACTIVE_CHECK_INTERVAL_MS
+      : isPriority(live)
+        ? PRIORITY_CHECK_INTERVAL_MS
+        : ORDINARY_CHECK_INTERVAL_MS;
+    return Date.now() - lastCheckedAt(live) >= interval;
+  };
   const sortByOldestCheck = (left: Live, right: Live) => {
     const leftLastChecked = Date.parse(checkByKey.get(left.key)?.last_checked_at || "") || 0;
     const rightLastChecked = Date.parse(checkByKey.get(right.key)?.last_checked_at || "") || 0;
-    const leftChecked = leftLastChecked >= detectionSessionStartedAt ? leftLastChecked : 0;
-    const rightChecked = rightLastChecked >= detectionSessionStartedAt ? rightLastChecked : 0;
-    if (leftChecked !== rightChecked) return leftChecked - rightChecked;
-
-    // Start each detection session with favorite and All Star lives. As soon as
-    // they are checked, the still-unchecked accounts move ahead of them.
-    return Number(isInitialPriority(right)) - Number(isInitialPriority(left));
+    return leftLastChecked - rightLastChecked;
   };
   const activeCandidates = candidates
-    .filter(live => activeKeys.has(live.key))
+    .filter(live => activeKeys.has(live.key) && isDue(live))
     .sort(sortByOldestCheck);
-  const inactiveCandidates = candidates
-    .filter(live => !activeKeys.has(live.key))
+  const priorityCandidates = candidates
+    .filter(live => !activeKeys.has(live.key) && isPriority(live) && isDue(live))
+    .sort(sortByOldestCheck);
+  const ordinaryCandidates = candidates
+    .filter(live => !activeKeys.has(live.key) && !isPriority(live) && isDue(live))
     .sort(sortByOldestCheck);
 
   const activeSlots = Math.min(15, activeCandidates.length);
   const batch = [
     ...activeCandidates.slice(0, activeSlots),
-    ...inactiveCandidates.slice(0, 40 - activeSlots),
+    ...priorityCandidates.slice(0, MAX_CHECKS_PER_RUN - activeSlots),
   ];
-  if (batch.length < 40) {
+  if (batch.length < MAX_CHECKS_PER_RUN) {
+    batch.push(...ordinaryCandidates.slice(0, MAX_CHECKS_PER_RUN - batch.length));
+  }
+  if (batch.length < MAX_CHECKS_PER_RUN) {
     batch.push(...activeCandidates.slice(
       activeSlots,
-      activeSlots + (40 - batch.length),
+      activeSlots + (MAX_CHECKS_PER_RUN - batch.length),
     ));
   }
   const results: Array<{ live: Live; result: { status: Status; error: string | null } }> = [];
@@ -216,13 +233,17 @@ async function runChecks(request: Request) {
     if (error) throw error;
   }
 
-  const { error: updateError } = await supabase
-    .from("giveaway_state")
-    .update({ active_live_keys: [...activeKeys], updated_at: new Date().toISOString() })
-    .eq("id", "shared");
-  if (updateError) throw updateError;
+  const nextActiveKeys = [...activeKeys].sort();
+  const statusesChanged = JSON.stringify(nextActiveKeys) !== JSON.stringify(originalActiveKeys);
+  if (statusesChanged) {
+    const { error: updateError } = await supabase
+      .from("giveaway_state")
+      .update({ active_live_keys: nextActiveKeys, updated_at: new Date().toISOString() })
+      .eq("id", "shared");
+    if (updateError) throw updateError;
+  }
 
-  return json({ checked: results.length, activated, deactivated });
+  return json({ checked: results.length, activated, deactivated, statusesChanged });
 }
 
 Deno.serve(async request => {

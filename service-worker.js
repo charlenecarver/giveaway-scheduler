@@ -1,5 +1,5 @@
-const CACHE_NAME = "givvy-time-v86";
-const IMAGE_CACHE_NAME = "givvy-time-images-v4";
+const CACHE_NAME = "givvy-time-v87";
+const IMAGE_CACHE_NAME = "givvy-time-images-v5";
 const REMOTE_IMAGE_TIMEOUT_MS = 8000;
 const APP_SHELL = [
   "./",
@@ -77,18 +77,15 @@ self.addEventListener("fetch", event => {
         }
       }
 
-      try {
-        const response = await fetch(event.request, { cache: "no-cache" });
-        if (response.ok) {
-          const imageCache = await caches.open(IMAGE_CACHE_NAME);
-          await imageCache.put(event.request, response.clone());
-        }
-        return response;
-      } catch (error) {
-        const cached = await caches.match(event.request);
-        if (cached) return cached;
-        throw error;
+      const imageCache = await caches.open(IMAGE_CACHE_NAME);
+      const cached = await imageCache.match(event.request);
+      if (cached) return cached;
+
+      const response = await fetch(event.request, { cache: "no-cache" });
+      if (response.ok) {
+        await imageCache.put(event.request, response.clone());
       }
+      return response;
     })());
     return;
   }
