@@ -1627,6 +1627,13 @@
       }
     }
 
+    function hasBundledLogo(username) {
+      const stem = String(username || "").trim().replace(/\./g, "").toLowerCase();
+      const bundledLogos = window.GIVVY_BUNDLED_LOGOS || new Set();
+      return ["jpeg", "png", "webp"]
+        .some(extension => bundledLogos.has(`${stem}.${extension}`));
+    }
+
     function updateProfileLink(row) {
       const username = row.querySelector('[data-field="username"]').value.trim().replace(/^@/, "");
       const link = row.querySelector(".profile-link");
@@ -2143,7 +2150,12 @@
           .map(input => input.type === "checkbox" ? "" : input.value)
           .join(" ")
           .toLowerCase();
-        const hasLogo = Boolean(row.dataset.logoPath || row._logoFile);
+        const username = row.querySelector('[data-field="username"]').value;
+        const hasLogo = Boolean(
+          row.dataset.logoPath ||
+          row._logoFile ||
+          hasBundledLogo(username)
+        );
         const hasCategories = normalizeCategories(row._categories).length > 0;
         const show =
           (!query || values.includes(query)) &&
