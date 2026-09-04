@@ -707,15 +707,15 @@
 
   <div id="itemCopyBackdrop" class="item-copy-backdrop" role="dialog" aria-modal="true" aria-labelledby="itemCopyTitle">
     <section class="item-copy-panel">
-      <h2 id="itemCopyTitle">Copy giveaway item</h2>
+      <h2 id="itemCopyTitle">Move giveaway item</h2>
       <p id="itemCopyDescription"></p>
       <div class="item-copy-picker">
-        <input id="itemCopyLiveSearch" class="item-copy-search" type="search" placeholder="Search lives…" autocomplete="off" aria-label="Copy item to live" />
+        <input id="itemCopyLiveSearch" class="item-copy-search" type="search" placeholder="Search lives…" autocomplete="off" aria-label="Move item to live" />
         <div id="itemCopyLiveMenu" class="item-copy-menu"></div>
       </div>
       <div class="item-copy-actions">
         <button class="button button-secondary" type="button" onclick="closeItemCopyDialog()">Cancel</button>
-        <button id="itemCopyConfirmButton" class="button button-primary" type="button" onclick="confirmItemCopy()">Copy</button>
+        <button id="itemCopyConfirmButton" class="button button-primary" type="button" onclick="confirmItemCopy()">Move</button>
       </div>
     </section>
   </div>
@@ -1225,7 +1225,7 @@
       const candidates = rows
         .filter(row => row !== sourceRow && row.dataset.originalKey);
       if (candidates.length === 0) {
-        setStatus("There are no other saved lives to copy this item to.", "error");
+        setStatus("There are no other saved lives to move this item to.", "error");
         return;
       }
 
@@ -1235,7 +1235,7 @@
       const search = document.getElementById("itemCopyLiveSearch");
       search.value = "";
       document.getElementById("itemCopyConfirmButton").disabled = true;
-      document.getElementById("itemCopyDescription").textContent = `Copy “${item}” to:`;
+      document.getElementById("itemCopyDescription").textContent = `Move “${item}” to:`;
       document.getElementById("itemCopyBackdrop").classList.add("open");
       search.focus();
       renderItemCopyLiveMenu();
@@ -1250,42 +1250,77 @@
       const alreadySaved = targetRow._items.some(
         saved => saved.trim().toLowerCase() === item.trim().toLowerCase()
       );
-      if (alreadySaved) {
-        closeItemCopyDialog();
-        setStatus("That live already has this giveaway item.", "error");
-        return;
-      }
 
       const button = document.getElementById("itemCopyConfirmButton");
-      const nextItems = normalizeItems([...targetRow._items, item]);
-      button.disabled = true;
-      button.textContent = "Copying…";
-      try {
-        const { error } = await database
-          .from("lives")
-          .update({ items: nextItems, updated_at: new Date().toISOString() })
-          .eq("key", targetKey);
-        if (error) throw error;
+      const sourceRow = copyingItemSourceRow;
+      const sourceKey = sourceRow?.dataset.originalKey;
+      if (!sourceRow || !sourceKey) return;
 
-        const hadOtherEdits = targetRow.classList.contains("dirty");
-        targetRow._items = [...nextItems];
-        if (targetRow._originalState) targetRow._originalState.items = [...nextItems];
-        renderItemsEditor(targetRow);
-        if (!hadOtherEdits) {
-          targetRow.classList.add("saved-change");
-          targetRow.querySelector(".row-change-badge").textContent = "Saved";
-          targetRow.querySelector(".row-message").textContent = "Item copied";
-          targetRow.querySelector(".row-message").className = "row-message success";
+      const previousTargetItems = [...targetRow._items];
+      const nextTargetItems = alreadySaved
+        ? previousTargetItems
+        : normalizeItems([...previousTargetItems, item]);
+      const nextSourceItems = sourceRow._items.filter(
+        saved => saved.trim().toLowerCase() !== item.trim().toLowerCase()
+      );
+      button.disabled = true;
+      button.textContent = "Moving…";
+      try {
+        if (!alreadySaved) {
+          const { error: targetError } = await database
+            .from("lives")
+            .update({ items: nextTargetItems, updated_at: new Date().toISOString() })
+            .eq("key", targetKey);
+          if (targetError) throw targetError;
         }
+
+        const { error: sourceError } = await database
+          .from("lives")
+          .update({ items: nextSourceItems, updated_at: new Date().toISOString() })
+          .eq("key", sourceKey);
+        if (sourceError) {
+          if (!alreadySaved) {
+            const { error: rollbackError } = await database
+              .from("lives")
+              .update({ items: previousTargetItems, updated_at: new Date().toISOString() })
+              .eq("key", targetKey);
+            if (rollbackError) {
+              console.error("Could not roll back failed item move", rollbackError);
+            }
+          }
+          throw sourceError;
+        }
+
+        targetRow._items = [...nextTargetItems];
+        if (targetRow._originalState) targetRow._originalState.items = [...nextTargetItems];
+        sourceRow._items = [...nextSourceItems];
+        if (sourceRow._originalState) sourceRow._originalState.items = [...nextSourceItems];
+        renderItemsEditor(targetRow);
+        renderItemsEditor(sourceRow);
+        [sourceRow, targetRow].forEach(row => {
+          if (rowHasUnsavedChanges(row)) {
+            row.classList.add("dirty");
+            row.classList.remove("saved-change");
+            row.querySelector(".row-change-badge").textContent = "Edited";
+            row.querySelector(".row-message").textContent = "";
+            row.querySelector(".row-message").className = "row-message";
+          } else {
+            row.classList.remove("dirty");
+            row.classList.add("saved-change");
+            row.querySelector(".row-change-badge").textContent = "Saved";
+            row.querySelector(".row-message").textContent = "Item moved";
+            row.querySelector(".row-message").className = "row-message success";
+          }
+        });
         closeItemCopyDialog();
-        setStatus(`Copied “${item}” successfully.`, "success");
+        setStatus(`Moved “${item}” successfully.`, "success");
         applyView();
       } catch (error) {
         console.error(error);
-        setStatus(error.message || "Could not copy the giveaway item.", "error");
+        setStatus(error.message || "Could not move the giveaway item.", "error");
       } finally {
         button.disabled = false;
-        button.textContent = "Copy";
+        button.textContent = "Move";
       }
     }
 
@@ -1341,18 +1376,19 @@
           input.focus();
           input.select();
         });
-        const copy = document.createElement("button");
-        copy.type = "button";
-        copy.className = "item-chip-action";
-        copy.innerHTML = `
+        const move = document.createElement("button");
+        move.type = "button";
+        move.className = "item-chip-action";
+        move.innerHTML = `
           <svg viewBox="0 0 16 16" aria-hidden="true">
-            <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect>
-            <path d="M3.5 10.5h-1a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1"></path>
+            <path d="M1.5 8h10"></path>
+            <path d="M8.5 4.5 12 8l-3.5 3.5"></path>
+            <path d="M14 3v10"></path>
           </svg>
         `;
-        copy.title = "Copy to another live";
-        copy.setAttribute("aria-label", `Copy ${item} to another live`);
-        copy.addEventListener("click", () => openItemCopyDialog(row, item));
+        move.title = "Move to another live";
+        move.setAttribute("aria-label", `Move ${item} to another live`);
+        move.addEventListener("click", () => openItemCopyDialog(row, item));
         const remove = document.createElement("button");
         remove.type = "button";
         remove.className = "item-chip-action item-chip-remove";
@@ -1363,7 +1399,7 @@
           markDirty(row);
           renderItemsEditor(row);
         });
-        chip.append(text, edit, copy, remove);
+        chip.append(text, edit, move, remove);
         list.append(chip);
       });
     }
