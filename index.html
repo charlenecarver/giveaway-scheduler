@@ -434,6 +434,95 @@
       display: flex;
     }
 
+    .existing-live-panel {
+      width: min(390px, 100%);
+      padding: 22px;
+      border-radius: 16px;
+      background: white;
+      box-shadow: 0 18px 50px rgba(20, 22, 27, 0.24);
+      text-align: center;
+    }
+
+    .existing-live-panel h2 {
+      margin: 0 0 8px;
+      color: #51445b;
+      font-size: 20px;
+    }
+
+    .existing-live-message {
+      margin: 0 0 17px;
+      color: #776b80;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .existing-live-profile {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      align-items: center;
+      gap: 13px;
+      padding: 13px;
+      border: 1px solid #e4ddea;
+      border-radius: 13px;
+      background: #faf7fc;
+      text-align: left;
+    }
+
+    .existing-live-logo-wrap {
+      position: relative;
+      width: 64px;
+      height: 64px;
+    }
+
+    .existing-live-logo,
+    .existing-live-logo-fallback {
+      position: absolute;
+      inset: 0;
+      width: 64px;
+      height: 64px;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(66, 48, 76, 0.13);
+    }
+
+    .existing-live-logo { object-fit: contain; background: white; }
+    .existing-live-logo-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eadff0;
+      color: #6a5675;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .existing-live-name {
+      display: block;
+      overflow: hidden;
+      color: #44394b;
+      font-size: 16px;
+      font-weight: 850;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .existing-live-username {
+      display: block;
+      overflow: hidden;
+      margin-top: 3px;
+      color: #85798d;
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .existing-live-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
     .live-editor {
       width: min(420px, 100%);
       max-height: calc(100vh - 40px);
@@ -4798,6 +4887,27 @@
     </div>
   </div>
 
+  <div id="existingLiveBackdrop" class="live-editor-backdrop">
+    <section class="existing-live-panel" role="dialog" aria-modal="true" aria-labelledby="existingLiveTitle">
+      <h2 id="existingLiveTitle">Live already exists</h2>
+      <p class="existing-live-message">A live with this username already exists.</p>
+      <div class="existing-live-profile">
+        <span class="existing-live-logo-wrap">
+          <span id="existingLiveLogoFallback" class="existing-live-logo-fallback"></span>
+          <img id="existingLiveLogo" class="existing-live-logo" alt="" hidden />
+        </span>
+        <span>
+          <span id="existingLiveName" class="existing-live-name"></span>
+          <span id="existingLiveUsername" class="existing-live-username"></span>
+        </span>
+      </div>
+      <div class="existing-live-actions">
+        <button class="live-editor-cancel" type="button" onclick="closeExistingLiveDialog()">Close</button>
+        <button class="live-editor-save" type="button" onclick="addNewLiveFromExistingDialog()">Add New</button>
+      </div>
+    </section>
+  </div>
+
   <div class="container">
 
     <div class="app-layout">
@@ -5536,7 +5646,8 @@
         "items": [
           "Snoopy Plushie",
           "Keychain",
-          "Luxury Rhinestone Bow-Knot Key Cha... Purple"
+          "Luxury Rhinestone Bow-Knot Key Cha... Purple",
+          "Luxury Rhinestone Bow-Knot Key Cha... White"
         ],
         "categories": [
           "Accessories",
@@ -5748,7 +5859,7 @@
       {
         "key": "ann nicole",
         "name": "Ann Nicole",
-        "username": "",
+        "username": "annc2272",
         "items": [
           "DECOLURE Luxury Glam Full Size... Blush Pink, Full",
           "SLEEPHORIA Quilt Set with Shams... Light Grey, King",
@@ -5757,7 +5868,7 @@
           "DECOLURE 100% Pure Mulberry Si... Silver Grey, King"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "annc2272-1788566689537.jpeg",
         "last_giveaway_at": "2026-09-04T12:05:12.403+00:00"
       },
       {
@@ -5806,13 +5917,13 @@
       },
       {
         "key": "baby thre...",
-        "name": "Baby Thre...",
-        "username": "",
+        "name": "Baby Three World",
+        "username": "taylor.olivia82",
         "items": [
           "Baby Three- pajama party pen blind box 1PCS"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "taylorolivia82-1788566691075.jpeg",
         "last_giveaway_at": "2026-09-01T00:26:03.819+00:00"
       },
       {
@@ -5939,6 +6050,17 @@
         "last_giveaway_at": "2026-09-01T04:41:32.811+00:00"
       },
       {
+        "key": "bianvomar.",
+        "name": "bianvomar.",
+        "username": "",
+        "items": [
+          "Bianyo 6-Pack Assorted Set Color... Random Assorted"
+        ],
+        "categories": [],
+        "logo_path": "",
+        "last_giveaway_at": "2026-09-05T00:11:17.528+00:00"
+      },
+      {
         "key": "bianyoart",
         "name": "bianyomarkers",
         "username": "bianyoart",
@@ -5952,13 +6074,14 @@
           "Bianyo Cute Kawaii Bunny Cartoon Ea... Blue Marker Tote Bag",
           "Bianyo 6-Pack Assorted Set Colored B... Random Assorted",
           "Bianyo 3PCS Lightweight Jelly Color P...",
-          "Metal Laptop Stand with 360 Rotating..."
+          "Metal Laptop Stand with 360 Rotating...",
+          "Bianyo 6-Pack Assorted Set Color... Random Assorted"
         ],
         "categories": [
           "Stationery"
         ],
         "logo_path": "bianyoart-1788213817727.webp",
-        "last_giveaway_at": "2026-09-02T19:55:12.202+00:00"
+        "last_giveaway_at": "2026-09-05T00:13:09.597+00:00"
       },
       {
         "key": "biodance_global",
@@ -6012,13 +6135,13 @@
       },
       {
         "key": "blanca fas.",
-        "name": "Blanca Fas.",
-        "username": "",
+        "name": "Blanca Fashionista Live",
+        "username": "blancafashionistalive",
         "items": [
           "Portland Leather Canvas Purse Or... Java Bean, Classic, Medium"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "blancafashionistalive-1788566693553.jpeg",
         "last_giveaway_at": "2026-09-03T13:02:27.786+00:00"
       },
       {
@@ -6031,17 +6154,6 @@
         "categories": [],
         "logo_path": "blassbeauty-1788561924000.jpeg",
         "last_giveaway_at": "2026-09-02T00:27:49.395+00:00"
-      },
-      {
-        "key": "blindbox p...",
-        "name": "Blindbox p...",
-        "username": "",
-        "items": [
-          "Baby Three- pajama party pen blind box 1PCS"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T02:28:44.069+00:00"
       },
       {
         "key": "blitzbreakzz",
@@ -6185,28 +6297,6 @@
         ],
         "logo_path": "cakesbody.jpeg",
         "last_giveaway_at": "2026-09-01T04:29:05.153+00:00"
-      },
-      {
-        "key": "cancelled.",
-        "name": "Cancelled.",
-        "username": "",
-        "items": [
-          "NIHIL ZERO GIVEAWAY PACK Default"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T03:20:57.224+00:00"
-      },
-      {
-        "key": "cancelled.n",
-        "name": "Cancelled.N",
-        "username": "",
-        "items": [
-          "NIHIL ZERO GIVEAWAY PACK Default"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-08-31T23:48:13.287+00:00"
       },
       {
         "key": "cancelledhobby",
@@ -6466,34 +6556,13 @@
         "last_giveaway_at": "2026-08-29T00:05:30.736+00:00"
       },
       {
-        "key": "conv give:",
-        "name": "Conv Give:",
-        "username": "",
-        "items": [
-          "Portland Leather Metro Crossbody Вa... Coldbrew, Mini"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T17:06:07.934+00:00"
-      },
-      {
-        "key": "coop si...",
-        "name": "Coop SI...",
-        "username": "",
-        "items": [
-          "Coop Home Goods Memory-Foam Tra... One Size"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T22:29:01.819+00:00"
-      },
-      {
         "key": "coopsleepgoods",
         "name": "Coop Sleep Goods",
         "username": "coopsleepgoods",
         "items": [
           "Coop Home Goods Memory-Foam... One Size",
-          "Travel pillow"
+          "Travel pillow",
+          "Coop Home Goods Memory-Foam Tra... One Size"
         ],
         "categories": [
           "Home Goods"
@@ -6982,17 +7051,6 @@
         "last_giveaway_at": "2026-08-27T13:11:44.122+00:00"
       },
       {
-        "key": "evervthin...",
-        "name": "Evervthin...",
-        "username": "",
-        "items": [
-          "08 Everything Kitchens Modern Essen... Default"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-04T17:22:39.363+00:00"
-      },
-      {
         "key": "everythingkitchens",
         "name": "Everything Kitchens",
         "username": "everythingkitchens",
@@ -7133,13 +7191,13 @@
       },
       {
         "key": "gen mel",
-        "name": "Gen Mel",
-        "username": "",
+        "name": "Gen❌ Mel",
+        "username": "thatgenxlesbianmomof3",
         "items": [
           "REVER Paradise Circus 70cm Long Le... 1 Pack"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "thatgenxlesbianmomof3-1788566694255.jpeg",
         "last_giveaway_at": "2026-09-02T04:26:22.717+00:00"
       },
       {
@@ -7406,22 +7464,13 @@
         "last_giveaway_at": "2026-08-27T13:12:56.797+00:00"
       },
       {
-        "key": "idistro",
+        "key": "idistrobags",
         "name": "iDistro",
-        "username": "",
+        "username": "idistrobags",
         "items": [
           "NIHIL ZERO JPN BOOSTER PACK Default",
           "NIHIL ZERO JPN BOOSTER OX!!! Default"
         ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T04:19:56.716+00:00"
-      },
-      {
-        "key": "idistrobags",
-        "name": "iDistro",
-        "username": "idistrobags",
-        "items": [],
         "categories": [],
         "logo_path": "idistrobags-1788561924000.jpeg",
         "last_giveaway_at": null
@@ -7452,25 +7501,14 @@
         "last_giveaway_at": "2026-08-27T21:22:46.76+00:00"
       },
       {
-        "key": "itsahuded.",
-        "name": "itsahuded.",
-        "username": "",
-        "items": [
-          "Heirloom Herb Seed Starter Set 5... Default",
-          "Medicinal Herb Seeds Kit - 5 Heirl... Default"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-04T03:55:08.102+00:00"
-      },
-      {
         "key": "tribeandtrowel",
         "name": "itsahugedeal",
         "username": "tribeandtrowel",
         "items": [
           "Heirloom Herb Seed Starter Set 5 Vari... Default",
           "Heirloom Herb Seed Starter Set 5 Vari...",
-          "Medicinal Herb Seeds Kit - 5 Heirl... Default"
+          "Medicinal Herb Seeds Kit - 5 Heirl... Default",
+          "Heirloom Herb Seed Starter Set 5... Default"
         ],
         "categories": [
           "Plants",
@@ -7478,17 +7516,6 @@
         ],
         "logo_path": "tribeandtrowel-1787873011994.jpeg",
         "last_giveaway_at": "2026-09-03T01:08:16.263+00:00"
-      },
-      {
-        "key": "itsahugedeal",
-        "name": "itsahugedeal",
-        "username": "itsahugedeal",
-        "items": [
-          "Heirloom seeds"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": null
       },
       {
         "key": "javvycoffee",
@@ -7544,12 +7571,12 @@
       {
         "key": "jlab_store",
         "name": "JLab_store",
-        "username": "",
+        "username": "jlab_store",
         "items": [
           "Earplugs Reuseable: JLab JBuds Prot... Black"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "jlab_store-1788566694935.jpeg",
         "last_giveaway_at": "2026-08-31T23:06:28.94+00:00"
       },
       {
@@ -7605,28 +7632,14 @@
       },
       {
         "key": "k20 bv...",
-        "name": "k20 bv...",
-        "username": "",
+        "name": "k2o by kylie jenner",
+        "username": "drinkk2o",
         "items": [
           "k2o electric frother Default"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "drinkk2o-1788566695644.jpeg",
         "last_giveaway_at": "2026-09-04T03:23:55.041+00:00"
-      },
-      {
-        "key": "k2o by kylie jenner",
-        "name": "k2o by kylie jenner",
-        "username": "k2o by kylie jenner",
-        "items": [
-          "frother",
-          "k2o electric frother"
-        ],
-        "categories": [
-          "Kitchen"
-        ],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-03T04:17:46.09+00:00"
       },
       {
         "key": "karmanepalcrafts",
@@ -7711,18 +7724,6 @@
         "last_giveaway_at": "2026-08-27T19:08:41.973+00:00"
       },
       {
-        "key": "kind",
-        "name": "KIND",
-        "username": "",
-        "items": [
-          "Luxury Rhinestone Bow-Knot Key Cha... Purple",
-          "Luxury Rhinestone Bow-Knot Key Cha... White"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T13:45:27.022+00:00"
-      },
-      {
         "key": "kindpatches_us",
         "name": "Kind Patches USA",
         "username": "kindpatches_us",
@@ -7738,12 +7739,12 @@
       {
         "key": "kira jade",
         "name": "Kira Jade",
-        "username": "",
+        "username": "kira.jade9010",
         "items": [
           "Tewiky Gold/Silver Heart Shape Penda... Gold"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "kirajade9010-1788566696289.jpeg",
         "last_giveaway_at": "2026-09-02T00:16:09.087+00:00"
       },
       {
@@ -7845,17 +7846,6 @@
         ],
         "logo_path": "latopia-1787543481793.jpeg",
         "last_giveaway_at": "2026-08-24T03:51:22.739+00:00"
-      },
-      {
-        "key": "laura mercier",
-        "name": "Laura Mercier",
-        "username": "",
-        "items": [
-          "Laura Mercier Tinted Moisturizer Blus... Parasol"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T23:35:09.996+00:00"
       },
       {
         "key": "laura m...",
@@ -7999,19 +7989,6 @@
         "last_giveaway_at": "2026-08-31T22:53:02.676+00:00"
       },
       {
-        "key": "rosmuse...",
-        "name": "LIVE RosMuse Beauty",
-        "username": "xd7lcagg1cm",
-        "items": [
-          "RosMuse Bubble Lash DIY Eyelash Ext... Grip-Brown"
-        ],
-        "categories": [
-          "Cosmetics"
-        ],
-        "logo_path": "rosmuse-1787925256108.jpeg",
-        "last_giveaway_at": "2026-08-28T13:48:34.971+00:00"
-      },
-      {
         "key": "livefindsfam",
         "name": "LiveFindsFam",
         "username": "livefindsfam",
@@ -8024,15 +8001,6 @@
         "categories": [],
         "logo_path": "livefindsfam-1788561924000.jpeg",
         "last_giveaway_at": "2026-09-04T04:23:31.004+00:00"
-      },
-      {
-        "key": "louisselect001",
-        "name": "LouisSelect",
-        "username": "louisselect001",
-        "items": [],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": null
       },
       {
         "key": "louiś louisseleci",
@@ -8086,34 +8054,12 @@
         "last_giveaway_at": "2026-08-31T06:13:42.332+00:00"
       },
       {
-        "key": "lucky cas",
-        "name": "lucky Cas",
-        "username": "",
-        "items": [
-          "TEWIKY 14k Gold Plated Golden O-Lin... gold"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-02T04:15:55.663+00:00"
-      },
-      {
-        "key": "lucky cas...",
-        "name": "lucky Cas...",
-        "username": "",
-        "items": [
-          "TEWIKY 14k Gold Plated Golden O-Lin... gold",
-          "TEWIKY Gold Cross Necklace for Wo... Silver"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-02T00:59:35.651+00:00"
-      },
-      {
         "key": "cassice688up",
         "name": "lucky Cassie",
         "username": "cassice688up",
         "items": [
-          "TEWIKY 14k Gold Plated Golden O-Lin... gold"
+          "TEWIKY 14k Gold Plated Golden O-Lin... gold",
+          "TEWIKY Gold Cross Necklace for Wo... Silver"
         ],
         "categories": [],
         "logo_path": "cassice688up-1788561924000.jpeg",
@@ -8179,13 +8125,13 @@
       },
       {
         "key": "lyre jewel...",
-        "name": "Lyre Jewel...",
-        "username": "",
+        "name": "Lyre Jewelry",
+        "username": "lyrejewelry.fl",
         "items": [
           "Surprise Me! Mystery Gold Jewelry Default"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "lyrejewelryfl-1788566697178.jpeg",
         "last_giveaway_at": "2026-08-31T22:53:26.887+00:00"
       },
       {
@@ -8423,12 +8369,12 @@
       {
         "key": "mikefinds57",
         "name": "mikefinds57",
-        "username": "",
+        "username": "mikefinds57",
         "items": [
           "Wireless Video Doorbell Camera - 108... Default"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "mikefinds57-1788566697900.jpeg",
         "last_giveaway_at": "2026-09-01T02:30:33.502+00:00"
       },
       {
@@ -8547,12 +8493,12 @@
       {
         "key": "munchkin",
         "name": "Munchkin",
-        "username": "",
+        "username": "munchkin.inc",
         "items": [
           "Munchkin Miracle 360º Sippy Cup,... Light Green"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "munchkininc-1788566698463.jpeg",
         "last_giveaway_at": "2026-09-04T02:49:32.463+00:00"
       },
       {
@@ -8587,21 +8533,12 @@
         "last_giveaway_at": "2026-09-03T01:22:09.905+00:00"
       },
       {
-        "key": "mytys.fas...",
-        "name": "mytys.fas...",
-        "username": "",
-        "items": [
-          "Mytys Virgin Mary & Jesus Themed C... Gold"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T02:29:13.488+00:00"
-      },
-      {
         "key": "mytys.fashion01",
         "name": "mytys.fashion01",
         "username": "mytys.fashion01",
-        "items": [],
+        "items": [
+          "Mytys Virgin Mary & Jesus Themed C... Gold"
+        ],
         "categories": [],
         "logo_path": "mytysfashion01-1788561924000.jpeg",
         "last_giveaway_at": null
@@ -8719,17 +8656,6 @@
         ],
         "logo_path": "ninetynine_dreams.jpeg",
         "last_giveaway_at": "2026-09-02T17:02:34.909+00:00"
-      },
-      {
-        "key": "ninia ki..",
-        "name": "Ninia Ki..",
-        "username": "",
-        "items": [
-          "Ninja Foodi NeverDull Premium Ch... Default"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-04T18:57:00.459+00:00"
       },
       {
         "key": "ninjakitchen",
@@ -8973,21 +8899,12 @@
         "key": "onelovedbabe",
         "name": "One Loved Babe",
         "username": "onelovedbabe",
-        "items": [],
-        "categories": [],
-        "logo_path": "onelovedbabe-1788561924000.jpeg",
-        "last_giveaway_at": null
-      },
-      {
-        "key": "one loved...",
-        "name": "One Loved...",
-        "username": "",
         "items": [
           "OLB Oversized Pink Graphic Vinyl Mak... Pink"
         ],
         "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-02T20:43:38.305+00:00"
+        "logo_path": "onelovedbabe-1788561924000.jpeg",
+        "last_giveaway_at": null
       },
       {
         "key": "ot.breaks",
@@ -9003,25 +8920,14 @@
         "last_giveaway_at": "2026-08-23T22:16:28.765+00:00"
       },
       {
-        "key": "ovc be.",
-        "name": "OVC Be.",
-        "username": "",
-        "items": [
-          "Pop Sonic Set of 2 Eyebrow Shapers White"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-03T13:20:40.522+00:00"
-      },
-      {
         "key": "painted",
         "name": "Painted",
-        "username": "",
+        "username": "painted",
         "items": [
           "Painted Blush Cream & Powder Du... Tangelo"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "painted-1788566699256.jpeg",
         "last_giveaway_at": "2026-09-04T04:25:32.799+00:00"
       },
       {
@@ -9389,17 +9295,6 @@
         "last_giveaway_at": "2026-09-02T15:10:14.721+00:00"
       },
       {
-        "key": "pullchemy",
-        "name": "Pullchemy",
-        "username": "",
-        "items": [
-          "Pitch Black Pack Givvy Default"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-08-31T23:08:27.007+00:00"
-      },
-      {
         "key": "pullchemyteg",
         "name": "PullchemyTCG",
         "username": "pullchemytcg",
@@ -9456,22 +9351,12 @@
         "last_giveaway_at": "2026-08-31T06:09:15.64+00:00"
       },
       {
-        "key": "put todeth.",
-        "name": "Put todeth.",
-        "username": "",
-        "items": [
-          "EVALESS T Shirt for Women Casua... Khaki Stripe, S"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-04T04:29:10.061+00:00"
-      },
-      {
         "key": "put_together_studio",
         "name": "Put together Studio",
         "username": "put_together_studio",
         "items": [
-          "EVALESS Women's Fitted Satin Blous... Apricot, S"
+          "EVALESS Women's Fitted Satin Blous... Apricot, S",
+          "EVALESS T Shirt for Women Casua... Khaki Stripe, S"
         ],
         "categories": [],
         "logo_path": "put_together_studio-1788561924000.jpeg",
@@ -9525,7 +9410,8 @@
           "Makeup",
           "Philosophy shower gel",
           "philosophy supersize 32oz merry mo... frstdsnowflakes",
-          "Pop Sonic Rechargeable Compact Mir... Mint Art Deco"
+          "Pop Sonic Rechargeable Compact Mir... Mint Art Deco",
+          "Pop Sonic Set of 2 Eyebrow Shapers White"
         ],
         "categories": [
           "Cosmetics"
@@ -9624,17 +9510,6 @@
         "last_giveaway_at": "2026-08-23T22:16:36.76+00:00"
       },
       {
-        "key": "rosekin",
-        "name": "ROSEKIN",
-        "username": "",
-        "items": [
-          "RoseKind Baby-Size Diamond-Patt... Gray,Baby (27\"x39\")"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-04T02:33:20.281+00:00"
-      },
-      {
         "key": "rosekind home",
         "name": "ROSEKIND HOME",
         "username": "rosekind_2",
@@ -9651,7 +9526,9 @@
         "key": "rosekind_1",
         "name": "ROSEKIND HOME",
         "username": "rosekind_1",
-        "items": [],
+        "items": [
+          "RoseKind Baby-Size Diamond-Patt... Gray,Baby (27\"x39\")"
+        ],
         "categories": [],
         "logo_path": "rosekind_1-1788561924000.jpeg",
         "last_giveaway_at": null
@@ -9669,17 +9546,6 @@
         ],
         "logo_path": "cagg1cm-1787944422615.jpeg",
         "last_giveaway_at": "2026-09-01T13:38:16.1+00:00"
-      },
-      {
-        "key": "rritthasht..",
-        "name": "Rritthasht..",
-        "username": "",
-        "items": [
-          "Glamnetic The Soft Launch Press-... Strawberry Icing"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-04T04:25:53.08+00:00"
       },
       {
         "key": "sale.fashion11",
@@ -9949,12 +9815,12 @@
       {
         "key": "silveraurany",
         "name": "silveraurany",
-        "username": "",
+        "username": "silveraurany",
         "items": [
           "3mm 925 sterling silver moissanite st... Default"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "silveraurany-1788566699869.jpeg",
         "last_giveaway_at": "2026-09-01T03:20:15.335+00:00"
       },
       {
@@ -10000,15 +9866,15 @@
       },
       {
         "key": "sol de j...",
-        "name": "Sol de J...",
-        "username": "",
+        "name": "Sol de Janeiro",
+        "username": "soldejaneiro",
         "items": [
           "Sol de Janeiro Exclusive Beaded Pouch Default",
           "Women's Exclusive Clutch Purse, Styli... Default",
           "Sol de Janeiro Exclusive Beaded Pouch"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "soldejaneiro-1788566700679.jpeg",
         "last_giveaway_at": "2026-09-03T00:35:37.856+00:00"
       },
       {
@@ -10066,17 +9932,6 @@
         "last_giveaway_at": "2026-09-01T23:26:18.131+00:00"
       },
       {
-        "key": "stehen d.",
-        "name": "Stehen D.",
-        "username": "",
-        "items": [
-          "RoseKind Baby-Size Diamond-Patt... Gray,Baby (27\"x39\")"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-03T04:19:43.209+00:00"
-      },
-      {
         "key": "steph",
         "name": "Steph",
         "username": "dealswithstephen",
@@ -10096,7 +9951,8 @@
         "items": [
           "Blanket",
           "RoseKind Baby-Size Diamond-Pattern... Gray, Baby (27\"×39\")",
-          "RoseKind Baby-Size Diamond-Patt... Gray, Baby (27\"×39\")"
+          "RoseKind Baby-Size Diamond-Patt... Gray, Baby (27\"×39\")",
+          "RoseKind Baby-Size Diamond-Patt... Gray,Baby (27\"x39\")"
         ],
         "categories": [
           "Home Goods"
@@ -10124,6 +9980,17 @@
         "last_giveaway_at": "2026-09-02T19:00:13.016+00:00"
       },
       {
+        "key": "strapsicle...",
+        "name": "Strapsicle - Kindle Accessory",
+        "username": "strapsicle",
+        "items": [
+          "Last Chance! Sale Clutches Burnt Orange"
+        ],
+        "categories": [],
+        "logo_path": "strapsicle-1788566701848.jpeg",
+        "last_giveaway_at": "2026-09-01T23:48:37.996+00:00"
+      },
+      {
         "key": "strapsicleshop",
         "name": "Strapsicle Shop",
         "username": "strapsicleshop",
@@ -10134,17 +10001,6 @@
         "categories": [],
         "logo_path": "strapsicleshop-1788561924000.jpeg",
         "last_giveaway_at": "2026-09-02T00:01:12.288+00:00"
-      },
-      {
-        "key": "strapsicle...",
-        "name": "Strapsicle...",
-        "username": "",
-        "items": [
-          "Last Chance! Sale Clutches Burnt Orange"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-01T23:48:37.996+00:00"
       },
       {
         "key": "svdfitness",
@@ -10457,17 +10313,6 @@
         "last_giveaway_at": "2026-09-02T17:38:59.729+00:00"
       },
       {
-        "key": "time sensi",
-        "name": "TIME SENSI",
-        "username": "",
-        "items": [
-          "Mini Handheld USB Rechargeable Fan... random color"
-        ],
-        "categories": [],
-        "logo_path": "",
-        "last_giveaway_at": "2026-09-02T13:40:46.013+00:00"
-      },
-      {
         "key": "timeoffsports6",
         "name": "TimeOFF Sports",
         "username": "timeoffsports6",
@@ -10749,6 +10594,17 @@
         "last_giveaway_at": "2026-09-01T15:06:52.439+00:00"
       },
       {
+        "key": "vevor.appliances.live",
+        "name": "VEVOR Appliances Live",
+        "username": "vevor.appliances.live",
+        "items": [
+          "[Backtoschool] VEVOR 2PCS Micro..."
+        ],
+        "categories": [],
+        "logo_path": "vevorapplianceslive-1788566702655.jpeg",
+        "last_giveaway_at": "2026-09-04T23:56:40.472+00:00"
+      },
+      {
         "key": "vikingcarcare",
         "name": "VIKING Car Care",
         "username": "vikingcarcare",
@@ -10905,12 +10761,12 @@
       {
         "key": "yokunodrop",
         "name": "yokunodrop",
-        "username": "",
+        "username": "yokunodrop",
         "items": [
           "1-Pack: Emma Jellybean Jolt Series S... Default"
         ],
         "categories": [],
-        "logo_path": "",
+        "logo_path": "yokunodrop-1788566703228.jpeg",
         "last_giveaway_at": "2026-09-01T21:19:36.832+00:00"
       },
       {
@@ -13416,6 +13272,45 @@
     }
 
 
+    function closeExistingLiveDialog() {
+      document.getElementById("existingLiveBackdrop").classList.remove("open");
+      document.body.classList.remove("live-editor-open");
+    }
+
+
+    function addNewLiveFromExistingDialog() {
+      closeExistingLiveDialog();
+      openNewLiveEditor();
+    }
+
+
+    function showExistingLiveDialog(live) {
+      const backdrop = document.getElementById("existingLiveBackdrop");
+      const fallback = document.getElementById("existingLiveLogoFallback");
+      const logo = document.getElementById("existingLiveLogo");
+      document.getElementById("existingLiveName").textContent = live.name || "Unnamed live";
+      document.getElementById("existingLiveUsername").textContent = live.username
+        ? `@${live.username.replace(/^@+/, "")}`
+        : "No username";
+      fallback.textContent = getLiveInitials(live.name || live.username);
+      fallback.hidden = false;
+      logo.hidden = true;
+      logo.removeAttribute("src");
+      logo.onload = () => {
+        logo.hidden = false;
+        fallback.hidden = true;
+      };
+      logo.onerror = () => {
+        logo.hidden = true;
+        fallback.hidden = false;
+      };
+      loadLocalLogo(logo, fallback, live.logoKey || live.username || live.name, live.logoPath || "");
+      document.body.classList.add("live-editor-open");
+      backdrop.classList.add("open");
+      backdrop.querySelector("button")?.focus();
+    }
+
+
     function initializeImportedLiveEditor() {
       const searchParameters = new URLSearchParams(window.location.search);
 
@@ -13434,22 +13329,19 @@
         .replace(/^@/, "");
       const existingLive = username
         ? getQuickLives().find(live =>
-            live.username.trim().toLowerCase() === username.toLowerCase()
+            live.username.trim().replace(/^@+/, "").toLowerCase() === username.toLowerCase()
           )
         : null;
 
       if (existingLive) {
-        openLiveEditor(existingLive);
-      } else {
-        openNewLiveEditor();
+        showExistingLiveDialog(existingLive);
+        return;
       }
 
+      openNewLiveEditor();
       liveEditorIsImport = true;
-      document.getElementById("liveEditorTitle").textContent =
-        existingLive ? "Update Imported Live" : "Import Live";
-      document.getElementById("liveEditorName").value = existingLive
-        ? existingLive.name
-        : name;
+      document.getElementById("liveEditorTitle").textContent = "Import Live";
+      document.getElementById("liveEditorName").value = name;
       document.getElementById("liveEditorUsername").value = username;
 
       const messages = [];
@@ -13460,10 +13352,6 @@
 
       if (!username) {
         messages.push("The Shortcut did not send the username.");
-      }
-
-      if (existingLive) {
-        messages.push(`@${username} already exists. The saved full name was kept.`);
       }
 
       setLiveImportNotice(messages);
@@ -13751,7 +13639,7 @@
       const currentLive = existingLives.find(live => live.key === editingLiveLibraryKey);
       const duplicateUsername = username && existingLives.find(live =>
         live.key !== editingLiveLibraryKey &&
-        live.username.trim().toLowerCase() === username.toLowerCase()
+        live.username.trim().replace(/^@+/, "").toLowerCase() === username.toLowerCase()
       );
 
       if (duplicateUsername) {
@@ -13779,7 +13667,7 @@
         return;
       }
 
-      await saveSharedLive({
+      const liveSaved = await saveSharedLive({
         key,
         name,
         username,
@@ -13788,6 +13676,7 @@
         logoPath,
         lastGiveawayAt: currentLive?.lastGiveawayAt || null
       });
+      if (!liveSaved) return;
 
       if (!sharedDatabase) {
         const localRecord = {
@@ -14309,7 +14198,7 @@
 
     async function saveSharedLive(live) {
       if (!sharedDatabase) {
-        return;
+        return true;
       }
 
       const record = getSharedLiveRecord(live);
@@ -14319,7 +14208,14 @@
 
       if (error) {
         console.error("Could not save the live to the shared library:", error);
+        const username = String(live.username || "").trim().replace(/^@+/, "");
+        const duplicate = error.code === "23505" || /username.+already used/i.test(error.message || "");
+        alert(duplicate
+          ? `The username @${username} is already used by another live. Enter a unique username.`
+          : "The live could not be saved. Please try again.");
+        return false;
       }
+      return true;
     }
 
 
@@ -15883,11 +15779,19 @@
         }
       });
 
+    document
+      .getElementById("existingLiveBackdrop")
+      .addEventListener("click", event => {
+        if (event.target === event.currentTarget) {
+          closeExistingLiveDialog();
+        }
+      });
+
     document.addEventListener("keydown", event => {
-      if (
-        event.key === "Escape" &&
-        document.getElementById("liveEditorBackdrop").classList.contains("open")
-      ) {
+      if (event.key !== "Escape") return;
+      if (document.getElementById("existingLiveBackdrop").classList.contains("open")) {
+        closeExistingLiveDialog();
+      } else if (document.getElementById("liveEditorBackdrop").classList.contains("open")) {
         closeLiveEditor();
       }
     });

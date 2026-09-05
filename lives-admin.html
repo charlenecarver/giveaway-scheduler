@@ -1952,6 +1952,23 @@
         return false;
       }
 
+      const normalizedUsername = record.username.trim().replace(/^@+/, "").toLowerCase();
+      const duplicateUsernameRow = normalizedUsername && rows.find(candidate =>
+        candidate !== row &&
+        candidate.querySelector('[data-field="username"]')
+          .value.trim().replace(/^@+/, "").toLowerCase() === normalizedUsername
+      );
+      if (duplicateUsernameRow) {
+        const duplicateName = duplicateUsernameRow
+          .querySelector('[data-field="name"]').value.trim() || "another live";
+        message.textContent = `@${record.username} is already used by ${duplicateName}.`;
+        message.className = "row-message error";
+        const usernameInput = row.querySelector('[data-field="username"]');
+        usernameInput.focus();
+        usernameInput.select();
+        return false;
+      }
+
       row.classList.add("saving");
       message.textContent = "Saving…";
       message.className = "row-message";
@@ -2004,7 +2021,9 @@
         return true;
       } catch (error) {
         console.error(error);
-        message.textContent = error.message || "Could not save.";
+        message.textContent = error.code === "23505" || /username.+already used/i.test(error.message || "")
+          ? `@${record.username} is already used by another live.`
+          : error.message || "Could not save.";
         message.className = "row-message error";
         return false;
       } finally {
