@@ -1575,6 +1575,13 @@
       line-height: 1.2;
     }
 
+    .giveaway-username {
+      color: #555;
+      font-size: 13px;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+
     .item-name {
       color: #666;
       font-size: 14px;
@@ -15456,6 +15463,13 @@
           const activeLogoFallback = card.querySelector(".giveaway-logo-fallback");
           const activeLogoLink = card.querySelector(".giveaway-logo-link");
           const activeUsername = getLogoKeyForLiveName(giveaway.liveName);
+          if (activeUsername) {
+            const usernameLine = document.createElement("div");
+            usernameLine.className = "giveaway-username";
+            usernameLine.textContent = "@" + activeUsername.replace(/^@+/, "");
+            const itemLine = card.querySelector(".item-name");
+            itemLine.before(usernameLine);
+          }
           const activeLogoPath = getLogoPathForLiveName(giveaway.liveName);
           activeLogoFallback.textContent = getLiveInitials(giveaway.liveName);
           loadLocalLogo(
