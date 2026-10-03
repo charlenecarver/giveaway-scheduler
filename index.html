@@ -13928,12 +13928,13 @@
     }
 
 
-    function saveSharedData({ deletedIds = [], clearHistory = false } = {}) {
+    function saveSharedData({ deletedIds = [], completedIds = [], clearHistory = false } = {}) {
       if (!sharedDatabase) {
         return;
       }
 
       const deletedIdSet = new Set(deletedIds.map(String));
+      const completedIdSet = new Set(completedIds.map(String));
       const localGiveaways = JSON.parse(JSON.stringify(giveaways));
       const localHistory = JSON.parse(JSON.stringify(history));
       const localActiveLiveKeys = [...activeQuickLiveKeys];
@@ -13972,6 +13973,7 @@
             });
             mergedHistoryById.forEach((_, id) => mergedGiveawaysById.delete(id));
             deletedIdSet.forEach(id => mergedGiveawaysById.delete(id));
+            completedIdSet.forEach(id => mergedGiveawaysById.delete(id));
 
             const mergedHistory = limitHistoryEntries(
               [...mergedHistoryById.values()]
@@ -15068,7 +15070,8 @@
       }
 
       if (dataChanged) {
-        saveData();
+        // Preserve removal even when older completions fall outside the history limit.
+        saveData({ completedIds: finished.map(giveaway => giveaway.id) });
       }
 
       if (structuralChange) {
